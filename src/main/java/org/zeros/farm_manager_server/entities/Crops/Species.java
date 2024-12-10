@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
-@Entity
+//@Entity
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -22,9 +22,6 @@ public class Species extends DatabaseEntity {
     private  String speciesType;
     private  String speciesDescription;
 
-
-    public Species() {
-    }
     @Transient
     public final Species ANY=Species.builder().speciesName("ANY").speciesType("ANY").build();
     @Transient

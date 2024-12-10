@@ -10,10 +10,10 @@ import java.sql.Date;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
-@Entity
+/*@Entity
 @Table( uniqueConstraints = {
         @UniqueConstraint(columnNames = {"species", "plant_variety"})
-})
+})*/
 public class Plant extends DatabaseEntity {
     @Column(name="species", nullable = false)
     @OneToOne

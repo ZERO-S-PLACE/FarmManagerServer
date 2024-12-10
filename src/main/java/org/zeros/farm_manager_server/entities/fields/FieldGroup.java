@@ -1,12 +1,11 @@
 package org.zeros.farm_manager_server.entities.fields;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
+import org.zeros.farm_manager_server.entities.User;
 
 import java.util.Objects;
 import java.util.Set;
@@ -15,24 +14,14 @@ import java.util.Set;
 @Getter
 @Setter
 @RequiredArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class FieldGroup extends DatabaseEntity {
 
     private String fieldGroupName;
-
-    @OneToMany
+    private String description;
+    @OneToMany(mappedBy = "id")
     private Set<Field> fields;
+    @ManyToOne
+    private User user;
 
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FieldGroup that = (FieldGroup) o;
-        return Objects.equals(fieldGroupName, that.fieldGroupName) && Objects.equals(fields, that.fields);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(fieldGroupName);
-    }
 }

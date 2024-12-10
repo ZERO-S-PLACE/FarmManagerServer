@@ -5,10 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.mapping.Set;
-import org.zeros.farm_manager_server.entities.agricultural_operations.Cultivation;
+/*import org.zeros.farm_manager_server.entities.AgriculturalOperations.Cultivation;
 
 @Entity
 @Getter
@@ -19,3 +17,4 @@ public class InterCrop extends Crop{
 @OneToOne
     private Cultivation destructiveCultivation;
 }
+*/

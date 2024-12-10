@@ -1,11 +1,11 @@
-package org.zeros.farm_manager_server.entities.agricultural_operations;
+package org.zeros.farm_manager_server.entities.AgriculturalOperations;
 
 import jakarta.persistence.Entity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
-@Entity
+//@Entity
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)

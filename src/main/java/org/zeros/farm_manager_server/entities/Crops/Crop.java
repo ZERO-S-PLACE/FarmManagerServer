@@ -5,11 +5,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
-import org.zeros.farm_manager_server.entities.agricultural_operations.*;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.*;
 
 import java.util.Set;
 
-@Entity
+/*@Entity
 @Getter
 @Setter
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -29,3 +29,4 @@ public abstract class Crop extends DatabaseEntity {
     @OneToMany
     private Set<Subside> subsides;
 }
+*/

@@ -10,7 +10,7 @@ import org.zeros.farm_manager_server.entities.DatabaseEntity;
 import java.sql.Date;
 import java.util.Set;
 
-@Entity
+//@Entity
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)

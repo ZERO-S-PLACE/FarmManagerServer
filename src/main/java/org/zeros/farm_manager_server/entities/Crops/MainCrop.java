@@ -1,11 +1,11 @@
 package org.zeros.farm_manager_server.entities.Crops;
 
-import jakarta.persistence.DiscriminatorValue;
+/*import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.*;
-import org.zeros.farm_manager_server.entities.agricultural_operations.Harvest;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Harvest;
 
 import java.util.Set;
 
@@ -21,3 +21,4 @@ public class MainCrop extends Crop {
     private Set<CropSale> cropSales;
     private Boolean isFullySold;
 }
+*/

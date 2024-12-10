@@ -1,6 +1,7 @@
 package org.zeros.farm_manager_server.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,13 +18,18 @@ import java.util.UUID;
 @Setter
 public abstract class DatabaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "VARCHAR(36)", unique = true, nullable = false)
     protected UUID id;
     @Version
+    @NotNull
     protected Integer version;
     @CreationTimestamp
-    @Column( updatable = false)
-    protected Timestamp dateCreated;
+    @NotNull
+    @Column(name="created_date",updatable = false)
+    protected Timestamp createdDate;
     @UpdateTimestamp
-    protected Timestamp dateUpdated;
+    @NotNull
+    @Column(name="created_date",updatable = false)
+    protected Timestamp lastModifiedDate;
 }

@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
-@Entity
+//@Entity
 @DiscriminatorValue("GRAIN")
 public class GrainParameters extends CropParameters {
     private Float glutenContent;

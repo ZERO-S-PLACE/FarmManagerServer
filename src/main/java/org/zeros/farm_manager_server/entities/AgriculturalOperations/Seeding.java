@@ -1,9 +1,9 @@
-package org.zeros.farm_manager_server.entities.agricultural_operations;
+package org.zeros.farm_manager_server.entities.AgriculturalOperations;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 import lombok.*;
-
+/*
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -21,3 +21,4 @@ public class Seeding extends AgriculturalOperation {
 
 
 }
+*/

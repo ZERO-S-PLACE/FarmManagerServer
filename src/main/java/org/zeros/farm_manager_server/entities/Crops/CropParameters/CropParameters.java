@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
 
-@Entity
+//@Entity
 @Getter
 @Setter
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)

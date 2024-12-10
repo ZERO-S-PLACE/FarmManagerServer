@@ -1,4 +1,4 @@
-package org.zeros.farm_manager_server.entities.agricultural_operations;
+package org.zeros.farm_manager_server.entities.AgriculturalOperations;
 
 import jakarta.persistence.Entity;
 import lombok.EqualsAndHashCode;
@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.zeros.farm_manager_server.entities.Crops.CropParameters.CropParameters;
 
-@Entity
+/*@Entity
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -15,3 +15,4 @@ public class Harvest extends AgriculturalOperation{
     private Float quantityPerAreaUnit;
     private CropParameters cropParameters;
 }
+*/

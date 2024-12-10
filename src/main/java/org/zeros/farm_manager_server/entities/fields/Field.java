@@ -4,32 +4,41 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.UniqueConstraint;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
+import org.zeros.farm_manager_server.entities.User;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Entity
 @Getter
 @Setter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Field extends DatabaseEntity {
 
     private String fieldName;
+    private String description;
 
-    private Float area;
-
+    private BigDecimal area;
+    @ManyToOne
+    private User user;
     @ManyToOne
     private FieldGroup fieldGroup;
-    @OneToMany
+    @OneToMany(mappedBy = "id")
     private Set<FieldPart> fieldParts;
 
-    private Set<String> surveyingPlots;
-
+    private String surveyingPlots;
     private Boolean isOwnField;
-    private Float propertyTax;
-    private Float rent;
+    private BigDecimal propertyTax;
+    private BigDecimal rent;
+    private Boolean isArchived;
 
+
+    public void setUser(User user){
+        this.user = user;
+        user.addField(this);
+    }
 }

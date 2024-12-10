@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.zeros.farm_manager_server.entities.Crops.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
-@Entity
+//@Entity
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)

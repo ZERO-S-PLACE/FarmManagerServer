@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
-@Entity
+//@Entity
 @DiscriminatorValue("SUGAR_BEET")
 public class SugarBeetParameters extends CropParameters {
     private Float sugarContent;
