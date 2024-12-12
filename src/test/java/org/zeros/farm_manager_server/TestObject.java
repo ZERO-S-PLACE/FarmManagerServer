@@ -1,7 +1,8 @@
 package org.zeros.farm_manager_server;
 
-import org.zeros.farm_manager_server.entities.User;
+import org.zeros.farm_manager_server.entities.User.User;
 import org.zeros.farm_manager_server.entities.fields.Field;
+import org.zeros.farm_manager_server.entities.fields.FieldPart;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -27,8 +28,16 @@ public class TestObject {
                 .area(BigDecimal.valueOf(random.nextDouble()*100).round(new MathContext(2)))
                 .fieldName("TestField"+fieldNumber)
                 .isOwnField(true)
+                .isArchived(false)
                 .propertyTax(BigDecimal.valueOf(random.nextDouble()*100).round(new MathContext(2)))
                 .build();
 
+    }
+
+    public static FieldPart createTestFieldPart(int i, BigDecimal area) {
+    return FieldPart.builder()
+            .fieldPartName("TEST_PART_"+i)
+            .area(area.round(new MathContext(2)))
+            .build();
     }
 }

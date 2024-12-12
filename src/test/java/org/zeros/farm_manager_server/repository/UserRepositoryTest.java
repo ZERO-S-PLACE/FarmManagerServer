@@ -7,14 +7,10 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.TestObject;
-import org.zeros.farm_manager_server.entities.User;
+import org.zeros.farm_manager_server.entities.User.User;
 import org.zeros.farm_manager_server.entities.fields.Field;
 import org.zeros.farm_manager_server.repositories.FieldRepository;
 import org.zeros.farm_manager_server.repositories.UserRepository;
-
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,8 +31,10 @@ public class UserRepositoryTest {
     @Test
     void testSaveUser() {
         User user= TestObject.createTestUser(0);
-        User testUser=userRepository.save(user);
+        User testUser=userRepository.saveAndFlush(user);
         assertThat(this.userRepository.findById(testUser.getId()).get()).isEqualTo(testUser);
+        assertThat(testUser.getCreatedDate()).isNotNull();
+        assertThat(testUser.getLastModifiedDate()).isNotNull();
     }
     @Test
     void testUserWithFields() {

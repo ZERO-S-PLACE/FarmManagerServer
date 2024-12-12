@@ -1,27 +1,60 @@
 package org.zeros.farm_manager_server.entities.fields;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
-import org.zeros.farm_manager_server.entities.User;
+import org.zeros.farm_manager_server.entities.User.User;
 
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Getter
 @Setter
-@RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true,exclude = {"description","fields"})
+@Builder
 public class FieldGroup extends DatabaseEntity {
 
+    @NotNull
+    @NotBlank
     private String fieldGroupName;
-    private String description;
-    @OneToMany(mappedBy = "id")
-    private Set<Field> fields;
+    @Builder.Default
+    private String description = "";
+
+    @OneToMany(mappedBy = "fieldGroup", fetch = FetchType.EAGER)
+    @Builder.Default
+    private Set<Field> fields=new HashSet<>();
+
     @ManyToOne
     private User user;
+
+    @Transient
+    public static final FieldGroup NONE = FieldGroup.builder().
+            fieldGroupName("NONE").
+            user(User.NONE)
+            .build();
+
+    @Transient
+    public static FieldGroup getDefaultFieldGroup(User user) {
+    return FieldGroup.builder().
+    fieldGroupName("DEFAULT").
+    user(user).build();
+}
+public void addFields(Set<Field> fields) {
+        this.fields.addAll(fields);
+}
+public void addField(Field field) {
+        this.fields.add(field);
+}
+    public void removeFields(Set<Field> fields) {
+        this.fields.removeAll(fields);
+    }
+public void removeField(Field field) {
+        this.fields.remove(field);
+    }
 
 }

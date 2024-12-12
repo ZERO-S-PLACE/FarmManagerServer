@@ -5,11 +5,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.type.SqlTypes;
 
 import java.sql.Timestamp;
-import java.util.Timer;
 import java.util.UUID;
 
 
@@ -18,18 +19,16 @@ import java.util.UUID;
 @Setter
 public abstract class DatabaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "VARCHAR(36)", unique = true, nullable = false)
+    @GeneratedValue(generator = "UUID")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     protected UUID id;
     @Version
     @NotNull
     protected Integer version;
     @CreationTimestamp
-    @NotNull
-    @Column(name="created_date",updatable = false)
+    @Column(updatable = false)
     protected Timestamp createdDate;
     @UpdateTimestamp
-    @NotNull
-    @Column(name="created_date",updatable = false)
     protected Timestamp lastModifiedDate;
 }

@@ -14,7 +14,7 @@ insert into field_group( field_group_name, id, created_date, last_modified_date,
 values ('fieldGroup2U1',UUID(),now(),now(),0,(select id from user where username='TestUser1'));
 
 insert into field_group( field_group_name, id, created_date, last_modified_date, version,user_id)
-values ('DEFAULT',UUID(),now(),now(),0,(select id from user where username='TestUser1'));
+values ('DEFAULT',UUID(),now(),now(),0,(select id from user where username='TestUser2'));
 
 insert into field (field_name, area, is_own_field, is_archived,
                    id, version, created_date, last_modified_date,

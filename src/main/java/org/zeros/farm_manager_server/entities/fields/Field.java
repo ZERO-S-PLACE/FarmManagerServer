@@ -1,14 +1,14 @@
 package org.zeros.farm_manager_server.entities.fields;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
-import org.zeros.farm_manager_server.entities.User;
+import org.zeros.farm_manager_server.entities.User.User;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -17,28 +17,43 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(callSuper=true,exclude = {"user","fieldGroup","fieldParts",})
 public class Field extends DatabaseEntity {
 
+    @NonNull
+    @NotBlank
     private String fieldName;
-    private String description;
-
-    private BigDecimal area;
+    @Builder.Default
+    private String description="";
+    @NonNull
+    @Builder.Default
+    @Min(0)
+    private BigDecimal area=BigDecimal.ZERO;
     @ManyToOne
     private User user;
     @ManyToOne
     private FieldGroup fieldGroup;
-    @OneToMany(mappedBy = "id")
+    @OneToMany(mappedBy = "field", fetch = FetchType.EAGER)
     private Set<FieldPart> fieldParts;
-
-    private String surveyingPlots;
-    private Boolean isOwnField;
-    private BigDecimal propertyTax;
-    private BigDecimal rent;
-    private Boolean isArchived;
-
+    @Builder.Default
+    private String surveyingPlots="";
+    @NonNull
+    @Builder.Default
+    private Boolean isOwnField=true;
+    @Builder.Default
+    @Min(0)
+    private BigDecimal propertyTax=BigDecimal.ZERO;
+    @Builder.Default
+    @Min(0)
+    private BigDecimal rent=BigDecimal.ZERO;
+    @Builder.Default
+    @NonNull
+    private Boolean isArchived=false;
 
     public void setUser(User user){
         this.user = user;
         user.addField(this);
     }
+    @Transient
+    public static final Field NONE = Field.builder().fieldName("NONE").build();
 }
