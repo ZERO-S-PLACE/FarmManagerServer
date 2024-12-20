@@ -7,21 +7,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.zeros.farm_manager_server.DAO.DefaultImpl.UserFieldsManagerDefault;
+import org.zeros.farm_manager_server.DAO.DefaultImpl.UserManagerDefault;
+import org.zeros.farm_manager_server.DAO.Interface.UserFieldsManager;
+import org.zeros.farm_manager_server.DAO.Interface.UserManager;
 import org.zeros.farm_manager_server.TestObject;
 import org.zeros.farm_manager_server.config.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.entities.User.User;
 import org.zeros.farm_manager_server.entities.fields.Field;
 import org.zeros.farm_manager_server.entities.fields.FieldGroup;
 import org.zeros.farm_manager_server.entities.fields.FieldPart;
-import org.zeros.farm_manager_server.repositories.FieldGroupRepository;
-import org.zeros.farm_manager_server.repositories.FieldPartRepository;
-import org.zeros.farm_manager_server.repositories.FieldRepository;
+import org.zeros.farm_manager_server.repositories.Fields.FieldGroupRepository;
+import org.zeros.farm_manager_server.repositories.Fields.FieldPartRepository;
+import org.zeros.farm_manager_server.repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.repositories.UserRepository;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @Import({UserFieldsManagerDefault.class, UserManagerDefault.class, LoggedUserConfiguration.class})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class UserFieldManagerTest {
 
     @Autowired
@@ -56,6 +60,7 @@ public class UserFieldManagerTest {
         user = userManager.logInNewUserByUsernameAndPassword("TestUser1", "password");
     }
 
+
     @Test
     void testCreateEmptyFieldGroup() {
         FieldGroup fieldGroup = userFieldsManager.createEmptyFieldGroup("TEST1", "");
@@ -64,7 +69,8 @@ public class UserFieldManagerTest {
         assertThat(fieldGroup.getCreatedDate()).isNotNull();
         assertThat(fieldGroup.getLastModifiedDate()).isNotNull();
         assertThat(fieldGroup.getFieldGroupName()).isNotNull();
-        assertThat(userManager.getUserById(user.getId()).getFieldGroups()).contains(fieldGroup);
+        User groupUser=userManager.getUserById(user.getId());
+        assertThat(groupUser.getFieldGroups()).contains(fieldGroup);
     }
 
     @Test

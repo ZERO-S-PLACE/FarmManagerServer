@@ -2,20 +2,40 @@ package org.zeros.farm_manager_server.entities.Crops.CropParameters;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.validation.constraints.DecimalMin;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
+@Entity
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
-//@Entity
 @DiscriminatorValue("GRAIN")
+@AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
 public class GrainParameters extends CropParameters {
-    private Float glutenContent;
-    private Float proteinContent;
-    private Float fallingNumber;
-    private Float density;
-    private Float humidity;
-    private Float pollution;
+    @NonNull
+    @Builder.Default
+    @DecimalMin("0.00")
+    private BigDecimal glutenContent=BigDecimal.valueOf(10);
+    @NonNull
+    @Builder.Default
+    @DecimalMin("0.00")
+    private BigDecimal proteinContent=BigDecimal.valueOf(12);
+    @NonNull
+    @Builder.Default
+    @DecimalMin("0.00")
+    private BigDecimal fallingNumber= BigDecimal.valueOf(250);
+    @NonNull
+    @Builder.Default
+    @DecimalMin("0.00")
+    private BigDecimal density= BigDecimal.valueOf(750);
+    @NonNull
+    @Builder.Default
+    @DecimalMin("0.00")
+    private BigDecimal humidity=BigDecimal.valueOf(14);
+
 }

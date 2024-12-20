@@ -6,6 +6,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.zeros.farm_manager_server.DAO.DefaultImpl.UserManagerDefault;
+import org.zeros.farm_manager_server.DAO.Interface.UserManager;
 import org.zeros.farm_manager_server.TestObject;
 import org.zeros.farm_manager_server.config.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.entities.User.LoginError;
