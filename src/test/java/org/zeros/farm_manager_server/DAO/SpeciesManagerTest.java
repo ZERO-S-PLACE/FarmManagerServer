@@ -66,10 +66,9 @@ public class SpeciesManagerTest {
     @Test
     void testGetAllSpecies() {
         Species species= speciesManager.addSpecies(Species.builder()
-                .name("test1")
-                .family("X11")
+                .name("test13")
+                .family("X113")
                 .build());
-        speciesManager.addSpecies(species);
         Page<Species> speciesAll= speciesManager.getAllSpecies(0);
        assertThat(speciesAll.getTotalElements()).isEqualTo(6);
     }
@@ -82,20 +81,19 @@ public class SpeciesManagerTest {
     @Test
     void testGetUserSpecies() {
         Species species= speciesManager.addSpecies(Species.builder()
-                .name("test1")
-                .family("X11")
+                .name("test1323")
+                .family("X113232")
                 .build());
-        speciesManager.addSpecies(species);
+
         Page<Species> speciesUser=speciesManager.getUserSpecies(0);
         assertThat(speciesUser.getTotalElements()).isEqualTo(1);
     }
     @Test
     void testUpdateSpecies() throws NoSuchObjectException {
         Species species= speciesManager.addSpecies(Species.builder()
-                .name("test1")
-                .family("X11")
+                .name("test1212121")
+                .family("X1122222")
                 .build());
-        speciesManager.addSpecies(species);
         Species speciesToUpdate= speciesManager.getSpeciesById(species.getId());
         entityManager.detach(speciesToUpdate);
         speciesToUpdate.setName("TEST_UPDATE");
@@ -117,10 +115,9 @@ public class SpeciesManagerTest {
     @Test
     void testDeleteSpecies(){
         Species species= speciesManager.addSpecies(Species.builder()
-                .name("test1")
-                .family("X11")
+                .name("test1333")
+                .family("X113323")
                 .build());
-        speciesManager.addSpecies(species);
         entityManager.detach(species);
         speciesManager.deleteSpeciesSafe(species);
         assertThat(speciesManager.getSpeciesById(species.getId())).isEqualTo(Species.NONE);

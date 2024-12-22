@@ -1,10 +1,13 @@
 package org.zeros.farm_manager_server.entities.AgriculturalOperations.Operations;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.OperationType;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.ResourceType;
+import org.zeros.farm_manager_server.entities.Crops.Crop.MainCrop;
 import org.zeros.farm_manager_server.entities.Crops.CropParameters.CropParameters;
 
 import java.math.BigDecimal;
@@ -29,4 +32,14 @@ public class Harvest extends AgriculturalOperation {
     @Builder.Default
     @ManyToOne
     private CropParameters cropParameters=CropParameters.NONE;
+
+    @PrePersist
+    private void init() {
+        setOperationType(OperationType.HARVEST);
+    }
+    @Transient
+    public static final Harvest NONE =Harvest.builder().crop(MainCrop.NONE)
+            .build();
+
+
 }

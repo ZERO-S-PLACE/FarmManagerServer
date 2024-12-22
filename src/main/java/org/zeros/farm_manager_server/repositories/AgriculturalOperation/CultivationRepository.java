@@ -19,7 +19,5 @@ public interface CultivationRepository extends JpaRepository<Cultivation, UUID> 
     @NonNull
     Optional<Cultivation> findById(@NotNull UUID Id);
     List<Cultivation> findAllByCrop(@NotNull Crop crop);
-
-
     List<Cultivation> findAllByFarmingMachine(FarmingMachine farmingMachine);
 }

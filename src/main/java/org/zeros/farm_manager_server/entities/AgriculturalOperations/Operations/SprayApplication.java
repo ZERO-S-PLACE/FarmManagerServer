@@ -1,14 +1,14 @@
 package org.zeros.farm_manager_server.entities.AgriculturalOperations.Operations;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Transient;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.Fertilizer;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.Spray;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.OperationType;
+import org.zeros.farm_manager_server.entities.Crops.Crop.MainCrop;
 
 import java.math.BigDecimal;
 
@@ -22,7 +22,8 @@ import java.math.BigDecimal;
 public class SprayApplication extends AgriculturalOperation {
     @NonNull
     @ManyToOne
-    private Spray spray;
+    @Builder.Default
+    private Spray spray=Spray.NONE;
     @NonNull
     @ManyToOne
     @Builder.Default
@@ -43,6 +44,14 @@ public class SprayApplication extends AgriculturalOperation {
     @DecimalMin("0.000")
     @Builder.Default
     private BigDecimal fertilizerPricePerUnit=BigDecimal.ZERO;
+    @PrePersist
+    private void init() {
+        setOperationType(OperationType.SPRAY_APPLICATION);
+    }
+
+    @Transient
+    public static final SprayApplication NONE =SprayApplication.builder().crop(MainCrop.NONE)
+            .build();
 
 
 

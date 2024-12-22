@@ -1,8 +1,6 @@
 package org.zeros.farm_manager_server.entities.AgriculturalOperations.Data;
 
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.OperationType;
@@ -26,8 +24,10 @@ public class FarmingMachine extends DatabaseEntity {
     @NotBlank
     private String model;
     @NonNull
-    @Convert(converter = OperationTypesConverter.class)
-    private Set<OperationType> supportedOperationTypes;
+    @ElementCollection
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private Set<OperationType> supportedOperationTypes=Set.of(OperationType.NONE);
     @Builder.Default
     private String description="";
     @NonNull
@@ -37,5 +37,14 @@ public class FarmingMachine extends DatabaseEntity {
     public final static FarmingMachine NONE= FarmingMachine.builder()
             .producer("NONE")
             .model("NONE")
-            .supportedOperationTypes(Set.of(OperationType.ANY)).build();
+            .supportedOperationTypes(Set.of(OperationType.NONE)).build();
+
+    @Transient
+    public final static FarmingMachine UNDEFINED= FarmingMachine.builder()
+            .producer("UNDEFINED")
+            .model("UNDEFINED")
+            .supportedOperationTypes(Set.of(OperationType.ANY))
+            .build();
+
+
 }

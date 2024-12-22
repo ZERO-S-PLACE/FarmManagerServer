@@ -19,4 +19,5 @@ public interface FertilizerManager {
     Fertilizer addFertilizer(Fertilizer fertilizer);
     Fertilizer updateFertilizer(Fertilizer fertilizer);
     void deleteFertilizerSafe(Fertilizer fertilizer);
+    Fertilizer getUndefinedFertilizer();
 }

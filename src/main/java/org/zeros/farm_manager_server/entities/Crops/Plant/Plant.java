@@ -3,6 +3,7 @@ package org.zeros.farm_manager_server.entities.Crops.Plant;
 import jakarta.persistence.*;
 import lombok.*;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
+import org.zeros.farm_manager_server.model.ApplicationDefaults;
 
 import java.time.LocalDate;
 @Entity
@@ -21,7 +22,7 @@ public class Plant extends DatabaseEntity {
     private String variety;
     @NonNull
     @Builder.Default
-    private LocalDate registrationDate= LocalDate.ofYearDay(2010,1);
+    private LocalDate registrationDate= ApplicationDefaults.UNDEFINED_DATE_MIN;
     @NonNull
     @Builder.Default
     private String productionCompany="";

@@ -22,4 +22,5 @@ public interface SprayManager {
     Spray addSpray(Spray spray);
     Spray updateSpray(Spray spray) ;
     void deleteSpraySafe(Spray spray);
+    Spray getUndefinedSpray();
 }

@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Operations.Harvest;
 import org.zeros.farm_manager_server.entities.Crops.CropSale;
+import org.zeros.farm_manager_server.entities.fields.FieldPart;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,13 +21,21 @@ import java.util.Set;
 public class MainCrop extends Crop {
 
     @OneToMany(mappedBy = "crop", fetch = FetchType.EAGER,cascade = CascadeType.REMOVE)
-    private Set<Harvest> harvest;
-
+    @NonNull
+    @Builder.Default
+    private Set<Harvest> harvest=new HashSet<>();
     @OneToMany(mappedBy = "crop")
-    private Set<CropSale> cropSales;
+    @NonNull
+    @Builder.Default
+    private Set<CropSale> cropSales=new HashSet<>();
     @NonNull
     @Builder.Default
     private Boolean isFullySold=false;
+
+    @Transient
+    public static final MainCrop NONE=MainCrop.builder()
+                    .fieldPart(FieldPart.NONE)
+            .build();
 
 
 }

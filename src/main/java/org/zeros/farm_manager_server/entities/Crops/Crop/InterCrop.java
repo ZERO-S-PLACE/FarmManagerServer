@@ -3,9 +3,12 @@ package org.zeros.farm_manager_server.entities.Crops.Crop;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Operations.Cultivation;
+import org.zeros.farm_manager_server.entities.fields.FieldPart;
+import org.zeros.farm_manager_server.model.ApplicationDefaults;
 
 import java.time.LocalDate;
 
@@ -20,7 +23,13 @@ import java.time.LocalDate;
 @SuperBuilder
 public class InterCrop extends Crop {
 
-    @Builder.Default
+
     @NonNull
-    private LocalDate dateDestroyed=LocalDate.MAX;
+    @Builder.Default
+    private LocalDate dateDestroyed= ApplicationDefaults.UNDEFINED_DATE_MAX;
+
+    @Transient
+    public static final InterCrop NONE=InterCrop.builder()
+            .fieldPart(FieldPart.NONE)
+            .build();
 }

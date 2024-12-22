@@ -80,7 +80,7 @@ public class FertilizerManagerTest {
                 .K_Percent(BigDecimal.TEN)
                 .build());
         Page<Fertilizer> fertilizers= fertilizerManager.getAllFertilizers(0);
-       assertThat(fertilizers.getTotalElements()).isEqualTo(4);
+       assertThat(fertilizers.getTotalElements()).isEqualTo(5);
         assertThat(fertilizers.getContent()).contains(fertilizer);
     }
 
@@ -93,7 +93,7 @@ public class FertilizerManagerTest {
                 .K_Percent(BigDecimal.TEN)
                 .build());
         Page<Fertilizer> fertilizers=fertilizerManager.getDefaultFertilizers(0);
-        assertThat(fertilizers.getTotalElements()).isEqualTo(3);
+        assertThat(fertilizers.getTotalElements()).isEqualTo(4);
         assertThat(fertilizers.getContent().contains(fertilizer)).isFalse();
     }
     @Test
