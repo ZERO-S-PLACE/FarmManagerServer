@@ -288,6 +288,11 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
         return field;
     }
 
+    @Override
+    public FieldPart getFieldPartById(UUID id) {
+        return fieldPartRepository.findById(id).orElse(FieldPart.NONE);
+    }
+
 
     private void validateFieldName(Field field) {
         if(field.getFieldName().isBlank()){

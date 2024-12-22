@@ -6,7 +6,6 @@ create table farming_machine
     last_modified_date        timestamp    not null,
     producer                  varchar(100) not null,
     model                     varchar(100) not null,
-    supported_operation_types text         not null,
     description               text,
     created_by varchar(36) not null
 ) engine = InnoDB;
@@ -43,7 +42,6 @@ create table spray
     name               varchar(100) not null,
     producer           varchar(100),
     spray_type         varchar(100) not null,
-    active_substances  text,
     description        text,
     created_by varchar(36) not null
 ) engine = InnoDB;

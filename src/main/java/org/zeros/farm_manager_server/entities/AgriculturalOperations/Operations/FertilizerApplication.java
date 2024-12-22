@@ -1,11 +1,12 @@
 package org.zeros.farm_manager_server.entities.AgriculturalOperations.Operations;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.Fertilizer;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.OperationType;
+import org.zeros.farm_manager_server.entities.Crops.Crop.MainCrop;
 
 import java.math.BigDecimal;
 
@@ -19,7 +20,8 @@ import java.math.BigDecimal;
 public class FertilizerApplication extends AgriculturalOperation {
     @NonNull
     @ManyToOne
-    private Fertilizer fertilizer;
+    @Builder.Default
+    private Fertilizer fertilizer=Fertilizer.NONE;
     @NonNull
     @Builder.Default
     private BigDecimal quantityPerAreaUnit=BigDecimal.ZERO;
@@ -27,4 +29,11 @@ public class FertilizerApplication extends AgriculturalOperation {
     @Builder.Default
     private BigDecimal pricePerUnit=BigDecimal.ZERO;
 
+    @Transient
+    public static final FertilizerApplication NONE =FertilizerApplication.builder().crop(MainCrop.NONE)
+            .build();
+    @PrePersist
+    private void init() {
+        setOperationType(OperationType.FERTILIZER_APPLICATION);
+    }
 }

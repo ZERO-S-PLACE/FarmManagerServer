@@ -16,11 +16,11 @@ import java.util.*;
 public interface FertilizerRepository extends JpaRepository<Fertilizer, UUID> {
 
 
-    Page<Fertilizer> findAllByIsNaturalFertilizerAndCreatedByIn(boolean b, Set<Serializable> createdBy,Pageable pageable);
+    Page<Fertilizer> findAllByIsNaturalFertilizerAndCreatedByIn(boolean b, Set<String> createdBy,Pageable pageable);
 
-    Optional<Fertilizer> findByNameAndProducerAndCreatedByIn(String name, String producer,Set<Serializable> createdBy);
+    Optional<Fertilizer> findByNameAndProducerAndCreatedByIn(String name, String producer,Set<String> createdBy);
 
-    Page<Fertilizer> findAllByCreatedByIn(Set<Serializable> createdBy, Pageable pageable);
+    Page<Fertilizer> findAllByCreatedByIn(Set<String> createdBy, Pageable pageable);
 
     Page<Fertilizer> findAllByNameContainingAndCreatedByIn(String name, Set<String> admin,  Pageable pageable);
 }

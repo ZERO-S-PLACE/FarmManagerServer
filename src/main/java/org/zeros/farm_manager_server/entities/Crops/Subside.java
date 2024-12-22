@@ -7,6 +7,7 @@ import lombok.*;
 import org.zeros.farm_manager_server.entities.Crops.Crop.Crop;
 import org.zeros.farm_manager_server.entities.Crops.Plant.Species;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
+import org.zeros.farm_manager_server.model.ApplicationDefaults;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -31,7 +32,7 @@ public class Subside extends DatabaseEntity {
     private String description="";
     @NonNull
     @Builder.Default
-    private LocalDate yearOfSubside=LocalDate.MIN;
+    private LocalDate yearOfSubside= LocalDate.now();
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "subside_species",

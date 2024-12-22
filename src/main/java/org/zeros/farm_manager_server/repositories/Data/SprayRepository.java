@@ -26,7 +26,7 @@ public interface SprayRepository extends JpaRepository<Spray, UUID> {
 
     Page<Spray> findAllByActiveSubstancesContainsAndCreatedByIn(String activeSubstance,Set<String> createdBy, PageRequest name);
 
-    Optional<Object> findByNameAndProducerAndCreatedByIn(String name, String producer,Set<String> createdBy);
+    Optional<Spray> findByNameAndProducerAndCreatedByIn(String name, String producer,Set<String> createdBy);
 
     Page<Spray> findAllByCreatedByIn(Set<String> createdBy, PageRequest name);
 }

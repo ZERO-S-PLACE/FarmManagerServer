@@ -27,6 +27,7 @@ public interface UserFieldsManager {
     void deleteFieldWithData(Field field);
     void archiveField(Field field);
     Field deArchiveField(Field field);
+
     Field divideFieldPart(FieldPart originPart,FieldPart part1,FieldPart part2);
     FieldPart mergeFieldParts(Set<FieldPart> fieldParts);
     Set<FieldPart> getAllFieldParts(Field field);
@@ -34,7 +35,7 @@ public interface UserFieldsManager {
     FieldPart updateFieldPartName(FieldPart fieldPart, String newName);
     Field updateFieldPartAreaResizeField(FieldPart fieldPart, BigDecimal newArea);
     Field updateFieldPartAreaTransfer(FieldPart changedPart, FieldPart resizedPart,BigDecimal newArea);
-
+    FieldPart getFieldPartById(UUID id);
 
 
 }

@@ -1,13 +1,14 @@
 package org.zeros.farm_manager_server.entities.AgriculturalOperations.Operations;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.CultivationType;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.OperationType;
+import org.zeros.farm_manager_server.entities.Crops.Crop.MainCrop;
 
 import java.math.BigDecimal;
 
@@ -19,6 +20,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @SuperBuilder
 public class Cultivation extends AgriculturalOperation {
+
+
     @NonNull
     @DecimalMin("0.0")
     @Builder.Default
@@ -27,4 +30,12 @@ public class Cultivation extends AgriculturalOperation {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private CultivationType cultivationType=CultivationType.NONE;
+    @Transient
+    public static final Cultivation NONE =Cultivation.builder().crop(MainCrop.NONE)
+            .build();
+    @PrePersist
+    private void init() {
+        setOperationType(OperationType.CULTIVATION);
+    }
+
 }

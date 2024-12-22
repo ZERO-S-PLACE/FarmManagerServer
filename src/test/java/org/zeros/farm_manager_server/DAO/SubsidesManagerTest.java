@@ -127,7 +127,7 @@ public class SubsidesManagerTest {
                 .yearOfSubside(LocalDate.of(2024,1,1))
                 .build());
         Subside subsideToDelete=subsideManager.getSubsideById(subside.getId());
-        entityManager.detach(subsideToDelete);
+        subsideManager.deleteSubsideSafe(subsideToDelete);
         assertThat(subsideManager.getSubsideById(subsideToDelete.getId())).isEqualTo(Subside.NONE);
     }
 

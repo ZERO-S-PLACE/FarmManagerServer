@@ -12,6 +12,7 @@ import org.zeros.farm_manager_server.entities.Crops.Subside;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
 import org.zeros.farm_manager_server.entities.fields.FieldPart;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -19,7 +20,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true, exclude = {"fieldPart","cultivatedPlants","seeding","cultivations","sprayApplications",
+@EqualsAndHashCode(callSuper = true, exclude = {"cultivatedPlants","seeding","cultivations","sprayApplications",
 "fertilizerApplications","subsides"})
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "is_main_crop", discriminatorType = DiscriminatorType.STRING)
@@ -28,27 +29,40 @@ public abstract class Crop extends DatabaseEntity {
 
     @ManyToOne
     @NonNull
-    private FieldPart fieldPart;
+    @Builder.Default
+    private FieldPart fieldPart=FieldPart.NONE;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "crop_plant", joinColumns = @JoinColumn(name = "crop_id"), inverseJoinColumns = @JoinColumn(name = "plant_id"))
-    private Set<Plant> cultivatedPlants;
+    @NonNull
+    @Builder.Default
+    private Set<Plant> cultivatedPlants=new HashSet<>();
+
+    @OneToMany(mappedBy = "crop", fetch = FetchType.EAGER,cascade = {CascadeType.REMOVE,CascadeType.PERSIST})
+    @NonNull
+    @Builder.Default
+    private Set<Seeding> seeding=new HashSet<>();
 
     @OneToMany(mappedBy = "crop", fetch = FetchType.EAGER,cascade = CascadeType.REMOVE)
-    private Set<Seeding> seeding;
+    @NonNull
+    @Builder.Default
+    private Set<Cultivation> cultivations=new HashSet<>();
+
 
     @OneToMany(mappedBy = "crop", fetch = FetchType.EAGER,cascade = CascadeType.REMOVE)
-    private Set<Cultivation> cultivations;
+    @NonNull
+    @Builder.Default
+    private Set<SprayApplication> sprayApplications=new HashSet<>();
 
     @OneToMany(mappedBy = "crop", fetch = FetchType.EAGER,cascade = CascadeType.REMOVE)
-    private Set<SprayApplication> sprayApplications;
-
-    @OneToMany(mappedBy = "crop", fetch = FetchType.EAGER,cascade = CascadeType.REMOVE)
-    private Set<FertilizerApplication> fertilizerApplications;
+    @NonNull
+    @Builder.Default
+    private Set<FertilizerApplication> fertilizerApplications=new HashSet<>();
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "crop_subside", joinColumns = @JoinColumn(name = "crop_id"), inverseJoinColumns = @JoinColumn(name = "subside_id"))
-    private Set<Subside> subsides;
-
+    @NonNull
+    @Builder.Default
+    private Set<Subside> subsides=new HashSet<>();
     @NonNull
     @Builder.Default
     Boolean workFinished=false;

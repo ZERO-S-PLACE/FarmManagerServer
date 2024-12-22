@@ -5,8 +5,11 @@ import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.ResourceType;
 import org.zeros.farm_manager_server.entities.Crops.Crop.Crop;
+import org.zeros.farm_manager_server.entities.Crops.Crop.MainCrop;
 import org.zeros.farm_manager_server.entities.Crops.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
+import org.zeros.farm_manager_server.model.ApplicationDefaults;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -19,12 +22,18 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 public class CropSale extends DatabaseEntity {
+    @Transient
+    public static final CropSale NONE =CropSale.builder()
+            .crop(MainCrop.NONE)
+            .resourceType(ResourceType.NONE)
+            .build(); ;
     @NonNull
     @ManyToOne
-    Crop crop;
+            @Builder.Default
+    Crop crop=MainCrop.NONE;
     @NonNull
     @Builder.Default
-    private LocalDate dateSold =LocalDate.MIN;
+    private LocalDate dateSold = ApplicationDefaults.UNDEFINED_DATE_MIN;
     @NonNull
     @Builder.Default
     private String soldTo="";

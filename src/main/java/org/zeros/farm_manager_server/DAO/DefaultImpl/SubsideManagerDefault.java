@@ -18,42 +18,41 @@ import java.util.Set;
 import java.util.UUID;
 @Component
 public class SubsideManagerDefault implements SubsideManager {
-    private User user;
+   private final LoggedUserConfiguration config;
     private final SubsideRepository subsideRepository;
     private final CropRepository cropRepository;
 
     public SubsideManagerDefault(LoggedUserConfiguration loggedUserConfiguration, SubsideRepository subsideRepository, CropRepository cropRepository) {
         this.subsideRepository = subsideRepository;
         this.cropRepository = cropRepository;
-        this.user=loggedUserConfiguration.getLoggedUserProperty().get();
-        loggedUserConfiguration.getLoggedUserProperty().addListener(((observable, oldValue, newValue) -> user=newValue));
+        this.config=loggedUserConfiguration;
     }
 
     @Override
     public Page<Subside> getAllSubsides(int pageNumber) {
-        return subsideRepository.findAllByCreatedByIn(Set.of("ADMIN", user.getUsername()),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+        return subsideRepository.findAllByCreatedByIn(config.allRows(),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
     }
 
     @Override
     public Page<Subside> getDefaultSubsides(int pageNumber) {
-        return subsideRepository.findAllByCreatedByIn(Set.of("ADMIN"),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+        return subsideRepository.findAllByCreatedByIn(config.defaultRows(),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
     }
 
     @Override
     public Page<Subside> getUserSubsides(int pageNumber) {
-        return subsideRepository.findAllByCreatedByIn(Set.of(user.getUsername()),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+        return subsideRepository.findAllByCreatedByIn(config.userRows(),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
     }
 
     @Override
     public Page<Subside> getSubsidesByNameAs(String name,int pageNumber) {
         return subsideRepository.findAllByNameContainingIgnoreCaseAndCreatedByIn(
-                name,Set.of("ADMIN", user.getUsername()),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+                name,config.allRows(),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
     }
 
     @Override
     public Page<Subside> getSubsidesBySpeciesAllowed(Species species,int pageNumber) {
         return subsideRepository.findAllBySpeciesAllowedContainsAndCreatedByIn(
-                species,Set.of("ADMIN", user.getUsername()),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+                species,config.allRows(),PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
     }
 
     @Override
@@ -64,12 +63,12 @@ public class SubsideManagerDefault implements SubsideManager {
     @Override
     public Subside addSubside(Subside subside) {
         if(subside.getName().isBlank()){
-            return Subside.NONE;
+            throw new IllegalArgumentException("Subside name must be specified");
         }
-        if(subsideRepository.findByNameAndCreatedByIn(subside.getName(),Set.of("ADMIN", user.getUsername())).isPresent()){
-            return Subside.NONE;
+        if(subsideRepository.findByNameAndCreatedByIn(subside.getName(),config.allRows()).isPresent()){
+            throw new IllegalArgumentException("There is already a subside with this name");
         }
-        subside.setCreatedBy(user.getUsername());
+        subside.setCreatedBy(config.username());
         return subsideRepository.saveAndFlush(subside);
     }
 
@@ -77,10 +76,12 @@ public class SubsideManagerDefault implements SubsideManager {
     public Subside updateSubside(Subside subside){
         Subside originalSubside=subsideRepository.findById(subside.getId()).orElse(Subside.NONE);
         if(originalSubside.equals(Subside.NONE)){
-           return Subside.NONE;
+          throw new IllegalArgumentException("Subside not found");
         }
-        if(originalSubside.getCreatedBy().equals(user.getUsername())){
-            if(subside.getName().isBlank()){subside.setName("New Subside");}
+        if(originalSubside.getCreatedBy().equals(config.username())){
+            if(subside.getName().isBlank()){
+                throw new IllegalArgumentException("Subside name must be specified");
+            }
             return subsideRepository.saveAndFlush(subside);
         }
         throw new IllegalAccessError("You can't modify this object-no access");
@@ -90,7 +91,7 @@ public class SubsideManagerDefault implements SubsideManager {
     @Override
     public void deleteSubsideSafe(Subside subside) {
         Subside originalSubside = subsideRepository.findById(subside.getId()).orElse(Subside.NONE);
-        if (originalSubside.getCreatedBy().equals(user.getUsername())) {
+        if (originalSubside.getCreatedBy().equals(config.username())) {
             if (cropRepository.findAllBySubsidesContains(subside).isEmpty()) {
                 subsideRepository.delete(subside);
                 return;

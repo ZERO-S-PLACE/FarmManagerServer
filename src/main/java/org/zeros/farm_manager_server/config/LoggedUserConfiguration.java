@@ -3,6 +3,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
 import org.zeros.farm_manager_server.entities.User.User;
+
+import java.util.List;
+import java.util.Set;
+
 @Getter
 @Configuration
 public class LoggedUserConfiguration {
@@ -12,6 +16,17 @@ public class LoggedUserConfiguration {
     public void replaceUserBean(User newUser) {
             loggedUserProperty.set(newUser);
     }
-
+    public Set<String> allRows() {
+        return Set.copyOf(List.of("ADMIN", loggedUserProperty.get().getUsername()));
+    }
+    public Set<String> userRows() {
+        return Set.of( loggedUserProperty.get().getUsername());
+    }
+    public Set<String> defaultRows() {
+        return Set.of("ADMIN");
+    }
+    public String username() {
+        return loggedUserProperty.get().getUsername();
+    }
 
 }

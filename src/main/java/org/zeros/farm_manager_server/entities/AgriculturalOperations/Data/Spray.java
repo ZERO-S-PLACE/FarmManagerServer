@@ -30,7 +30,7 @@ public class Spray extends DatabaseEntity {
     private SprayType sprayType=SprayType.OTHER;
     @NonNull
     @Builder.Default
-    @Convert(converter = StringSetDatabaseConverter.class)
+    @ElementCollection
     private Set<String> activeSubstances=new HashSet<>();
     @NonNull
     @Builder.Default
@@ -39,6 +39,9 @@ public class Spray extends DatabaseEntity {
     @Builder.Default
     private String createdBy="ADMIN";
     @Transient
-    public static final Spray NONE =Spray.builder().name("NONE").producer("NONE").build(); ;
+    public static final Spray NONE =Spray.builder().name("NONE").producer("NONE").build();
+
+    @Transient
+    public static final Spray UNDEFINED =Spray.builder().name("UNDEFINED").producer("UNDEFINED").build();
 
 }

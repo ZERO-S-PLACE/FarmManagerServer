@@ -79,5 +79,8 @@ public class Fertilizer extends DatabaseEntity {
 
 
     @Transient
-    public final static Fertilizer NONE=Fertilizer.builder().name("NONE").build();
+    public final static Fertilizer NONE=Fertilizer.builder().name("NONE").producer("NONE").build();
+
+    @Transient
+    public final static Fertilizer UNDEFINED=Fertilizer.builder().name("UNDEFINED").producer("UNDEFINED").build();
 }

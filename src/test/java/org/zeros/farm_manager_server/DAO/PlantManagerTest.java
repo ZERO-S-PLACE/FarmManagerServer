@@ -77,13 +77,13 @@ public class PlantManagerTest {
                 .species(species)
                 .build());
         Page<Plant> plants= plantManager.getAllPlants(0);
-       assertThat(plants.getTotalElements()).isEqualTo(6);
+       assertThat(plants.getTotalElements()).isEqualTo(7);
     }
 
     @Test
     void testGetDefaultPlants() {
         Page<Plant> plants=plantManager.getDefaultPlants(0);
-        assertThat(plants.getTotalElements()).isEqualTo(5);
+        assertThat(plants.getTotalElements()).isEqualTo(6);
     }
     @Test
     void testGetUserPlants() {
