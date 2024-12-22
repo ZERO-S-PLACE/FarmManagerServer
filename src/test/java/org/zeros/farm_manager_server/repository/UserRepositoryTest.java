@@ -9,7 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.TestObject;
 import org.zeros.farm_manager_server.entities.User.User;
 import org.zeros.farm_manager_server.entities.fields.Field;
-import org.zeros.farm_manager_server.repositories.FieldRepository;
+import org.zeros.farm_manager_server.repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.repositories.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
