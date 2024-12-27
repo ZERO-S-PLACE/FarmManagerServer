@@ -10,21 +10,17 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
-import org.zeros.farm_manager_server.DAO.DefaultImpl.FarmingMachineManagerDefault;
-import org.zeros.farm_manager_server.DAO.DefaultImpl.FertilizerManagerDefault;
-import org.zeros.farm_manager_server.DAO.DefaultImpl.UserManagerDefault;
-import org.zeros.farm_manager_server.DAO.Interface.FarmingMachineManager;
-import org.zeros.farm_manager_server.DAO.Interface.FertilizerManager;
+import org.zeros.farm_manager_server.DAO.Default.Data.FarmingMachineManagerDefault;
+import org.zeros.farm_manager_server.DAO.Default.UserFieldsManagerDefault;
+import org.zeros.farm_manager_server.DAO.Default.UserManagerDefault;
+import org.zeros.farm_manager_server.DAO.Interface.Data.FarmingMachineManager;
 import org.zeros.farm_manager_server.DAO.Interface.UserManager;
 import org.zeros.farm_manager_server.config.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.Fertilizer;
-import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.OperationType;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Enum.OperationType;
 import org.zeros.farm_manager_server.entities.User.User;
 import org.zeros.farm_manager_server.repositories.Data.FarmingMachineRepository;
-import org.zeros.farm_manager_server.repositories.Data.FertilizerRepository;
 
-import java.math.BigDecimal;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,9 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ActiveProfiles("local")
 @DataJpaTest
-@Import({FarmingMachineManagerDefault.class, UserManagerDefault.class, LoggedUserConfiguration.class})
+@Import({UserFieldsManagerDefault.class,FarmingMachineManagerDefault.class, UserManagerDefault.class, LoggedUserConfiguration.class})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class FarmingMachineManagerTest {
     @Autowired
     UserManager userManager;
@@ -44,22 +39,22 @@ public class FarmingMachineManagerTest {
     LoggedUserConfiguration loggedUserConfiguration;
     @Autowired
     EntityManager entityManager;
-    private User user;
     @Autowired
     private FarmingMachineManager farmingMachineManager;
+    private User user;
 
     @BeforeEach
     public void setUp() {
-        user = userManager.logInNewUserByUsernameAndPassword("TestUser1", "password");
+        user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
     }
 
     @Test
     void testCreateMachine() {
 
-        FarmingMachine machine= farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
-                        .model("TEST_MODEL")
-                        .producer("TEST_PRODUCER")
-                        .supportedOperationTypes(Set.of(OperationType.CULTIVATION))
+        FarmingMachine machine = farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
+                .model("TEST_MODEL")
+                .producer("TEST_PRODUCER")
+                .supportedOperationTypes(Set.of(OperationType.CULTIVATION))
                 .build());
         assertThat(machine.getId()).isNotNull();
         assertThat(machine.getModel()).isEqualTo("TEST_MODEL");
@@ -71,80 +66,81 @@ public class FarmingMachineManagerTest {
 
     @Test
     void testGetAllMachines() {
-        FarmingMachine machine= farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
+        FarmingMachine machine = farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
                 .model("TEST_MODEL")
                 .producer("TEST_PRODUCER")
                 .supportedOperationTypes(Set.of(OperationType.CULTIVATION))
                 .build());
-        Page<FarmingMachine> machines= farmingMachineManager.getAllFarmingMachines(0);
-       assertThat(machines.getTotalElements()).isEqualTo(9);
+        Page<FarmingMachine> machines = farmingMachineManager.getAllFarmingMachines(0);
+        assertThat(machines.getTotalElements()).isEqualTo(9);
         assertThat(machines.getContent()).contains(machine);
     }
 
     @Test
     void testGetDefaultMachines() {
-        FarmingMachine machine= farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
+        FarmingMachine machine = farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
                 .model("TEST_MODEL")
                 .producer("TEST_PRODUCER")
                 .supportedOperationTypes(Set.of(OperationType.CULTIVATION))
                 .build());
-        Page<FarmingMachine> machines=farmingMachineManager.getDefaultFarmingMachines(0);
+        Page<FarmingMachine> machines = farmingMachineManager.getDefaultFarmingMachines(0);
         assertThat(machines.getTotalElements()).isEqualTo(8);
         assertThat(machines.getContent().contains(machine)).isFalse();
     }
+
     @Test
     void testGetUserMachines() {
-        FarmingMachine machine= farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
+        FarmingMachine machine = farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
                 .model("TEST_MODEL")
                 .producer("TEST_PRODUCER")
                 .supportedOperationTypes(Set.of(OperationType.CULTIVATION))
                 .build());
-        Page<FarmingMachine> machines=farmingMachineManager.getUserFarmingMachines(0);
+        Page<FarmingMachine> machines = farmingMachineManager.getUserFarmingMachines(0);
         assertThat(machines.getTotalElements()).isEqualTo(1);
         assertThat(machines.getContent()).contains(machine);
     }
 
     @Test
-    void testUpdateMachine()  {
-        FarmingMachine machine= farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
+    void testUpdateMachine() {
+        FarmingMachine machine = farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
                 .model("TEST_MODEL")
                 .producer("TEST_PRODUCER")
                 .supportedOperationTypes(Set.of(OperationType.CULTIVATION))
                 .build());
-        FarmingMachine toUpdate= farmingMachineManager.getFarmingMachineById(machine.getId());
+        FarmingMachine toUpdate = farmingMachineManager.getFarmingMachineById(machine.getId());
         entityManager.detach(toUpdate);
         toUpdate.setModel("TEST_UPDATE");
-        FarmingMachine machineUpdated= farmingMachineManager.updateFarmingMachine(toUpdate);
+        FarmingMachine machineUpdated = farmingMachineManager.updateFarmingMachine(toUpdate);
         assertThat(machineUpdated.getId()).isEqualTo(toUpdate.getId());
         assertThat(machineUpdated.getModel()).isEqualTo("TEST_UPDATE");
     }
 
     @Test
-    void testUpdateFailedAccessDenied(){
-        FarmingMachine farmingMachineToUpdate= farmingMachineManager.getDefaultFarmingMachines(0).stream().findFirst().orElse(FarmingMachine.NONE);
+    void testUpdateFailedAccessDenied() {
+        FarmingMachine farmingMachineToUpdate = farmingMachineManager.getDefaultFarmingMachines(0).stream().findFirst().orElse(FarmingMachine.NONE);
         entityManager.detach(farmingMachineToUpdate);
         farmingMachineToUpdate.setModel("TEST_UPDATE");
-        assertThrows(IllegalAccessError.class,()-> farmingMachineManager.updateFarmingMachine(farmingMachineToUpdate));
+        assertThrows(IllegalAccessError.class, () -> farmingMachineManager.updateFarmingMachine(farmingMachineToUpdate));
         assertThat(farmingMachineManager.getFarmingMachineById(farmingMachineToUpdate.getId()).getModel()).isNotEqualTo("TEST_UPDATE");
         assertThat(farmingMachineManager.getFarmingMachineById(farmingMachineToUpdate.getId()).getModel()).isNotEqualTo("NONE");
     }
 
     @Test
-    void testDeleteMachine(){
-        FarmingMachine machine= farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
+    void testDeleteMachine() {
+        FarmingMachine machine = farmingMachineManager.addFarmingMachine(FarmingMachine.builder()
                 .model("TEST_MODEL")
                 .producer("TEST_PRODUCER")
                 .supportedOperationTypes(Set.of(OperationType.CULTIVATION))
                 .build());
-        FarmingMachine farmingMachineToDelete= farmingMachineManager.getFarmingMachineById(machine.getId());
+        FarmingMachine farmingMachineToDelete = farmingMachineManager.getFarmingMachineById(machine.getId());
         farmingMachineManager.deleteFarmingMachineSafe(farmingMachineToDelete);
         assertThat(farmingMachineManager.getFarmingMachineById(machine.getId())).isEqualTo(FarmingMachine.NONE);
     }
 
     @Test
-    void testDeleteFailedAccessDenied(){
-        FarmingMachine machine= farmingMachineManager.getDefaultFarmingMachines(0).stream().findFirst().orElse(FarmingMachine.NONE);
-        assertThrows(IllegalAccessError.class,()->farmingMachineManager.deleteFarmingMachineSafe(machine));
+    void testDeleteFailedAccessDenied() {
+        FarmingMachine machine = farmingMachineManager.getDefaultFarmingMachines(0).stream().findFirst().orElse(FarmingMachine.NONE);
+        assertThrows(IllegalAccessError.class, () -> farmingMachineManager.deleteFarmingMachineSafe(machine));
         assertThat(farmingMachineManager.getFarmingMachineById(machine.getId())).isNotEqualTo(FarmingMachine.NONE);
     }
 

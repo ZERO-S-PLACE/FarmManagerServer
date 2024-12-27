@@ -26,13 +26,14 @@ public abstract class DatabaseEntity {
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     protected UUID id;
+
     @Version
     @NotNull
     protected Integer version;
+
     @CreationTimestamp
-    @Setter(AccessLevel.NONE)
-    @Column(updatable = false)
     protected Timestamp createdDate;
+
     @UpdateTimestamp
     protected Timestamp lastModifiedDate;
 }

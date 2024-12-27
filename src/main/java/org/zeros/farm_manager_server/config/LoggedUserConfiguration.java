@@ -1,4 +1,5 @@
 package org.zeros.farm_manager_server.config;
+
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
@@ -11,20 +12,24 @@ import java.util.Set;
 @Configuration
 public class LoggedUserConfiguration {
 
-    private final SimpleObjectProperty<User> loggedUserProperty =new SimpleObjectProperty<>(User.NONE);
+    private final SimpleObjectProperty<User> loggedUserProperty = new SimpleObjectProperty<>(User.NONE);
 
     public void replaceUserBean(User newUser) {
-            loggedUserProperty.set(newUser);
+        loggedUserProperty.set(newUser);
     }
+
     public Set<String> allRows() {
         return Set.copyOf(List.of("ADMIN", loggedUserProperty.get().getUsername()));
     }
+
     public Set<String> userRows() {
-        return Set.of( loggedUserProperty.get().getUsername());
+        return Set.of(loggedUserProperty.get().getUsername());
     }
+
     public Set<String> defaultRows() {
         return Set.of("ADMIN");
     }
+
     public String username() {
         return loggedUserProperty.get().getUsername();
     }

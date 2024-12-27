@@ -32,6 +32,6 @@ create table field
     created_date       timestamp      not null,
     last_modified_date timestamp      not null,
     user_id            varchar(36)    not null,
-    foreign key (user_id) references user (id) 
+    foreign key (user_id) references user (id)
 ) engine = InnoDB;
 

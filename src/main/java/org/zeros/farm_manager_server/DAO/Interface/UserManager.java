@@ -6,15 +6,21 @@ import java.util.UUID;
 
 public interface UserManager {
 
-    public abstract User createNewUser(User user);
+    User createNewUser(User user);
 
-    public abstract User getUserById(UUID id);
+    User getUserById(UUID id);
 
-    public abstract User getUserByEmail(String email);
-    public abstract User getUserByUsername(String username);
-    public abstract User logInNewUserByEmailAndPassword(String email, String password);
-    public abstract User logInNewUserByUsernameAndPassword(String username, String password);
-    public abstract void logOutUser();
-    public abstract User updateUserInfo(User user);
-    public abstract void deleteAllUserData(User user);
+    User getUserByEmail(String email);
+
+    User getUserByUsername(String username);
+
+    User logInNewUserByEmailAndPassword(String email, String password);
+
+    User logInNewUserByUsernameAndPassword(String username, String password);
+
+    void logOutUser();
+
+    User updateUserInfo(User user);
+
+    void deleteAllUserData(User user);
 }

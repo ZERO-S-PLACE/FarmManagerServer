@@ -1,18 +1,19 @@
 package org.zeros.farm_manager_server.entities.AgriculturalOperations.Operations;
 
-import jakarta.persistence.*;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Transient;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.OperationType;
-import org.zeros.farm_manager_server.entities.Crops.Crop.Crop;
-import org.zeros.farm_manager_server.entities.Crops.Crop.MainCrop;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.entities.Crop.Crop.Crop;
+import org.zeros.farm_manager_server.entities.Crop.Crop.MainCrop;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
 import org.zeros.farm_manager_server.model.ApplicationDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
 
 
 @Getter
@@ -24,39 +25,48 @@ import java.time.LocalDate;
 @SuperBuilder
 
 public abstract class AgriculturalOperation extends DatabaseEntity {
-    @NonNull
-    @ManyToOne
-    @Builder.Default
-    private Crop crop= MainCrop.NONE;
-    @NonNull
-    @Builder.Default
-    @ManyToOne
-    private FarmingMachine farmingMachine=FarmingMachine.UNDEFINED;
-    @NonNull
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private OperationType operationType=OperationType.NONE;
-    @NonNull
-    @Builder.Default
-    private LocalDate dateStarted= ApplicationDefaults.UNDEFINED_DATE_MIN;
-    @NonNull
-    @Builder.Default
-    private LocalDate dateFinished=ApplicationDefaults.UNDEFINED_DATE_MAX;
-    @NonNull
-    @Builder.Default
-    private Boolean isExternalService=false;
-    @NonNull
-    @Builder.Default
-    private BigDecimal externalServicePrice=BigDecimal.ZERO;
-    @NonNull
-    @Builder.Default
-    private BigDecimal fuelConsumptionPerUnit=BigDecimal.ZERO;
-    @NonNull
-    @Builder.Default
-    private BigDecimal fuelPrice=BigDecimal.ZERO;
-    @NonNull
-    @Builder.Default
-    private Boolean isPlannedOperation=false;
 
+    @NonNull
+    @ManyToOne
+    @Builder.Default
+    private Crop crop = MainCrop.NONE;
+
+    @NonNull
+    @Builder.Default
+    @ManyToOne
+    private FarmingMachine farmingMachine = FarmingMachine.UNDEFINED;
+
+    @NonNull
+    @Transient
+    @Builder.Default
+    private OperationType operationType = OperationType.NONE;
+
+    @NonNull
+    @Builder.Default
+    private LocalDate dateStarted = ApplicationDefaults.UNDEFINED_DATE_MIN;
+
+    @NonNull
+    @Builder.Default
+    private LocalDate dateFinished = ApplicationDefaults.UNDEFINED_DATE_MAX;
+
+    @NonNull
+    @Builder.Default
+    private Boolean isExternalService = false;
+
+    @NonNull
+    @Builder.Default
+    private BigDecimal externalServicePrice = BigDecimal.ZERO;
+
+    @NonNull
+    @Builder.Default
+    private BigDecimal fuelConsumptionPerUnit = BigDecimal.ZERO;
+
+    @NonNull
+    @Builder.Default
+    private BigDecimal fuelPrice = BigDecimal.ZERO;
+
+    @NonNull
+    @Builder.Default
+    private Boolean isPlannedOperation = false;
 
 }

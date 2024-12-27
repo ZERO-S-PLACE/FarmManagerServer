@@ -7,11 +7,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.entities.Crops.Plant.Plant;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
-import org.zeros.farm_manager_server.entities.fields.Field;
-import org.zeros.farm_manager_server.entities.fields.FieldGroup;
+import org.zeros.farm_manager_server.entities.Fields.Field;
+import org.zeros.farm_manager_server.entities.Fields.FieldGroup;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -60,10 +58,14 @@ public class User extends DatabaseEntity {
     @Size(min = 2, max = 255)
     @Builder.Default
     private String password = "";
+    @NonNull
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-    private Set<Field> fields;
+    private Set<Field> fields=new HashSet<>();
+    @NonNull
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-    private Set<FieldGroup> fieldGroups;
+    private Set<FieldGroup> fieldGroups=new HashSet<>();
 
     @Transient
     private LoginError loginError;
