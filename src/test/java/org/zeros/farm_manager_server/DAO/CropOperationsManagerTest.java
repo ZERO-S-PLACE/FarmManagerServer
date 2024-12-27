@@ -8,27 +8,28 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.zeros.farm_manager_server.DAO.DefaultImpl.*;
+import org.zeros.farm_manager_server.DAO.Default.*;
+import org.zeros.farm_manager_server.DAO.Default.Data.*;
 import org.zeros.farm_manager_server.DAO.Interface.*;
+import org.zeros.farm_manager_server.DAO.Interface.Data.*;
 import org.zeros.farm_manager_server.config.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.FarmingMachine;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.Fertilizer;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Data.Spray;
 import org.zeros.farm_manager_server.entities.AgriculturalOperations.Operations.*;
-import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.OperationType;
-import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.ResourceType;
-import org.zeros.farm_manager_server.entities.Crops.Crop.Crop;
-import org.zeros.farm_manager_server.entities.Crops.Crop.MainCrop;
-import org.zeros.farm_manager_server.entities.Crops.CropParameters.GrainParameters;
-import org.zeros.farm_manager_server.entities.Crops.CropSale;
-import org.zeros.farm_manager_server.entities.Crops.Plant.Plant;
-import org.zeros.farm_manager_server.entities.Crops.Plant.Species;
-import org.zeros.farm_manager_server.entities.Crops.Subside;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.entities.Crop.Crop.Crop;
+import org.zeros.farm_manager_server.entities.Crop.Crop.MainCrop;
+import org.zeros.farm_manager_server.entities.Crop.CropParameters.GrainParameters;
+import org.zeros.farm_manager_server.entities.Crop.CropSale;
+import org.zeros.farm_manager_server.entities.Crop.Plant.Plant;
+import org.zeros.farm_manager_server.entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.entities.Crop.Subside;
 import org.zeros.farm_manager_server.entities.User.User;
-import org.zeros.farm_manager_server.entities.fields.Field;
-import org.zeros.farm_manager_server.entities.fields.FieldPart;
+import org.zeros.farm_manager_server.entities.Fields.Field;
+import org.zeros.farm_manager_server.entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.repositories.Crop.CropRepository;
-import org.zeros.farm_manager_server.repositories.Data.FertilizerRepository;
 import org.zeros.farm_manager_server.repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.repositories.Fields.FieldRepository;
@@ -47,8 +48,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({UserFieldsManagerDefault.class, PlantManagerDefault.class, SpeciesManagerDefault.class, SprayManagerDefault.class, FertilizerManagerDefault.class, FarmingMachineManagerDefault.class, UserManagerDefault.class, LoggedUserConfiguration.class, CropOperationsManagerDefault.class, CropParametersManagerDefault.class, SubsideManagerDefault.class})
-
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class CropOperationsManagerTest {
 
     @Autowired
@@ -75,8 +74,6 @@ public class CropOperationsManagerTest {
     private SprayManager sprayManager;
     @Autowired
     private FarmingMachineManager farmingMachineManager;
-    private User user;
-    private Field field;
     private FieldPart fieldPart;
     private Plant plant1;
     private Plant plant2;
@@ -84,8 +81,6 @@ public class CropOperationsManagerTest {
     private CropRepository cropRepository;
     @Autowired
     private SubsideManager subsideManager;
-    @Autowired
-    private FertilizerRepository fertilizerRepository;
     @Autowired
     private FertilizerManager fertilizerManager;
     @Autowired
@@ -95,8 +90,8 @@ public class CropOperationsManagerTest {
     @BeforeEach
     public void setUp() {
 
-        user = userManager.logInNewUserByUsernameAndPassword("TestUser1", "password");
-        field = user.getFields().stream().findFirst().orElse(Field.NONE);
+        User user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        Field field = user.getFields().stream().findFirst().orElse(Field.NONE);
         fieldPart = field.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
         ArrayList<Plant> plants = plantManager.getDefaultPlants(0).stream().collect(Collectors.toCollection(ArrayList::new));
         plant1 = plants.getFirst();
@@ -195,7 +190,6 @@ public class CropOperationsManagerTest {
         seeding.setGerminationRate(BigDecimal.ONE);
         seeding.setRowSpacing(BigDecimal.valueOf(30));
         Seeding seedingSaved = (Seeding) cropOperationsManager.updateOperationParameters(seeding);
-        crop = cropOperationsManager.getCropById(crop.getId());
         assertThat(seedingSaved.getIsPlannedOperation()).isFalse();
         assertThat(seedingSaved.getGerminationRate()).isEqualTo(BigDecimal.ONE);
         assertThat(seedingSaved.getRowSpacing()).isEqualTo(BigDecimal.valueOf(30));
@@ -232,7 +226,7 @@ public class CropOperationsManagerTest {
         assertThat(crop.getSubsides()).contains(subsides.get(0));
         assertThat(crop.getSubsides()).contains(subsides.get(1));
         assertThat(crop.getSubsides().size()).isEqualTo(2);
-        assertThrows(IllegalAccessError.class, () -> subsideManager.deleteSubsideSafe(subsides.get(0)));
+        assertThrows(IllegalAccessError.class, () -> subsideManager.deleteSubsideSafe(subsides.getFirst()));
 
     }
 
@@ -270,7 +264,14 @@ public class CropOperationsManagerTest {
         Cultivation cultivation = cropOperationsManager.addCultivation(crop, Cultivation.builder().dateStarted(LocalDate.now()).dateFinished(LocalDate.now().plusDays(1)).depth(BigDecimal.valueOf(10)).farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(OperationType.CULTIVATION, 0).stream().findFirst().orElse(FarmingMachine.UNDEFINED)).build());
         cropOperationsManager.addCultivation(crop, cultivation);
 
-        Seeding seeding = cropOperationsManager.addSeeding(crop, Seeding.builder().dateStarted(LocalDate.now()).dateFinished(LocalDate.now().plusDays(1)).depth(BigDecimal.valueOf(10)).farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(OperationType.SEEDING, 0).stream().findFirst().orElse(FarmingMachine.UNDEFINED)).build());
+        Seeding seeding = cropOperationsManager.addSeeding(crop, Seeding.builder()
+                .dateStarted(LocalDate.now())
+                .dateFinished(LocalDate.now().plusDays(1))
+                .depth(BigDecimal.valueOf(10))
+                .quantityPerAreaUnit(BigDecimal.valueOf(40))
+                .farmingMachine(farmingMachineManager
+                        .getFarmingMachineBySupportedOperation(OperationType.SEEDING, 0).stream().findFirst().orElse(FarmingMachine.UNDEFINED))
+                .build());
         cropOperationsManager.addSeeding(crop, seeding);
 
         FertilizerApplication fertilizerApplication = cropOperationsManager.addFertilizerApplication(crop, FertilizerApplication.builder().dateStarted(LocalDate.now()).dateFinished(LocalDate.now().plusDays(1)).quantityPerAreaUnit(BigDecimal.valueOf(100)).fertilizer(fertilizerManager.getDefaultFertilizers(0).stream().findFirst().orElse(Fertilizer.NONE)).farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(OperationType.FERTILIZER_APPLICATION, 0).stream().findFirst().orElse(FarmingMachine.UNDEFINED)).build());

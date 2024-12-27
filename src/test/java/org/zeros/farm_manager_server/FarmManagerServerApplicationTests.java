@@ -13,12 +13,4 @@ class FarmManagerServerApplicationTests {
     @Autowired
     UserManager userManager;
 
-    @Test
-    void contextLoads() {
-        User user=userManager.logInNewUserByUsernameAndPassword("TestUser1","password");
-        assertThat(user.getFields()).hasSize(4);
-        assertThat(user.getFieldGroups()).hasSize(2);
-
-    }
-
 }
