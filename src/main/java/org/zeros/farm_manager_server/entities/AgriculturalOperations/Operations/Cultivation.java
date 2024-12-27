@@ -6,9 +6,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.CultivationType;
-import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.OperationType;
-import org.zeros.farm_manager_server.entities.Crops.Crop.MainCrop;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Enum.CultivationType;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.entities.Crop.Crop.MainCrop;
 
 import java.math.BigDecimal;
 
@@ -21,21 +21,25 @@ import java.math.BigDecimal;
 @SuperBuilder
 public class Cultivation extends AgriculturalOperation {
 
+    @NonNull
+    @Builder.Default
+    @DecimalMin("0.0")
+    private BigDecimal depth = BigDecimal.ZERO;
 
     @NonNull
-    @DecimalMin("0.0")
     @Builder.Default
-    private BigDecimal depth=BigDecimal.ZERO;
-    @NonNull
     @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private CultivationType cultivationType=CultivationType.NONE;
-    @Transient
-    public static final Cultivation NONE =Cultivation.builder().crop(MainCrop.NONE)
-            .build();
-    @PrePersist
+    private CultivationType cultivationType = CultivationType.NONE;
+
+    @PostLoad
+    @PostConstruct
     private void init() {
         setOperationType(OperationType.CULTIVATION);
     }
+
+    @Transient
+    public static final Cultivation NONE = Cultivation.builder()
+            .crop(MainCrop.NONE)
+            .build();
 
 }

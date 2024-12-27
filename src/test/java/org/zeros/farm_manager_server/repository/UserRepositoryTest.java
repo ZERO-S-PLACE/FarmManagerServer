@@ -8,7 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.TestObject;
 import org.zeros.farm_manager_server.entities.User.User;
-import org.zeros.farm_manager_server.entities.fields.Field;
+import org.zeros.farm_manager_server.entities.Fields.Field;
 import org.zeros.farm_manager_server.repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.repositories.UserRepository;
 

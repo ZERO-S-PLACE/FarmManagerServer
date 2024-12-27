@@ -9,16 +9,16 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.zeros.farm_manager_server.DAO.DefaultImpl.UserFieldsManagerDefault;
-import org.zeros.farm_manager_server.DAO.DefaultImpl.UserManagerDefault;
+import org.zeros.farm_manager_server.DAO.Default.UserFieldsManagerDefault;
+import org.zeros.farm_manager_server.DAO.Default.UserManagerDefault;
 import org.zeros.farm_manager_server.DAO.Interface.UserFieldsManager;
 import org.zeros.farm_manager_server.DAO.Interface.UserManager;
 import org.zeros.farm_manager_server.TestObject;
 import org.zeros.farm_manager_server.config.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.entities.User.User;
-import org.zeros.farm_manager_server.entities.fields.Field;
-import org.zeros.farm_manager_server.entities.fields.FieldGroup;
-import org.zeros.farm_manager_server.entities.fields.FieldPart;
+import org.zeros.farm_manager_server.entities.Fields.Field;
+import org.zeros.farm_manager_server.entities.Fields.FieldGroup;
+import org.zeros.farm_manager_server.entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.repositories.Fields.FieldRepository;
@@ -57,7 +57,7 @@ public class UserFieldManagerTest {
 
     @BeforeEach
     public void setUp() {
-        user = userManager.logInNewUserByUsernameAndPassword("TestUser1", "password");
+        user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
     }
 
 
@@ -69,7 +69,7 @@ public class UserFieldManagerTest {
         assertThat(fieldGroup.getCreatedDate()).isNotNull();
         assertThat(fieldGroup.getLastModifiedDate()).isNotNull();
         assertThat(fieldGroup.getFieldGroupName()).isNotNull();
-        User groupUser=userManager.getUserById(user.getId());
+        User groupUser = userManager.getUserById(user.getId());
         assertThat(groupUser.getFieldGroups()).contains(fieldGroup);
     }
 
@@ -101,7 +101,7 @@ public class UserFieldManagerTest {
         assertThat(fieldUser.getFieldGroups()).contains(fieldGroup);
         assertThat(fieldUser.getFields()).contains(fieldSaved);
         assertThat(fieldSaved.getFieldGroup().getFields()).contains(fieldSaved);
-        assertThat(fieldUser.getFields().size()).isEqualTo(5);
+        assertThat(fieldUser.getFields().size()).isEqualTo(6);
         assertThat(fieldUser.getFieldGroups().size()).isEqualTo(3);
         assertThat(fieldSaved.getFieldParts().stream().findFirst().orElse(FieldPart.NONE).getArea()).isEqualTo(fieldSaved.getArea());
     }
@@ -149,7 +149,7 @@ public class UserFieldManagerTest {
     void testDeleteFieldGroupWithoutFields() {
         User fieldUser = userRepository.findUserById(user.getId()).get();
         Field field = TestObject.createTestField(0);
-        FieldGroup fieldGroup1 = fieldUser.getFieldGroups().stream().findAny().get();
+        FieldGroup fieldGroup1 = fieldUser.getFieldGroups().stream().filter(fg -> !fg.getFieldGroupName().equals("DEFAULT")).findFirst().get();
         entityManager.detach(fieldGroup1);
         Field fieldSaved = userFieldsManager.createFieldInGroup(field, fieldGroup1);
         assertThat(fieldSaved).isNotNull();
@@ -172,7 +172,7 @@ public class UserFieldManagerTest {
     }
 
     @Test
-    void testDivideFieldPart(){
+    void testDivideFieldPart() {
         User fieldUser = userRepository.findUserById(user.getId()).get();
         Field field = TestObject.createTestField(0);
         FieldGroup fieldGroup1 = fieldUser.getFieldGroups().stream().findAny().get();
@@ -181,38 +181,38 @@ public class UserFieldManagerTest {
         assertThat(fieldSaved).isNotNull();
         assertThat(fieldSaved.getId()).isNotNull();
 
-        FieldPart basePart= fieldSaved.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
-        FieldPart part1=TestObject.createTestFieldPart(0,fieldSaved.getArea().multiply(BigDecimal.valueOf(0.3)));
-        FieldPart part2=TestObject.createTestFieldPart(1,BigDecimal.valueOf(1));
+        FieldPart basePart = fieldSaved.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
+        FieldPart part1 = TestObject.createTestFieldPart(0, fieldSaved.getArea().multiply(BigDecimal.valueOf(0.3)));
+        FieldPart part2 = TestObject.createTestFieldPart(1, BigDecimal.valueOf(1));
 
-        Field dividedField=userFieldsManager.divideFieldPart(basePart,part1,part2);
+        Field dividedField = userFieldsManager.divideFieldPart(basePart, part1, part2);
         assertThat(dividedField).isNotNull();
         assertThat(dividedField.getFieldParts().contains(fieldPartRepository.findById(basePart.getId()).orElse(FieldPart.NONE))).isTrue();
         assertThat(dividedField.getFieldParts().size()).isEqualTo(3);
-        BigDecimal areaSum=BigDecimal.ZERO;
-        for(FieldPart fieldPart:dividedField.getFieldParts()){
-            if(!fieldPart.getIsArchived()){
-                areaSum=areaSum.add(fieldPart.getArea());
+        BigDecimal areaSum = BigDecimal.ZERO;
+        for (FieldPart fieldPart : dividedField.getFieldParts()) {
+            if (!fieldPart.getIsArchived()) {
+                areaSum = areaSum.add(fieldPart.getArea());
             }
         }
-        assertThat(fieldSaved.getArea().floatValue()==areaSum.floatValue()).isTrue();
+        assertThat(fieldSaved.getArea().floatValue() == areaSum.floatValue()).isTrue();
 
     }
 
     @Test
-    void testMergeFieldParts(){
+    void testMergeFieldParts() {
         User fieldUser = userRepository.findUserById(user.getId()).get();
         Field field = TestObject.createTestField(0);
         FieldGroup fieldGroup1 = fieldUser.getFieldGroups().stream().findAny().get();
         entityManager.detach(fieldGroup1);
         Field fieldSaved = userFieldsManager.createFieldInGroup(field, fieldGroup1);
-        FieldPart basePart= fieldSaved.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
-        FieldPart part1=TestObject.createTestFieldPart(0,fieldSaved.getArea().multiply(BigDecimal.valueOf(0.3)));
-        FieldPart part2=TestObject.createTestFieldPart(1,BigDecimal.valueOf(1));
-        Field dividedField=userFieldsManager.divideFieldPart(basePart,part1,part2);
+        FieldPart basePart = fieldSaved.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
+        FieldPart part1 = TestObject.createTestFieldPart(0, fieldSaved.getArea().multiply(BigDecimal.valueOf(0.3)));
+        FieldPart part2 = TestObject.createTestFieldPart(1, BigDecimal.valueOf(1));
+        Field dividedField = userFieldsManager.divideFieldPart(basePart, part1, part2);
 
-        FieldPart merged=userFieldsManager.mergeFieldParts(userFieldsManager.getAllNonArchivedFieldParts(dividedField));
-        dividedField=fieldRepository.findById(dividedField.getId()).orElse(Field.NONE);
+        FieldPart merged = userFieldsManager.mergeFieldParts(userFieldsManager.getAllNonArchivedFieldParts(dividedField));
+        dividedField = fieldRepository.findById(dividedField.getId()).orElse(Field.NONE);
         assertThat(merged).isNotNull();
         assertThat(merged.getArea()).isEqualTo(dividedField.getArea());
         assertThat(dividedField.getFieldParts().size()).isEqualTo(4);
@@ -221,29 +221,30 @@ public class UserFieldManagerTest {
                 .contains(fieldPartRepository.findById(merged.getId()).orElse(FieldPart.NONE));
 
     }
+
     @Test
-    void testResizeFieldPartResizeField(){
+    void testResizeFieldPartResizeField() {
         User fieldUser = userRepository.findUserById(user.getId()).get();
         Field field = TestObject.createTestField(0);
         FieldGroup fieldGroup1 = fieldUser.getFieldGroups().stream().findAny().get();
         entityManager.detach(fieldGroup1);
         Field fieldSaved = userFieldsManager.createFieldInGroup(field, fieldGroup1);
-        FieldPart basePart= fieldSaved.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
-        FieldPart part1=TestObject.createTestFieldPart(0,fieldSaved.getArea().multiply(BigDecimal.valueOf(0.3)));
-        FieldPart part2=TestObject.createTestFieldPart(1,BigDecimal.valueOf(1));
-        Field dividedField=userFieldsManager.divideFieldPart(basePart,part1,part2);
+        FieldPart basePart = fieldSaved.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
+        FieldPart part1 = TestObject.createTestFieldPart(0, fieldSaved.getArea().multiply(BigDecimal.valueOf(0.3)));
+        FieldPart part2 = TestObject.createTestFieldPart(1, BigDecimal.valueOf(1));
+        Field dividedField = userFieldsManager.divideFieldPart(basePart, part1, part2);
 
-        FieldPart resizePart=userFieldsManager.getAllNonArchivedFieldParts(
+        FieldPart resizePart = userFieldsManager.getAllNonArchivedFieldParts(
                 dividedField).stream().findFirst().orElse(FieldPart.NONE);
-        Field resizedField=userFieldsManager.updateFieldPartAreaResizeField(
-                resizePart,resizePart.getArea().multiply(BigDecimal.valueOf(0.01)));
-        BigDecimal areaSum=BigDecimal.ZERO;
-        for(FieldPart fieldPart:dividedField.getFieldParts()){
-            if(!fieldPart.getIsArchived()){
-                areaSum=areaSum.add(fieldPart.getArea());
+        Field resizedField = userFieldsManager.updateFieldPartAreaResizeField(
+                resizePart, resizePart.getArea().multiply(BigDecimal.valueOf(0.01)));
+        BigDecimal areaSum = BigDecimal.ZERO;
+        for (FieldPart fieldPart : dividedField.getFieldParts()) {
+            if (!fieldPart.getIsArchived()) {
+                areaSum = areaSum.add(fieldPart.getArea());
             }
         }
-        assertThat(resizedField.getArea().floatValue()==areaSum.floatValue()).isTrue();
+        assertThat(resizedField.getArea().floatValue() == areaSum.floatValue()).isTrue();
 
 
     }

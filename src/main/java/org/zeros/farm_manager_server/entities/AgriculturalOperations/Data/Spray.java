@@ -3,9 +3,8 @@ package org.zeros.farm_manager_server.entities.AgriculturalOperations.Data;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.zeros.farm_manager_server.entities.AgriculturalOperations.Util.SprayType;
+import org.zeros.farm_manager_server.entities.AgriculturalOperations.Enum.SprayType;
 import org.zeros.farm_manager_server.entities.DatabaseEntity;
-import org.zeros.farm_manager_server.util.StringSetDatabaseConverter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -22,26 +21,37 @@ public class Spray extends DatabaseEntity {
     @NonNull
     @NotBlank
     private String name;
+
+    @NonNull
     @Builder.Default
-    private String producer="";
+    private String producer = "";
+
     @NonNull
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private SprayType sprayType=SprayType.OTHER;
+    private SprayType sprayType = SprayType.OTHER;
+
     @NonNull
     @Builder.Default
     @ElementCollection
-    private Set<String> activeSubstances=new HashSet<>();
+    private Set<String> activeSubstances = new HashSet<>();
+
     @NonNull
     @Builder.Default
-    private String description="";
+    private String description = "";
+
     @NonNull
     @Builder.Default
-    private String createdBy="ADMIN";
-    @Transient
-    public static final Spray NONE =Spray.builder().name("NONE").producer("NONE").build();
+    private String createdBy = "ADMIN";
 
     @Transient
-    public static final Spray UNDEFINED =Spray.builder().name("UNDEFINED").producer("UNDEFINED").build();
-
+    public static final Spray NONE = Spray.builder()
+            .name("NONE")
+            .producer("NONE")
+            .build();
+    @Transient
+    public static final Spray UNDEFINED = Spray.builder()
+            .name("UNDEFINED")
+            .producer("UNDEFINED")
+            .build();
 }

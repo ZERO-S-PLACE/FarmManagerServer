@@ -18,69 +18,82 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 public class Fertilizer extends DatabaseEntity {
+
     @NonNull
     @NotBlank
     private String name;
-    @Builder.Default
-    private String producer="";
+
     @NonNull
     @Builder.Default
-    private Boolean isNaturalFertilizer=false;
+    private String producer = "";
+
     @NonNull
     @Builder.Default
-    private String createdBy="ADMIN";
+    private Boolean isNaturalFertilizer = false;
+
+    @NonNull
+    @Builder.Default
+    private String createdBy = "ADMIN";
 
     /*PERCENTAGE OF PURE ELEMENTS*/
-
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal organicMatterPercent=BigDecimal.ZERO;
+    private BigDecimal organicMatterPercent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal N_Percent=BigDecimal.ZERO;
+    private BigDecimal N_Percent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal P_Percent=BigDecimal.ZERO;
+    private BigDecimal P_Percent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal K_Percent=BigDecimal.ZERO;
+    private BigDecimal K_Percent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal Ca_Percent=BigDecimal.ZERO;
+    private BigDecimal Ca_Percent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal Mg_Percent=BigDecimal.ZERO;
+    private BigDecimal Mg_Percent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal S_Percent=BigDecimal.ZERO;
+    private BigDecimal S_Percent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal Na_Percent=BigDecimal.ZERO;
+    private BigDecimal Na_Percent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal Cl_Percent=BigDecimal.ZERO;
+    private BigDecimal Cl_Percent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal Fe_Percent=BigDecimal.ZERO;
+    private BigDecimal Fe_Percent = BigDecimal.ZERO;
+    @NonNull
     @Builder.Default
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    private BigDecimal B_Percent=BigDecimal.ZERO;
-
+    private BigDecimal B_Percent = BigDecimal.ZERO;
 
     @Transient
-    public final static Fertilizer NONE=Fertilizer.builder().name("NONE").producer("NONE").build();
-
+    public final static Fertilizer NONE = Fertilizer.builder().name("NONE").producer("NONE").build();
     @Transient
-    public final static Fertilizer UNDEFINED=Fertilizer.builder().name("UNDEFINED").producer("UNDEFINED").build();
+    public final static Fertilizer UNDEFINED = Fertilizer.builder().name("UNDEFINED").producer("UNDEFINED").build();
 }
