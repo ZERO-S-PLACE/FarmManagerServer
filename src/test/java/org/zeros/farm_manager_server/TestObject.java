@@ -1,8 +1,8 @@
 package org.zeros.farm_manager_server;
 
-import org.zeros.farm_manager_server.entities.User.User;
-import org.zeros.farm_manager_server.entities.Fields.Field;
-import org.zeros.farm_manager_server.entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Entities.User.User;
+import org.zeros.farm_manager_server.Entities.Fields.Field;
+import org.zeros.farm_manager_server.Entities.Fields.FieldPart;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
