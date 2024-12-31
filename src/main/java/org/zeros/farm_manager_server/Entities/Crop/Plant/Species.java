@@ -4,7 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 
 @Entity
 @Getter
@@ -13,7 +13,7 @@ import org.zeros.farm_manager_server.Entities.DatabaseEntity;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Species extends DatabaseEntity {
+public class Species extends BaseEntity {
 
 
     @NonNull

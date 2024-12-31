@@ -18,8 +18,8 @@ import org.zeros.farm_manager_server.Entities.Crop.CropParameters.SugarBeetParam
 import org.zeros.farm_manager_server.Entities.Crop.CropSale;
 import org.zeros.farm_manager_server.Entities.Crop.Plant.Plant;
 import org.zeros.farm_manager_server.Entities.Crop.Subside;
-import org.zeros.farm_manager_server.Entities.DataTransfer.ResourcesSummary;
-import org.zeros.farm_manager_server.Entities.DataTransfer.CropSummary;
+import org.zeros.farm_manager_server.DTO.DataTransfer.ResourcesSummary;
+import org.zeros.farm_manager_server.DTO.DataTransfer.CropSummary;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 
 import java.math.BigDecimal;

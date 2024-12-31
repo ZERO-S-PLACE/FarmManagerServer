@@ -20,7 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @EqualsAndHashCode
 @SuperBuilder
-public abstract class DatabaseEntity {
+public abstract class BaseEntity {
     @Id
     @GeneratedValue(generator = "UUID")
     @JdbcTypeCode(SqlTypes.CHAR)

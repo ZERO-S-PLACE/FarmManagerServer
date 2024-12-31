@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Entities.Fields.FieldGroup;
 
@@ -21,7 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true, exclude = {"loginError", "userCreationError", "fields", "fieldGroups"})
 @Builder
-public class User extends DatabaseEntity {
+public class User extends BaseEntity {
     @Transient
     public final static User NONE = User.builder().firstName("NONE").lastName("NONE").email("NONE@.com").username("NONE").password("NONE").build();
     @NotBlank

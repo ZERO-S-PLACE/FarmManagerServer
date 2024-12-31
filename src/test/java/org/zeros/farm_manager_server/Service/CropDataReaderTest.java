@@ -22,8 +22,8 @@ import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.Resour
 import org.zeros.farm_manager_server.Entities.Crop.Crop.Crop;
 import org.zeros.farm_manager_server.Entities.Crop.Crop.MainCrop;
 import org.zeros.farm_manager_server.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Entities.DataTransfer.CropSummary;
-import org.zeros.farm_manager_server.Entities.DataTransfer.ResourcesSummary;
+import org.zeros.farm_manager_server.DTO.DataTransfer.CropSummary;
+import org.zeros.farm_manager_server.DTO.DataTransfer.ResourcesSummary;
 import org.zeros.farm_manager_server.Entities.User.User;
 import org.zeros.farm_manager_server.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Entities.Fields.FieldPart;

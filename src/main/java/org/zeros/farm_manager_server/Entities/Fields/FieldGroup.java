@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Entities.User.User;
 
 import java.util.HashSet;
@@ -17,7 +17,7 @@ import java.util.Set;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true, exclude = {"fields"})
 @Builder
-public class FieldGroup extends DatabaseEntity {
+public class FieldGroup extends BaseEntity {
 
 
     @NotNull

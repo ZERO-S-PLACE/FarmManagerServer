@@ -7,7 +7,7 @@ import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.Resour
 import org.zeros.farm_manager_server.Entities.Crop.Crop.Crop;
 import org.zeros.farm_manager_server.Entities.Crop.Crop.MainCrop;
 import org.zeros.farm_manager_server.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 
 import java.math.BigDecimal;
@@ -21,12 +21,12 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CropSale extends DatabaseEntity {
+public class CropSale extends BaseEntity {
 
     @NonNull
     @ManyToOne
     @Builder.Default
-    Crop crop = MainCrop.NONE;
+    private Crop crop = MainCrop.NONE;
 
     @NonNull
     @Builder.Default

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.OperationType;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 
 import java.util.Set;
 
@@ -15,7 +15,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FarmingMachine extends DatabaseEntity {
+public class FarmingMachine extends BaseEntity {
 
     @NonNull
     @NotBlank

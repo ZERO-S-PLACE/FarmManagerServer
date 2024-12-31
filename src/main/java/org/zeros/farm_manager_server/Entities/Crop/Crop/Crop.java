@@ -6,7 +6,7 @@ import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Operations.*;
 import org.zeros.farm_manager_server.Entities.Crop.Plant.Plant;
 import org.zeros.farm_manager_server.Entities.Crop.Subside;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Entities.Fields.FieldPart;
 
 import java.util.HashSet;
@@ -23,11 +23,11 @@ import java.util.Set;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "is_main_crop", discriminatorType = DiscriminatorType.STRING)
 @SuperBuilder
-public abstract class Crop extends DatabaseEntity {
+public abstract class Crop extends BaseEntity {
 
     @NonNull
     @Builder.Default
-    Boolean workFinished = false;
+    private Boolean workFinished = false;
 
     @ManyToOne
     @NonNull

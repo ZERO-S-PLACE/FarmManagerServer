@@ -9,7 +9,7 @@ import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.Farmin
 import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.OperationType;
 import org.zeros.farm_manager_server.Entities.Crop.Crop.Crop;
 import org.zeros.farm_manager_server.Entities.Crop.Crop.MainCrop;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 
 import java.math.BigDecimal;
@@ -24,7 +24,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @SuperBuilder
 
-public abstract class AgriculturalOperation extends DatabaseEntity {
+public abstract class AgriculturalOperation extends BaseEntity {
 
     @NonNull
     @ManyToOne

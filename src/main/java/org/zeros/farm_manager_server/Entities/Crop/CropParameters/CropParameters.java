@@ -5,7 +5,7 @@ import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.ResourceType;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 
 import java.math.BigDecimal;
 
@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class CropParameters extends DatabaseEntity {
+public class CropParameters extends BaseEntity {
 
     @NonNull
     @Builder.Default

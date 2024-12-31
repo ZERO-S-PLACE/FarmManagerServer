@@ -1,4 +1,4 @@
-package org.zeros.farm_manager_server.Entities.DataTransfer;
+package org.zeros.farm_manager_server.DTO.DataTransfer;
 
 import jakarta.persistence.Transient;
 import lombok.*;

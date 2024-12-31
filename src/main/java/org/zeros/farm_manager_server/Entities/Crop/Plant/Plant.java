@@ -3,7 +3,7 @@ package org.zeros.farm_manager_server.Entities.Crop.Plant;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 
 import java.time.LocalDate;
@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Plant extends DatabaseEntity {
+public class Plant extends BaseEntity {
 
     @NonNull
     @OneToOne

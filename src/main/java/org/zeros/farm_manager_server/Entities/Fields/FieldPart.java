@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.zeros.farm_manager_server.Entities.Crop.Crop.Crop;
 import org.zeros.farm_manager_server.Entities.Crop.Crop.MainCrop;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -19,7 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FieldPart extends DatabaseEntity {
+public class FieldPart extends BaseEntity {
 
     @NotBlank
     @NonNull

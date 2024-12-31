@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.zeros.farm_manager_server.Entities.DatabaseEntity;
+import org.zeros.farm_manager_server.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Entities.User.User;
 import org.zeros.farm_manager_server.Util.StringSetDatabaseConverter;
 
@@ -19,7 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(callSuper = true, exclude = {"user", "fieldGroup", "fieldParts",})
-public class Field extends DatabaseEntity {
+public class Field extends BaseEntity {
 
     @NonNull
     @NotBlank
