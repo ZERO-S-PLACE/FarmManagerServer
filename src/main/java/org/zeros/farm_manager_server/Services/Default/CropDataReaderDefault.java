@@ -1,26 +1,27 @@
 package org.zeros.farm_manager_server.Services.Default;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.CropSummary;
+import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.ResourcesSummary;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.*;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.InterCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.GrainParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.RapeSeedParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.SugarBeetParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
+import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Services.Interface.CropDataReader;
 import org.zeros.farm_manager_server.Services.Interface.CropOperationsManager;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.Fertilizer;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Operations.*;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.ResourceType;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.Crop;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.InterCrop;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.MainCrop;
-import org.zeros.farm_manager_server.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Entities.Crop.CropParameters.GrainParameters;
-import org.zeros.farm_manager_server.Entities.Crop.CropParameters.RapeSeedParameters;
-import org.zeros.farm_manager_server.Entities.Crop.CropParameters.SugarBeetParameters;
-import org.zeros.farm_manager_server.Entities.Crop.CropSale;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Plant;
-import org.zeros.farm_manager_server.Entities.Crop.Subside;
-import org.zeros.farm_manager_server.DTO.DataTransfer.ResourcesSummary;
-import org.zeros.farm_manager_server.DTO.DataTransfer.CropSummary;
-import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -30,12 +31,9 @@ import java.util.Set;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class CropDataReaderDefault implements CropDataReader {
     private final CropOperationsManager cropOperationsManager;
-
-    public CropDataReaderDefault(CropOperationsManager cropOperationsManager) {
-        this.cropOperationsManager = cropOperationsManager;
-    }
 
     private static Map<ResourceType, BigDecimal> getMeanYieldByCropSales(Set<CropSale> cropSales, BigDecimal area) {
         Map<ResourceType, BigDecimal> amountSold = new HashMap<>();
@@ -221,11 +219,12 @@ public class CropDataReaderDefault implements CropDataReader {
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
                 .area(crop.getFieldPart().getArea())
-                .seedingMaterialPerAreaUnit(getSeedingMaterialPerAreaUnit(crop,true))
-                .sprayPerAreaUnit(getSprayQuantityPerAreaUnit(crop,true))
-                .fertilizerPerAreaUnit(getFertilizerQuantityPerAreaUnit(crop,true))
+                .seedingMaterialPerAreaUnit(getSeedingMaterialPerAreaUnit(crop, true))
+                .sprayPerAreaUnit(getSprayQuantityPerAreaUnit(crop, true))
+                .fertilizerPerAreaUnit(getFertilizerQuantityPerAreaUnit(crop, true))
                 .build();
     }
+
     @Override
     public ResourcesSummary getPlannedResourcesSummary(Crop crop) {
         crop = cropOperationsManager.getCropById(crop.getId());
@@ -235,16 +234,16 @@ public class CropDataReaderDefault implements CropDataReader {
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
                 .area(crop.getFieldPart().getArea())
-                .seedingMaterialPerAreaUnit(getSeedingMaterialPerAreaUnit(crop,false))
-                .sprayPerAreaUnit(getSprayQuantityPerAreaUnit(crop,false))
-                .fertilizerPerAreaUnit(getFertilizerQuantityPerAreaUnit(crop,false))
+                .seedingMaterialPerAreaUnit(getSeedingMaterialPerAreaUnit(crop, false))
+                .sprayPerAreaUnit(getSprayQuantityPerAreaUnit(crop, false))
+                .fertilizerPerAreaUnit(getFertilizerQuantityPerAreaUnit(crop, false))
                 .build();
     }
 
-    private Map<Set<Plant>, BigDecimal> getSeedingMaterialPerAreaUnit(Crop crop,boolean includeNotPlanned) {
+    private Map<Set<Plant>, BigDecimal> getSeedingMaterialPerAreaUnit(Crop crop, boolean includeNotPlanned) {
         Map<Set<Plant>, BigDecimal> seedingMaterialQuantity = new HashMap<>();
         for (Seeding seeding : crop.getSeeding()) {
-            if(seeding.getIsPlannedOperation()||includeNotPlanned) {
+            if (seeding.getIsPlannedOperation() || includeNotPlanned) {
                 if (seedingMaterialQuantity.containsKey(seeding.getSownPlants())) {
                     BigDecimal quantity = seedingMaterialQuantity.get(seeding.getSownPlants());
                     seedingMaterialQuantity.remove(seeding.getSownPlants());
@@ -258,11 +257,11 @@ public class CropDataReaderDefault implements CropDataReader {
 
     }
 
-    private Map<Fertilizer, BigDecimal> getFertilizerQuantityPerAreaUnit(Crop crop,boolean includeNotPlanned) {
+    private Map<Fertilizer, BigDecimal> getFertilizerQuantityPerAreaUnit(Crop crop, boolean includeNotPlanned) {
         Map<Fertilizer, BigDecimal> fertilizerQuantity = new HashMap<>();
         for (SprayApplication sprayApplication : crop.getSprayApplications()) {
             if (!sprayApplication.getSpray().equals(Spray.UNDEFINED)) {
-                if(sprayApplication.getIsPlannedOperation()||includeNotPlanned) {
+                if (sprayApplication.getIsPlannedOperation() || includeNotPlanned) {
                     if (fertilizerQuantity.containsKey(sprayApplication.getFertilizer())) {
                         BigDecimal quantity = fertilizerQuantity.get(sprayApplication.getFertilizer());
                         fertilizerQuantity.remove(sprayApplication.getFertilizer());
@@ -275,7 +274,7 @@ public class CropDataReaderDefault implements CropDataReader {
         }
         for (FertilizerApplication fertilizerApplication : crop.getFertilizerApplications()) {
             if (!fertilizerApplication.getFertilizer().equals(Fertilizer.UNDEFINED)) {
-                if(fertilizerApplication.getIsPlannedOperation()||includeNotPlanned) {
+                if (fertilizerApplication.getIsPlannedOperation() || includeNotPlanned) {
                     if (fertilizerQuantity.containsKey(fertilizerApplication.getFertilizer())) {
                         BigDecimal quantity = fertilizerQuantity.get(fertilizerApplication.getFertilizer());
                         fertilizerQuantity.remove(fertilizerApplication.getFertilizer());
@@ -289,11 +288,11 @@ public class CropDataReaderDefault implements CropDataReader {
         return fertilizerQuantity;
     }
 
-    private Map<Spray, BigDecimal> getSprayQuantityPerAreaUnit(Crop crop,boolean includeNotPlanned) {
+    private Map<Spray, BigDecimal> getSprayQuantityPerAreaUnit(Crop crop, boolean includeNotPlanned) {
         Map<Spray, BigDecimal> sprayQuantity = new HashMap<>();
         for (SprayApplication sprayApplication : crop.getSprayApplications()) {
             if (!sprayApplication.getSpray().equals(Spray.UNDEFINED)) {
-                if(sprayApplication.getIsPlannedOperation()||includeNotPlanned) {
+                if (sprayApplication.getIsPlannedOperation() || includeNotPlanned) {
                     if (sprayQuantity.containsKey(sprayApplication.getSpray())) {
                         BigDecimal quantity = sprayQuantity.get(sprayApplication.getSpray());
                         sprayQuantity.remove(sprayApplication.getSpray());

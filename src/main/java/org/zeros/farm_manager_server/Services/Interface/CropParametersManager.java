@@ -1,8 +1,8 @@
 package org.zeros.farm_manager_server.Services.Interface;
 
 import org.springframework.data.domain.Page;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.ResourceType;
-import org.zeros.farm_manager_server.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 
 import java.util.UUID;
 

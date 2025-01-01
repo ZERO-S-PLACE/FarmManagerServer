@@ -7,22 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
+import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
+import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
+import org.zeros.farm_manager_server.Repositories.UserRepository;
 import org.zeros.farm_manager_server.Services.Default.UserFieldsManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
 import org.zeros.farm_manager_server.TestObject;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.User.User;
-import org.zeros.farm_manager_server.Entities.Fields.Field;
-import org.zeros.farm_manager_server.Entities.Fields.FieldGroup;
-import org.zeros.farm_manager_server.Entities.Fields.FieldPart;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
-import org.zeros.farm_manager_server.Repositories.UserRepository;
 
 import java.math.BigDecimal;
 
@@ -32,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @Import({UserFieldsManagerDefault.class, UserManagerDefault.class, LoggedUserConfiguration.class})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class UserFieldManagerTest {
 
     @Autowired
@@ -217,8 +215,7 @@ public class UserFieldManagerTest {
         assertThat(merged.getArea()).isEqualTo(dividedField.getArea());
         assertThat(dividedField.getFieldParts().size()).isEqualTo(4);
         assertThat(userFieldsManager.getAllNonArchivedFieldParts(dividedField).size()).isEqualTo(1);
-        assertThat(userFieldsManager.getAllNonArchivedFieldParts(dividedField))
-                .contains(fieldPartRepository.findById(merged.getId()).orElse(FieldPart.NONE));
+        assertThat(userFieldsManager.getAllNonArchivedFieldParts(dividedField)).contains(fieldPartRepository.findById(merged.getId()).orElse(FieldPart.NONE));
 
     }
 
@@ -234,10 +231,8 @@ public class UserFieldManagerTest {
         FieldPart part2 = TestObject.createTestFieldPart(1, BigDecimal.valueOf(1));
         Field dividedField = userFieldsManager.divideFieldPart(basePart, part1, part2);
 
-        FieldPart resizePart = userFieldsManager.getAllNonArchivedFieldParts(
-                dividedField).stream().findFirst().orElse(FieldPart.NONE);
-        Field resizedField = userFieldsManager.updateFieldPartAreaResizeField(
-                resizePart, resizePart.getArea().multiply(BigDecimal.valueOf(0.01)));
+        FieldPart resizePart = userFieldsManager.getAllNonArchivedFieldParts(dividedField).stream().findFirst().orElse(FieldPart.NONE);
+        Field resizedField = userFieldsManager.updateFieldPartAreaResizeField(resizePart, resizePart.getArea().multiply(BigDecimal.valueOf(0.01)));
         BigDecimal areaSum = BigDecimal.ZERO;
         for (FieldPart fieldPart : dividedField.getFieldParts()) {
             if (!fieldPart.getIsArchived()) {

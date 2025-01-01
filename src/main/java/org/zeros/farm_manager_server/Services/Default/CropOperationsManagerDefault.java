@@ -2,30 +2,31 @@ package org.zeros.farm_manager_server.Services.Default;
 
 import jakarta.persistence.EntityManager;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.*;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.InterCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.*;
+import org.zeros.farm_manager_server.Repositories.Crop.CropRepository;
+import org.zeros.farm_manager_server.Repositories.Crop.CropSaleRepository;
 import org.zeros.farm_manager_server.Services.Interface.CropOperationsManager;
 import org.zeros.farm_manager_server.Services.Interface.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.FarmingMachineManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.FertilizerManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.SprayManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.Fertilizer;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.OperationType;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Operations.*;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.Crop;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.InterCrop;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.MainCrop;
-import org.zeros.farm_manager_server.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Entities.Crop.CropSale;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Plant;
-import org.zeros.farm_manager_server.Entities.Crop.Subside;
-import org.zeros.farm_manager_server.Entities.Fields.FieldPart;
-import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.*;
-import org.zeros.farm_manager_server.Repositories.Crop.CropRepository;
-import org.zeros.farm_manager_server.Repositories.Crop.CropSaleRepository;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -33,6 +34,7 @@ import java.util.UUID;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class CropOperationsManagerDefault implements CropOperationsManager {
     private final EntityManager entityManager;
     private final CropRepository cropRepository;
@@ -48,33 +50,6 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     private final SprayManager sprayManager;
     private final FertilizerManager fertilizerManager;
 
-    public CropOperationsManagerDefault(CropRepository cropRepository,
-                                        EntityManager entityManager,
-                                        CultivationRepository cultivationRepository,
-                                        SeedingRepository seedingRepository,
-                                        SprayApplicationRepository sprayApplicationRepository,
-                                        FertilizerApplicationRepository fertilizerApplicationRepository,
-                                        HarvestRepository harvestRepository,
-                                        CropSaleRepository cropSaleRepository,
-                                        SubsideManager subsideManager,
-                                        FarmingMachineManager farmingMachineManager,
-                                        CropParametersManager cropParametersManager,
-                                        SprayManager sprayManager,
-                                        FertilizerManager fertilizerManager) {
-        this.cropRepository = cropRepository;
-        this.entityManager = entityManager;
-        this.cultivationRepository = cultivationRepository;
-        this.seedingRepository = seedingRepository;
-        this.sprayApplicationRepository = sprayApplicationRepository;
-        this.fertilizerApplicationRepository = fertilizerApplicationRepository;
-        this.harvestRepository = harvestRepository;
-        this.cropSaleRepository = cropSaleRepository;
-        this.subsideManager = subsideManager;
-        this.farmingMachineManager = farmingMachineManager;
-        this.cropParametersManager = cropParametersManager;
-        this.sprayManager = sprayManager;
-        this.fertilizerManager = fertilizerManager;
-    }
 
     private static void checkModificationAccess(Crop crop) {
         if (crop.getWorkFinished()) {

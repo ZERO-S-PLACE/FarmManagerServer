@@ -11,9 +11,9 @@ import org.zeros.farm_manager_server.Services.Default.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
 import org.zeros.farm_manager_server.TestObject;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.User.LoginError;
-import org.zeros.farm_manager_server.Entities.User.User;
-import org.zeros.farm_manager_server.Entities.User.UserCreationError;
+import org.zeros.farm_manager_server.Domain.Entities.User.LoginError;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Entities.User.UserCreationError;
 import org.zeros.farm_manager_server.Repositories.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;

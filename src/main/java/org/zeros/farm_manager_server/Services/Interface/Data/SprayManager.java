@@ -1,8 +1,9 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import org.springframework.data.domain.Page;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.SprayType;
+import org.springframework.data.domain.Range;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
 
 import java.util.UUID;
 
@@ -30,4 +31,6 @@ public interface SprayManager {
     void deleteSpraySafe(Spray spray);
 
     Spray getUndefinedSpray();
+
+    Page<Spray> getSpraysCriteria(String name, String producer, SprayType sprayType, String activeSubstance, Integer pageNumber);
 }

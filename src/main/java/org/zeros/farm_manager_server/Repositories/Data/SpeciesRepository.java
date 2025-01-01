@@ -3,7 +3,7 @@ package org.zeros.farm_manager_server.Repositories.Data;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
 
 import java.util.Optional;
 import java.util.Set;

@@ -1,22 +1,24 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.zeros.farm_manager_server.Services.Interface.Data.FarmingMachineManager;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.*;
 import org.zeros.farm_manager_server.Repositories.Data.FarmingMachineRepository;
+import org.zeros.farm_manager_server.Services.Interface.Data.FarmingMachineManager;
 
 import java.util.UUID;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class FarmingMachineManagerDefault implements FarmingMachineManager {
     private final LoggedUserConfiguration config;
     private final FarmingMachineRepository farmingMachineRepository;
@@ -26,50 +28,71 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
     private final FertilizerApplicationRepository fertilizerApplicationRepository;
     private final HarvestRepository harvestRepository;
 
-    public FarmingMachineManagerDefault(LoggedUserConfiguration loggedUserConfiguration, FarmingMachineRepository farmingMachineRepository, SeedingRepository seedingRepository, CultivationRepository cultivationRepository, SprayApplicationRepository sprayApplicationRepository, FertilizerApplicationRepository fertilizerApplicationRepository, HarvestRepository harvestRepository) {
-        this.farmingMachineRepository = farmingMachineRepository;
-        this.seedingRepository = seedingRepository;
-        this.cultivationRepository = cultivationRepository;
-        this.sprayApplicationRepository = sprayApplicationRepository;
-        this.fertilizerApplicationRepository = fertilizerApplicationRepository;
-        this.harvestRepository = harvestRepository;
-        this.config = loggedUserConfiguration;
-
-    }
-
     @Override
     public Page<FarmingMachine> getAllFarmingMachines(int pageNumber) {
-        return farmingMachineRepository.findAllByCreatedByIn(config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("model")));
+        return farmingMachineRepository.findAllByCreatedByIn(config.allRows(), getPageRequest(pageNumber));
+    }
+
+    private static PageRequest getPageRequest(int pageNumber) {
+        if(pageNumber<0) pageNumber = 0;
+        return PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("model"));
     }
 
     @Override
     public Page<FarmingMachine> getDefaultFarmingMachines(int pageNumber) {
-        return farmingMachineRepository.findAllByCreatedByIn(config.defaultRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("model")));
+        return farmingMachineRepository.findAllByCreatedByIn(config.defaultRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<FarmingMachine> getUserFarmingMachines(int pageNumber) {
-        return farmingMachineRepository.findAllByCreatedByIn(config.userRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("model")));
+        return farmingMachineRepository.findAllByCreatedByIn(config.userRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<FarmingMachine> getFarmingMachineByNameAs(String model, int pageNumber) {
-        return farmingMachineRepository.findAllByModelContainingIgnoreCaseAndCreatedByIn(model, config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("model")));
+        return farmingMachineRepository.findAllByModelContainingIgnoreCaseAndCreatedByIn(model, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<FarmingMachine> getFarmingMachineByProducerAs(String producer, int pageNumber) {
-        return farmingMachineRepository.findAllByProducerContainingIgnoreCaseAndCreatedByIn(producer, config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("model")));
+        return farmingMachineRepository.findAllByProducerContainingIgnoreCaseAndCreatedByIn(producer, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<FarmingMachine> getFarmingMachineByProducerAndNameAs(String producer, String model, int pageNumber) {
-        return farmingMachineRepository.findAllByProducerContainingIgnoreCaseAndModelContainingIgnoreCaseAndCreatedByIn(producer, model, config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("model")));
+    public Page<FarmingMachine> getFarmingMachineByProducerAndNameAs(String producer,
+                                                                     String model, int pageNumber) {
+        return farmingMachineRepository
+                .findAllByProducerContainingIgnoreCaseAndModelContainingIgnoreCaseAndCreatedByIn(
+                        producer, model, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<FarmingMachine> getFarmingMachineBySupportedOperation(OperationType operationType, int pageNumber) {
-        return farmingMachineRepository.findAllBySupportedOperationTypesContainsAndCreatedByIn(operationType, config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("model")));
+    public Page<FarmingMachine> getFarmingMachineBySupportedOperation(OperationType operationType,
+                                                                      int pageNumber) {
+        return farmingMachineRepository.findAllBySupportedOperationTypesContainsAndCreatedByIn(
+                operationType, config.allRows(), getPageRequest(pageNumber));
+    }
+
+    @Override
+    public Page<FarmingMachine> getFarmingMachineCriteria(String model, String producer,
+                                                          OperationType operationType, int pageNumber) {
+        boolean modelPresent = !(model == null || model.isBlank());
+        boolean producerPresent = !(producer == null || producer.isBlank());
+        boolean operationTypePresent = !(operationType == null || operationType == OperationType.ANY);
+
+        if (modelPresent && producerPresent) {
+            return getFarmingMachineByProducerAndNameAs(producer, model, pageNumber);
+        }
+        if (modelPresent) {
+            return getFarmingMachineByNameAs(model, pageNumber);
+        }
+        if (producerPresent) {
+            return getFarmingMachineByProducerAs(producer, pageNumber);
+        }
+        if (operationTypePresent) {
+            return getFarmingMachineBySupportedOperation(operationType, pageNumber);
+        }
+        return getAllFarmingMachines(pageNumber);
     }
 
     @Override
@@ -82,7 +105,8 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
         if (farmingMachine.getModel().isBlank() || farmingMachine.getProducer().isBlank()) {
             throw new IllegalArgumentException("FarmingMachine model and producer are required");
         }
-        if (farmingMachineRepository.findByProducerAndModelAndCreatedByIn(farmingMachine.getProducer(), farmingMachine.getModel(), config.allRows()).isEmpty()) {
+        if (farmingMachineRepository.findByProducerAndModelAndCreatedByIn(
+                farmingMachine.getProducer(), farmingMachine.getModel(), config.allRows()).isEmpty()) {
             farmingMachine.setCreatedBy(config.username());
             return farmingMachineRepository.saveAndFlush(farmingMachine);
         }
@@ -91,7 +115,8 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
 
     @Override
     public FarmingMachine updateFarmingMachine(FarmingMachine farmingMachine) {
-        FarmingMachine originalMachine = farmingMachineRepository.findById(farmingMachine.getId()).orElse(FarmingMachine.NONE);
+        FarmingMachine originalMachine = farmingMachineRepository.findById(farmingMachine.getId())
+                .orElse(FarmingMachine.NONE);
         if (originalMachine.equals(FarmingMachine.NONE)) {
             throw new IllegalArgumentException("FarmingMachine not found");
         }
@@ -99,7 +124,11 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
             if (farmingMachine.getModel().isBlank() || farmingMachine.getProducer().isBlank()) {
                 throw new IllegalArgumentException("FarmingMachine model and producer are required");
             }
-            return farmingMachineRepository.saveAndFlush(farmingMachine);
+            originalMachine.setModel(farmingMachine.getModel());
+            originalMachine.setProducer(farmingMachine.getProducer());
+            originalMachine.setDescription(farmingMachine.getDescription());
+            originalMachine.setSupportedOperationTypes(farmingMachine.getSupportedOperationTypes());
+            return farmingMachineRepository.saveAndFlush(originalMachine);
 
         }
         throw new IllegalAccessError("You can't modify this object-no access");
@@ -108,9 +137,14 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
 
     @Override
     public void deleteFarmingMachineSafe(FarmingMachine farmingMachine) {
-        FarmingMachine originalMachine = farmingMachineRepository.findById(farmingMachine.getId()).orElse(FarmingMachine.NONE);
+        FarmingMachine originalMachine = farmingMachineRepository.findById(farmingMachine.getId())
+                .orElse(FarmingMachine.NONE);
         if (originalMachine.getCreatedBy().equals(config.username())) {
-            if (seedingRepository.findAllByFarmingMachine(farmingMachine).isEmpty() && cultivationRepository.findAllByFarmingMachine(farmingMachine).isEmpty() && sprayApplicationRepository.findAllByFarmingMachine(farmingMachine).isEmpty() && fertilizerApplicationRepository.findAllByFarmingMachine(farmingMachine).isEmpty() && harvestRepository.findAllByFarmingMachine(farmingMachine).isEmpty()) {
+            if (seedingRepository.findAllByFarmingMachine(farmingMachine).isEmpty() &&
+                    cultivationRepository.findAllByFarmingMachine(farmingMachine).isEmpty() &&
+                    sprayApplicationRepository.findAllByFarmingMachine(farmingMachine).isEmpty() &&
+                    fertilizerApplicationRepository.findAllByFarmingMachine(farmingMachine).isEmpty() &&
+                    harvestRepository.findAllByFarmingMachine(farmingMachine).isEmpty()) {
                 farmingMachineRepository.delete(farmingMachine);
                 return;
             }
@@ -122,6 +156,8 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
 
     @Override
     public FarmingMachine getUndefinedFarmingMachine() {
-        return farmingMachineRepository.findByProducerAndModelAndCreatedByIn("UNDEFINED", "UNDEFINED", config.defaultRows()).orElse(FarmingMachine.UNDEFINED);
+        return farmingMachineRepository.findByProducerAndModelAndCreatedByIn(
+                "UNDEFINED", "UNDEFINED", config.defaultRows())
+                .orElse(FarmingMachine.UNDEFINED);
     }
 }

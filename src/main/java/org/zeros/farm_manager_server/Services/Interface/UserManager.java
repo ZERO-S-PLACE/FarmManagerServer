@@ -1,6 +1,6 @@
 package org.zeros.farm_manager_server.Services.Interface;
 
-import org.zeros.farm_manager_server.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
 
 import java.util.UUID;
 

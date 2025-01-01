@@ -3,14 +3,15 @@ package org.zeros.farm_manager_server.Services.Default;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.Fields.Field;
-import org.zeros.farm_manager_server.Entities.Fields.FieldGroup;
-import org.zeros.farm_manager_server.Entities.Fields.FieldPart;
-import org.zeros.farm_manager_server.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
@@ -21,6 +22,7 @@ import java.util.*;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class UserFieldsManagerDefault implements UserFieldsManager {
 
     private final UserRepository userRepository;
@@ -29,21 +31,6 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     private final FieldPartRepository fieldPartRepository;
     private final EntityManager entityManager;
     private User user;
-
-    public UserFieldsManagerDefault(LoggedUserConfiguration loggedUserConfiguration,
-                                    FieldGroupRepository fieldGroupRepository,
-                                    FieldRepository fieldRepository,
-                                    FieldPartRepository fieldPartRepository,
-                                    UserRepository userRepository,
-                                    EntityManager entityManager) {
-        this.fieldGroupRepository = fieldGroupRepository;
-        this.fieldRepository = fieldRepository;
-        this.fieldPartRepository = fieldPartRepository;
-        this.user = loggedUserConfiguration.getLoggedUserProperty().get();
-        this.entityManager = entityManager;
-        loggedUserConfiguration.getLoggedUserProperty().addListener(((observable, oldValue, newValue) -> user = newValue));
-        this.userRepository = userRepository;
-    }
 
     @Override
     public FieldGroup createEmptyFieldGroup(String fieldGroupName, String description) {
@@ -149,8 +136,8 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
         FieldPart defaultPart = FieldPart.getDefaultFieldPart(fieldSaved);
         field.setFieldParts(Set.of(defaultPart));
         fieldPartRepository.saveAndFlush(defaultPart);
-
-        return fieldSaved;
+        flushChanges();
+        return getFieldById(fieldSaved.getId());
     }
 
 

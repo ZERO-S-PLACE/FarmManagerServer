@@ -5,16 +5,16 @@ import org.springframework.stereotype.Component;
 import org.zeros.farm_manager_server.Services.Interface.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.*;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.Fertilizer;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.OperationType;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.SprayType;
-import org.zeros.farm_manager_server.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Plant;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Species;
-import org.zeros.farm_manager_server.Entities.Crop.Subside;
-import org.zeros.farm_manager_server.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
 import org.zeros.farm_manager_server.Repositories.UserRepository;
 
@@ -200,25 +200,25 @@ public class DefaultSetup {
                     .name("Polifoska 6")
                     .producer("Azoty")
                     .isNaturalFertilizer(false)
-                    .N_Percent(BigDecimal.valueOf(6))
-                    .P_Percent(BigDecimal.valueOf(20))
-                    .K_Percent(BigDecimal.valueOf(30))
+                    .totalNPercent(BigDecimal.valueOf(6))
+                    .totalPPercent(BigDecimal.valueOf(20))
+                    .totalKPercent(BigDecimal.valueOf(30))
                     .build());
             fertilizerManager.addFertilizer(Fertilizer.builder()
                     .name("Polifoska 8")
                     .producer("Azoty")
                     .isNaturalFertilizer(false)
-                    .N_Percent(BigDecimal.valueOf(8))
-                    .P_Percent(BigDecimal.valueOf(20))
-                    .K_Percent(BigDecimal.valueOf(30))
+                    .totalNPercent(BigDecimal.valueOf(8))
+                    .totalPPercent(BigDecimal.valueOf(20))
+                    .totalKPercent(BigDecimal.valueOf(30))
                     .build());
             fertilizerManager.addFertilizer(Fertilizer.builder()
                     .name("Polifoska 16")
                     .producer("Azoty")
                     .isNaturalFertilizer(false)
-                    .N_Percent(BigDecimal.valueOf(16))
-                    .P_Percent(BigDecimal.valueOf(20))
-                    .K_Percent(BigDecimal.valueOf(30))
+                    .totalNPercent(BigDecimal.valueOf(16))
+                    .totalPPercent(BigDecimal.valueOf(20))
+                    .totalKPercent(BigDecimal.valueOf(30))
                     .build());
         }
     }

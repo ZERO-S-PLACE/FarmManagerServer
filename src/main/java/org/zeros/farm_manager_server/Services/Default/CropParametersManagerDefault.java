@@ -1,39 +1,31 @@
 package org.zeros.farm_manager_server.Services.Default;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.zeros.farm_manager_server.Services.Interface.CropParametersManager;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.ResourceType;
-import org.zeros.farm_manager_server.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.HarvestRepository;
 import org.zeros.farm_manager_server.Repositories.Crop.CropParametersRepository;
 import org.zeros.farm_manager_server.Repositories.Crop.CropSaleRepository;
+import org.zeros.farm_manager_server.Services.Interface.CropParametersManager;
 
 import java.util.UUID;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class CropParametersManagerDefault implements CropParametersManager {
     private final CropParametersRepository cropParametersRepository;
     private final LoggedUserConfiguration config;
     private final CropSaleRepository cropSaleRepository;
     private final HarvestRepository harvestRepository;
 
-    public CropParametersManagerDefault(CropParametersRepository cropParametersRepository,
-                                        LoggedUserConfiguration loggedUserConfiguration,
-                                        CropSaleRepository cropSaleRepository,
-                                        HarvestRepository harvestRepository) {
-
-        this.cropParametersRepository = cropParametersRepository;
-        this.config = loggedUserConfiguration;
-        this.cropSaleRepository = cropSaleRepository;
-        this.harvestRepository = harvestRepository;
-    }
 
     @Override
     public CropParameters getCropParametersById(UUID id) {

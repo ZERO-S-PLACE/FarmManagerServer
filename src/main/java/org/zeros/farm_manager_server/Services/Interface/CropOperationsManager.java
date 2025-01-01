@@ -1,14 +1,14 @@
 package org.zeros.farm_manager_server.Services.Interface;
 
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Operations.*;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.Crop;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.InterCrop;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.MainCrop;
-import org.zeros.farm_manager_server.Entities.Crop.CropSale;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Plant;
-import org.zeros.farm_manager_server.Entities.Crop.Subside;
-import org.zeros.farm_manager_server.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.*;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.InterCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -79,11 +79,9 @@ public interface CropOperationsManager {
 
     Harvest getHarvestById(UUID id);
 
-
     Crop addSubside(Crop crop, Subside subside);
 
     Crop removeSubside(Crop crop, Subside subside);
-
 
     CropSale addCropSale(MainCrop crop, CropSale cropSale);
 

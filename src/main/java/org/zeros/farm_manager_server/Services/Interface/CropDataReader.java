@@ -1,10 +1,10 @@
 package org.zeros.farm_manager_server.Services.Interface;
 
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.ResourceType;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.Crop;
-import org.zeros.farm_manager_server.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.DTO.DataTransfer.CropSummary;
-import org.zeros.farm_manager_server.DTO.DataTransfer.ResourcesSummary;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.CropSummary;
+import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.ResourcesSummary;
 
 import java.util.Map;
 

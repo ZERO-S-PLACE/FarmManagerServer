@@ -1,8 +1,8 @@
 package org.zeros.farm_manager_server.Repositories.Fields;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.zeros.farm_manager_server.Entities.Fields.Field;
-import org.zeros.farm_manager_server.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 
 import java.util.List;
 import java.util.UUID;

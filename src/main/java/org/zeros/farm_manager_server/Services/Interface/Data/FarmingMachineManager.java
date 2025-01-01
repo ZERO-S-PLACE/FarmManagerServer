@@ -1,8 +1,8 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import org.springframework.data.domain.Page;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
 
 import java.util.UUID;
 
@@ -20,6 +20,8 @@ public interface FarmingMachineManager {
     Page<FarmingMachine> getFarmingMachineByProducerAndNameAs(String producer, String model, int pageNumber);
 
     Page<FarmingMachine> getFarmingMachineBySupportedOperation(OperationType operationType, int pageNumber);
+
+    Page<FarmingMachine> getFarmingMachineCriteria( String model,String producer,OperationType operationType, int pageNumber);
 
     FarmingMachine getFarmingMachineById(UUID id);
 

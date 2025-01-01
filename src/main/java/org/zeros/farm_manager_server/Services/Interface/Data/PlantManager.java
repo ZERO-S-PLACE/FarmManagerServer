@@ -1,8 +1,10 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import org.springframework.data.domain.Page;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Plant;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Species;
+import org.springframework.data.domain.Range;
+import org.springframework.security.core.parameters.P;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
 
 import java.rmi.NoSuchObjectException;
 import java.util.UUID;
@@ -25,7 +27,9 @@ public interface PlantManager {
 
     Plant addPlant(Plant plant);
 
-    Plant updatePlant(Plant plant) throws NoSuchObjectException;
+    Plant updatePlant(Plant plant);
 
     void deletePlantSafe(Plant plant);
+
+    Page<Plant> getPlantsCriteria(String variety, UUID speciesId, Integer pageNumber);
 }

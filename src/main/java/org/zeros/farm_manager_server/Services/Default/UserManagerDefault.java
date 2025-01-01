@@ -1,23 +1,25 @@
 package org.zeros.farm_manager_server.Services.Default;
 
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
-import org.zeros.farm_manager_server.Services.Interface.UserManager;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.Fields.FieldGroup;
-import org.zeros.farm_manager_server.Entities.User.LoginError;
-import org.zeros.farm_manager_server.Entities.User.User;
-import org.zeros.farm_manager_server.Entities.User.UserCreationError;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
+import org.zeros.farm_manager_server.Domain.Entities.User.LoginError;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Entities.User.UserCreationError;
 import org.zeros.farm_manager_server.Repositories.Data.*;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.UserRepository;
+import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
+import org.zeros.farm_manager_server.Services.Interface.UserManager;
 
 import java.util.UUID;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class UserManagerDefault implements UserManager {
 
     private final UserRepository userRepository;
@@ -31,21 +33,6 @@ public class UserManagerDefault implements UserManager {
     private final SprayRepository sprayRepository;
     private final FertilizerRepository fertilizerRepository;
 
-    public UserManagerDefault(UserRepository userRepository,
-                              LoggedUserConfiguration loggedUserConfiguration,
-                              FieldGroupRepository fieldGroupRepository,
-                              UserFieldsManager userFieldsManager, FarmingMachineRepository farmingMachineRepository, SubsideRepository subsideRepository, PlantRepository plantRepository, SpeciesRepository speciesRepository, SprayRepository sprayRepository, FertilizerRepository fertilizerRepository) {
-        this.userRepository = userRepository;
-        this.loggedUserConfiguration = loggedUserConfiguration;
-        this.fieldGroupRepository = fieldGroupRepository;
-        this.userFieldsManager = userFieldsManager;
-        this.farmingMachineRepository = farmingMachineRepository;
-        this.subsideRepository = subsideRepository;
-        this.plantRepository = plantRepository;
-        this.speciesRepository = speciesRepository;
-        this.sprayRepository = sprayRepository;
-        this.fertilizerRepository = fertilizerRepository;
-    }
 
     @Override
     public User createNewUser(User user) {

@@ -1,7 +1,7 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import org.springframework.data.domain.Page;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
 
 import java.rmi.NoSuchObjectException;
 import java.util.UUID;

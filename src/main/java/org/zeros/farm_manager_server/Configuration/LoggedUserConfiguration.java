@@ -3,7 +3,7 @@ package org.zeros.farm_manager_server.Configuration;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
-import org.zeros.farm_manager_server.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
 
 import java.util.List;
 import java.util.Set;

@@ -1,58 +1,59 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Species;
-import org.zeros.farm_manager_server.Entities.Crop.Subside;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.Crop.CropRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SubsideRepository;
+import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
 
 import java.util.UUID;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class SubsideManagerDefault implements SubsideManager {
     private final LoggedUserConfiguration config;
     private final SubsideRepository subsideRepository;
     private final CropRepository cropRepository;
 
-    public SubsideManagerDefault(LoggedUserConfiguration loggedUserConfiguration, SubsideRepository subsideRepository, CropRepository cropRepository) {
-        this.subsideRepository = subsideRepository;
-        this.cropRepository = cropRepository;
-        this.config = loggedUserConfiguration;
+    private static PageRequest getPageRequest(int pageNumber) {
+        if (pageNumber < 0) pageNumber = 0;
+        return PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending());
     }
 
     @Override
     public Page<Subside> getAllSubsides(int pageNumber) {
-        return subsideRepository.findAllByCreatedByIn(config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+        return subsideRepository.findAllByCreatedByIn(config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<Subside> getDefaultSubsides(int pageNumber) {
-        return subsideRepository.findAllByCreatedByIn(config.defaultRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+        return subsideRepository.findAllByCreatedByIn(config.defaultRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<Subside> getUserSubsides(int pageNumber) {
-        return subsideRepository.findAllByCreatedByIn(config.userRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+        return subsideRepository.findAllByCreatedByIn(config.userRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<Subside> getSubsidesByNameAs(String name, int pageNumber) {
         return subsideRepository.findAllByNameContainingIgnoreCaseAndCreatedByIn(
-                name, config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+                name, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<Subside> getSubsidesBySpeciesAllowed(Species species, int pageNumber) {
         return subsideRepository.findAllBySpeciesAllowedContainsAndCreatedByIn(
-                species, config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name").descending()));
+                species, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override

@@ -1,31 +1,29 @@
 package org.zeros.farm_manager_server.Services.Default;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.*;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Services.Interface.UserDataReader;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Enum.OperationType;
-import org.zeros.farm_manager_server.Entities.AgriculturalOperations.Operations.*;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.Crop;
-import org.zeros.farm_manager_server.Entities.Crop.Crop.MainCrop;
-import org.zeros.farm_manager_server.Entities.Fields.Field;
-import org.zeros.farm_manager_server.Entities.Fields.FieldPart;
-import org.zeros.farm_manager_server.Entities.User.User;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class UserDataReaderDefault implements UserDataReader {
     private final UserManager userManager;
     private final LoggedUserConfiguration loggedUserConfiguration;
 
-    public UserDataReaderDefault(UserManager userManager, LoggedUserConfiguration config) {
-        this.userManager = userManager;
-        this.loggedUserConfiguration = config;
-    }
 
     @Override
     public Set<AgriculturalOperation> getAllPlannedOperations(OperationType operationType) {

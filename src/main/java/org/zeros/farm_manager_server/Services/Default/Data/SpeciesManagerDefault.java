@@ -1,22 +1,24 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.Data.PlantRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SubsideRepository;
+import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 
 import java.util.UUID;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class SpeciesManagerDefault implements SpeciesManager {
 
     private final PlantRepository plantRepository;
@@ -25,47 +27,40 @@ public class SpeciesManagerDefault implements SpeciesManager {
     private final LoggedUserConfiguration config;
 
 
-    public SpeciesManagerDefault(LoggedUserConfiguration loggedUserConfiguration, PlantRepository plantRepository, SpeciesRepository speciesRepository, SubsideRepository subsideRepository, LoggedUserConfiguration config) {
-        this.plantRepository = plantRepository;
-        this.speciesRepository = speciesRepository;
-        this.subsideRepository = subsideRepository;
-        this.config = loggedUserConfiguration;
-    }
-
     private static void checkSpeciesConstraints(Species species) {
         if (species.getName().isBlank() || species.getFamily().isBlank()) {
             throw new IllegalArgumentException("Species name and family are required");
         }
     }
 
+    private static PageRequest getPageRequest(int pageNumber) {
+        if (pageNumber < 0) pageNumber = 0;
+        return PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("name"));
+    }
+
     @Override
     public Page<Species> getAllSpecies(int pageNumber) {
-        return speciesRepository.findAllByCreatedByIn(config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize,
-                Sort.by("name")));
+        return speciesRepository.findAllByCreatedByIn(config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<Species> getDefaultSpecies(int pageNumber) {
-        return speciesRepository.findAllByCreatedByIn(config.defaultRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize,
-                Sort.by("name")));
+        return speciesRepository.findAllByCreatedByIn(config.defaultRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<Species> getUserSpecies(int pageNumber) {
-        return speciesRepository.findAllByCreatedByIn(config.userRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize,
-                Sort.by("name")));
+        return speciesRepository.findAllByCreatedByIn(config.userRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<Species> getSpeciesByNameAs(String name, int pageNumber) {
-        return speciesRepository.findAllByNameContainsIgnoreCaseAndCreatedByIn(name, config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize,
-                Sort.by("name")));
+        return speciesRepository.findAllByNameContainsIgnoreCaseAndCreatedByIn(name, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
     public Page<Species> getSpeciesByFamilyAs(String family, int pageNumber) {
-        return speciesRepository.findAllByFamilyContainsIgnoreCaseAndCreatedByIn(family, config.allRows(), PageRequest.of(pageNumber, ApplicationDefaults.pageSize,
-                Sort.by("name")));
+        return speciesRepository.findAllByFamilyContainsIgnoreCaseAndCreatedByIn(family, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
