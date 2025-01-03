@@ -25,7 +25,7 @@ public class FarmingMachineMapperTest {
 
     @BeforeEach
     void setUp() {
-        farmingMachine = farmingMachineRepository.findAll(PageRequest.of(0,1)).stream().findFirst().get();
+        farmingMachine = farmingMachineRepository.findAll(PageRequest.of(0, 1)).stream().findFirst().get();
     }
 
     @Test
@@ -39,7 +39,7 @@ public class FarmingMachineMapperTest {
     public void testFarmingMachineToEntity() {
         FarmingMachineDTO dto = DefaultMappers.farmingMachineMapper.entityToDto(farmingMachine);
         dto.setDescription(null);
-        FarmingMachine entity = DefaultMappers.farmingMachineMapper.dtoToEntity(dto);
+        FarmingMachine entity = DefaultMappers.farmingMachineMapper.dtoToEntitySimpleProperties(dto);
         assertThat(entity.getId()).isEqualTo(farmingMachine.getId());
         assertThat(entity.getSupportedOperationTypes()).isEqualTo(farmingMachine.getSupportedOperationTypes());
     }

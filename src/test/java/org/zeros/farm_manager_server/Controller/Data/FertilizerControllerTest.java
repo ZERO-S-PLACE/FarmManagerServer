@@ -152,6 +152,7 @@ public class FertilizerControllerTest {
         FertilizerDTO fertilizerDTO = FertilizerDTO.builder()
                 .producer("TEST32")
                 .name("TEST32")
+                .isNaturalFertilizer(true)
                 .totalCaPercent(30)
                 .totalMgPercent(10)
                 .build();
@@ -211,13 +212,7 @@ public class FertilizerControllerTest {
     @Test
     @Transactional
     void update() throws Exception {
-        Fertilizer fertilizer = Fertilizer.builder()
-                .producer("TEST33")
-                .name("TEST33")
-                .totalNPercent(BigDecimal.valueOf(10))
-                .totalKPercent(BigDecimal.valueOf(30))
-                .build();
-        fertilizer = fertilizerManager.addFertilizer(fertilizer);
+        Fertilizer fertilizer = addNewFertilizer();
 
         FertilizerDTO fertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
         fertilizerDTO.setName("TEST_UPDATED");
@@ -232,6 +227,16 @@ public class FertilizerControllerTest {
         assertThat(fertilizerManager.getFertilizerById(fertilizer.getId()).getName())
                 .isEqualTo("TEST_UPDATED");
         assertThat(fertilizerManager.getFertilizerById(fertilizer.getId()).getTotalCaPercent()).isEqualTo(BigDecimal.valueOf(10));
+    }
+
+    private Fertilizer addNewFertilizer() {
+        return fertilizerManager.addFertilizer(FertilizerDTO.builder()
+                .producer("TEST")
+                .name("Test")
+                .isNaturalFertilizer(false)
+                .totalNPercent(10)
+                .totalKPercent(30)
+                .build());
     }
 
     @Test
@@ -251,13 +256,7 @@ public class FertilizerControllerTest {
     @Test
     @Transactional
     void updateModelBlank() throws Exception {
-        Fertilizer fertilizer = Fertilizer.builder()
-                .producer("TEST33")
-                .name("TEST33")
-                .totalCaPercent(BigDecimal.valueOf(10))
-                .build();
-        fertilizer = fertilizerManager.addFertilizer(fertilizer);
-
+        Fertilizer fertilizer = addNewFertilizer();
         FertilizerDTO FertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
         FertilizerDTO.setName("");
         mockMvc.perform(patch(FarmingMachineController.BASE_PATH)
@@ -271,12 +270,7 @@ public class FertilizerControllerTest {
     @Test
     @Transactional
     void deleteFertilizer() throws Exception {
-        Fertilizer fertilizer = Fertilizer.builder()
-                .producer("TEST32")
-                .name("TEST32")
-                .totalNPercent(BigDecimal.TEN)
-                .build();
-        fertilizer = fertilizerManager.addFertilizer(fertilizer);
+        Fertilizer fertilizer = addNewFertilizer();
 
         mockMvc.perform(delete(FertilizerController.BASE_PATH)
                         .param("id", fertilizer.getId().toString())

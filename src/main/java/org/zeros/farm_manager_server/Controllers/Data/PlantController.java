@@ -72,9 +72,7 @@ public class PlantController {
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody PlantDTO plantDTO) {
 
-        Plant saved = plantManager.addPlant(
-                DefaultMappers.plantMapper.dtoToEntity(plantDTO)
-        );
+        Plant saved = plantManager.addPlant(plantDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
@@ -83,15 +81,13 @@ public class PlantController {
 
     @PatchMapping(BASE_PATH)
     ResponseEntity<String> update(@RequestBody PlantDTO plantDTO) {
-        plantManager.updatePlant(
-                DefaultMappers.plantMapper.dtoToEntity(plantDTO)
-        );
+        plantManager.updatePlant(plantDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(BASE_PATH)
     ResponseEntity<String> deleteById(@RequestParam UUID id) {
-        plantManager.deletePlantSafe(plantManager.getPlantById(id));
+        plantManager.deletePlantSafe(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

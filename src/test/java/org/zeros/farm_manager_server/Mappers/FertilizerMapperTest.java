@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageRequest;
 import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FertilizerDTO;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
@@ -20,17 +19,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({DefaultMappers.class})
 public class FertilizerMapperTest {
+    static Fertilizer fertilizer;
     @Autowired
     FertilizerRepository fertilizerRepository;
-
-    static Fertilizer fertilizer;
 
     @BeforeEach
     public void setUp() {
         fertilizer = fertilizerRepository.saveAndFlush(Fertilizer.builder()
-                        .createdBy("ADMIN")
+                .createdBy("ADMIN")
                 .name("TEST1")
-                        .producer("TEST2")
+                .producer("TEST2")
                 .totalCaPercent(BigDecimal.valueOf(0.1))
                 .build()
         );
@@ -48,7 +46,7 @@ public class FertilizerMapperTest {
     @Test
     public void testFarmingMachineToEntity() {
         FertilizerDTO dto = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
-        Fertilizer entity = DefaultMappers.fertilizerMapper.dtoToEntity(dto);
+        Fertilizer entity = DefaultMappers.fertilizerMapper.dtoToEntitySimpleProperties(dto);
         assertThat(entity.getId()).isEqualTo(fertilizer.getId());
         assertThat(entity.getName()).isEqualTo(fertilizer.getName());
         assertThat(entity.getTotalCaPercent().doubleValue()).isEqualTo(fertilizer.getTotalCaPercent().doubleValue());

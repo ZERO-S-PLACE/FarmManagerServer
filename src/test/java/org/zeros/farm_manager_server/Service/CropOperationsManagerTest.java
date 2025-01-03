@@ -8,31 +8,37 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.*;
-import org.zeros.farm_manager_server.Services.Default.*;
-import org.zeros.farm_manager_server.Services.Default.Data.*;
-import org.zeros.farm_manager_server.Services.Interface.*;
-import org.zeros.farm_manager_server.Services.Interface.Data.*;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
+import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Operations.*;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.GrainParametersDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.*;
+import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.GrainParameters;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
-import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Crop.CropRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
+import org.zeros.farm_manager_server.Services.Default.CropOperationsManagerDefault;
+import org.zeros.farm_manager_server.Services.Default.CropParametersManagerDefault;
+import org.zeros.farm_manager_server.Services.Default.Data.*;
+import org.zeros.farm_manager_server.Services.Default.UserFieldsManagerDefault;
+import org.zeros.farm_manager_server.Services.Default.UserManagerDefault;
+import org.zeros.farm_manager_server.Services.Interface.CropOperationsManager;
+import org.zeros.farm_manager_server.Services.Interface.CropParametersManager;
+import org.zeros.farm_manager_server.Services.Interface.Data.*;
+import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
+import org.zeros.farm_manager_server.Services.Interface.UserManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -101,7 +107,7 @@ public class CropOperationsManagerTest {
 
     @Test
     void testCreateMainCrop() {
-        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
         assertThat(crop).isNotNull();
         assertThat(crop.getId()).isNotNull();
         assertThat(crop.getCreatedDate()).isNotNull();
@@ -113,7 +119,7 @@ public class CropOperationsManagerTest {
 
     @Test
     void testCreateInterCrop() {
-        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
         assertThat(crop).isNotNull();
         assertThat(crop.getId()).isNotNull();
         assertThat(crop.getCreatedDate()).isNotNull();
@@ -124,10 +130,8 @@ public class CropOperationsManagerTest {
 
     @Test
     void testPlanSeeding() {
-        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
-        Seeding seeding = Seeding.builder().depth(BigDecimal.valueOf(10)).quantityPerAreaUnit(BigDecimal.valueOf(120)).build();
-
-        Seeding seedingSaved = cropOperationsManager.planSeeding(crop, seeding);
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        Seeding seedingSaved = saveNewSeeding(crop,true);
         crop = cropOperationsManager.getCropById(crop.getId());
         assertThat(seedingSaved).isNotNull();
         assertThat(seedingSaved.getId()).isNotNull();
@@ -141,12 +145,22 @@ public class CropOperationsManagerTest {
         assertThat(crop.getSeeding()).contains(seedingSaved);
     }
 
+    private Seeding saveNewSeeding(Crop crop,boolean planned) {
+        SeedingDTO seedingDTO = SeedingDTO.builder()
+                .sownPlants(crop.getCultivatedPlants().stream().map(BaseEntity::getId).collect(Collectors.toSet()))
+                .depth(10)
+                .quantityPerAreaUnit(120)
+                .build();
+        if(planned){
+        return cropOperationsManager.planSeeding(crop.getId(), seedingDTO);}
+        return cropOperationsManager.addSeeding(crop.getId(), seedingDTO);
+
+    }
+
     @Test
     void testAddSeedingNew() {
-        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
-        Seeding seeding = Seeding.builder().depth(BigDecimal.valueOf(10)).quantityPerAreaUnit(BigDecimal.valueOf(120)).build();
-
-        Seeding seedingSaved = cropOperationsManager.addSeeding(crop, seeding);
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        Seeding seedingSaved = saveNewSeeding(crop,false);
         crop = cropOperationsManager.getCropById(crop.getId());
         assertThat(seedingSaved).isNotNull();
         assertThat(seedingSaved.getId()).isNotNull();
@@ -162,11 +176,10 @@ public class CropOperationsManagerTest {
 
     @Test
     void testAddSeedingPlanned() {
-        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
-        Seeding seeding = Seeding.builder().depth(BigDecimal.valueOf(10)).quantityPerAreaUnit(BigDecimal.valueOf(120)).build();
-
-        cropOperationsManager.planSeeding(crop, seeding);
-        Seeding seedingSaved = (Seeding) cropOperationsManager.commitPlannedOperation(seeding);
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        Seeding seedingSaved = saveNewSeeding(crop,false);
+        crop = cropOperationsManager.getCropById(crop.getId());
+        seedingSaved = (Seeding) cropOperationsManager.commitPlannedOperation(seedingSaved.getId(), OperationType.SEEDING);
         crop = cropOperationsManager.getCropById(crop.getId());
         assertThat(seedingSaved).isNotNull();
         assertThat(seedingSaved.getId()).isNotNull();
@@ -182,134 +195,158 @@ public class CropOperationsManagerTest {
 
     @Test
     void testUpdateSeeding() {
-        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
-        Seeding seeding = Seeding.builder().depth(BigDecimal.valueOf(10)).quantityPerAreaUnit(BigDecimal.valueOf(120)).build();
-
-        cropOperationsManager.addSeeding(crop, seeding);
-        entityManager.detach(seeding);
-        seeding.setGerminationRate(BigDecimal.ONE);
-        seeding.setRowSpacing(BigDecimal.valueOf(30));
-        Seeding seedingSaved = (Seeding) cropOperationsManager.updateOperationParameters(seeding);
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        Seeding seedingSaved = saveNewSeeding(crop,false);
+        crop = cropOperationsManager.getCropById(crop.getId());
+        SeedingDTO seedingDTO = DefaultMappers.seedingMapper.entityToDto(seedingSaved);
+        seedingDTO.setGerminationRate(0.95f);
+        seedingDTO.setRowSpacing(30);
+        seedingSaved = (Seeding) cropOperationsManager.updateOperationParameters(seedingDTO);
         assertThat(seedingSaved.getIsPlannedOperation()).isFalse();
-        assertThat(seedingSaved.getGerminationRate()).isEqualTo(BigDecimal.ONE);
+        assertThat(seedingSaved.getGerminationRate()).isEqualTo(BigDecimal.valueOf(0.95));
         assertThat(seedingSaved.getRowSpacing()).isEqualTo(BigDecimal.valueOf(30));
 
     }
 
     @Test
     void testDeleteSeeding() {
-        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
-        Seeding seeding = Seeding.builder().depth(BigDecimal.valueOf(10)).quantityPerAreaUnit(BigDecimal.valueOf(120)).build();
-
-        Seeding seedingSaved = cropOperationsManager.addSeeding(crop, seeding);
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        Seeding seedingSaved = saveNewSeeding(crop,false);
+        crop = cropOperationsManager.getCropById(crop.getId());
         assertThat(seedingSaved).isNotNull();
         assertThat(seedingSaved.getId()).isNotNull();
 
-        cropOperationsManager.deleteSeeding(seedingSaved);
+        cropOperationsManager.deleteOperation(seedingSaved.getId(), OperationType.SEEDING);
 
-        Crop crop1 = cropOperationsManager.getCropById(crop.getId());
+        crop = cropOperationsManager.getCropById(crop.getId());
         Seeding seeding1 = cropOperationsManager.getSeedingById(seedingSaved.getId());
         assertThat(seeding1).isNotNull();
         assertThat(seeding1).isEqualTo(Seeding.NONE);
-        assertThat(crop1.getSeeding().contains(seedingSaved)).isFalse();
+        assertThat(crop.getSeeding().contains(seedingSaved)).isFalse();
     }
 
     @Test
     void testAddSubside() {
-        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
-        ArrayList<Subside> subsides = subsideManager.getAllSubsides(0).stream().collect(Collectors.toCollection(ArrayList::new));
-        cropOperationsManager.addSubside(crop, subsides.get(0));
-        cropOperationsManager.addSubside(crop, subsides.get(1));
-        cropOperationsManager.addSubside(crop, subsides.get(1));
-        cropOperationsManager.addSubside(crop, subsides.get(1));
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        Species species = crop.getCultivatedPlants().stream().findFirst().get().getSpecies();
+        List<Subside> subsides = subsideManager.getAllSubsides(0).stream()
+                .filter(subside -> subside.getSpeciesAllowed().contains(species)).toList();
+        cropOperationsManager.addSubside(crop.getId(), subsides.get(0).getId());
+        cropOperationsManager.addSubside(crop.getId(), subsides.get(1).getId());
+        cropOperationsManager.addSubside(crop.getId(), subsides.get(1).getId());
+        cropOperationsManager.addSubside(crop.getId(), subsides.get(1).getId());
         crop = cropOperationsManager.getCropById(crop.getId());
         assertThat(crop.getSubsides()).contains(subsides.get(0));
         assertThat(crop.getSubsides()).contains(subsides.get(1));
         assertThat(crop.getSubsides().size()).isEqualTo(2);
-        assertThrows(IllegalAccessError.class, () -> subsideManager.deleteSubsideSafe(subsides.getFirst()));
+        assertThrows(IllegalAccessError.class, () -> subsideManager.deleteSubsideSafe(subsides.getFirst().getId()));
 
     }
 
     @Test
     void testRemoveSubside() {
-        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
-        ArrayList<Subside> subsides = subsideManager.getAllSubsides(0).stream().collect(Collectors.toCollection(ArrayList::new));
-        Subside subside = subsideManager.addSubside(Subside.builder().speciesAllowed(Set.of(speciesManager.getSpeciesByNameAs("ANY", 0).stream().findFirst().orElse(Species.NONE))).name("TEST_SUBSIDE").yearOfSubside(LocalDate.now()).build());
-
-        cropOperationsManager.addSubside(crop, subsides.get(0));
-        cropOperationsManager.addSubside(crop, subsides.get(1));
-        cropOperationsManager.addSubside(crop, subside);
-        cropOperationsManager.removeSubside(crop, subsides.get(0));
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        Species species = crop.getCultivatedPlants().stream().findFirst().get().getSpecies();
+        List<Subside> subsides = subsideManager.getAllSubsides(0).stream()
+                .filter(subside -> subside.getSpeciesAllowed().contains(species)).toList();
+        Subside subside = subsides.getFirst();
+        cropOperationsManager.addSubside(crop.getId(), subside.getId());
         crop = cropOperationsManager.getCropById(crop.getId());
-        assertThat(crop.getSubsides()).contains(subsides.get(1));
-        assertThat(crop.getSubsides()).contains(subsideManager.getSubsideById(subside.getId()));
-        assertThat(crop.getSubsides().contains(subsides.get(0))).isFalse();
-        assertThat(crop.getSubsides().size()).isEqualTo(2);
-        cropOperationsManager.removeSubside(crop, subside);
+        assertThat(crop.getSubsides()).contains(subside);
+        cropOperationsManager.removeSubside(crop.getId(), subside.getId());
         crop = cropOperationsManager.getCropById(crop.getId());
-        assertThat(crop.getSubsides()).contains(subsides.get(1));
         assertThat(crop.getSubsides().contains(subside)).isFalse();
-        assertThat(crop.getSubsides().contains(subsides.get(0))).isFalse();
         List<Crop> cropsWithSubside = cropRepository.findAllBySubsidesContains(subside);
         assertThat(cropsWithSubside).isEmpty();
-        subsideManager.deleteSubsideSafe(subside);
-        assertThat(subsideManager.getSubsideById(subside.getId())).isEqualTo(Subside.NONE);
+
     }
 
 
     @Test
     void testCreationOfCropWithProperties() {
-        MainCrop crop = cropOperationsManager.createNewMainCrop(fieldPart, Set.of(plant1, plant2));
+        Crop crop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
 
-        Cultivation cultivation = cropOperationsManager.addCultivation(crop, Cultivation.builder().dateStarted(LocalDate.now()).dateFinished(LocalDate.now().plusDays(1)).depth(BigDecimal.valueOf(10)).farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(OperationType.CULTIVATION, 0).stream().findFirst().orElse(FarmingMachine.UNDEFINED)).build());
-        cropOperationsManager.addCultivation(crop, cultivation);
+        Cultivation cultivation = cropOperationsManager.addCultivation(crop.getId(),
+                CultivationDTO.builder()
+                        .dateStarted(LocalDate.now())
+                        .dateFinished(LocalDate.now().plusDays(1))
+                        .depth(10)
+                        .farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(
+                                OperationType.CULTIVATION, 0).getContent().getFirst().getId()).build());
 
-        Seeding seeding = cropOperationsManager.addSeeding(crop, Seeding.builder()
+        Seeding seeding = cropOperationsManager.addSeeding(crop.getId(), SeedingDTO.builder()
+                        .sownPlants(crop.getCultivatedPlants().stream().map(BaseEntity::getId).collect(Collectors.toSet()))
                 .dateStarted(LocalDate.now())
                 .dateFinished(LocalDate.now().plusDays(1))
-                .depth(BigDecimal.valueOf(10))
-                .quantityPerAreaUnit(BigDecimal.valueOf(40))
+                .depth(10)
+                .quantityPerAreaUnit(40)
                 .farmingMachine(farmingMachineManager
-                        .getFarmingMachineBySupportedOperation(OperationType.SEEDING, 0).stream().findFirst().orElse(FarmingMachine.UNDEFINED))
+                        .getFarmingMachineBySupportedOperation(
+                                OperationType.SEEDING, 0).getContent().getFirst().getId())
                 .build());
-        cropOperationsManager.addSeeding(crop, seeding);
 
-        FertilizerApplication fertilizerApplication = cropOperationsManager.addFertilizerApplication(crop, FertilizerApplication.builder().dateStarted(LocalDate.now()).dateFinished(LocalDate.now().plusDays(1)).quantityPerAreaUnit(BigDecimal.valueOf(100)).fertilizer(fertilizerManager.getDefaultFertilizers(0).stream().findFirst().orElse(Fertilizer.NONE)).farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(OperationType.FERTILIZER_APPLICATION, 0).stream().findFirst().orElse(FarmingMachine.UNDEFINED)).build());
-        cropOperationsManager.addFertilizerApplication(crop, fertilizerApplication);
+        FertilizerApplication fertilizerApplication = cropOperationsManager.addFertilizerApplication(crop.getId(),
+                FertilizerApplicationDTO.builder()
+                        .dateStarted(LocalDate.now())
+                        .dateFinished(LocalDate.now().plusDays(1))
+                        .quantityPerAreaUnit(100)
+                        .fertilizer(fertilizerManager.getDefaultFertilizers(0).getContent().getFirst().getId())
+                        .farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(
+                                OperationType.FERTILIZER_APPLICATION, 0).getContent().getFirst().getId())
+                        .build());
 
-        SprayApplication sprayApplication = cropOperationsManager.addSprayApplication(crop, SprayApplication.builder().dateStarted(LocalDate.now()).dateFinished(LocalDate.now().plusDays(1)).fertilizer(Fertilizer.NONE).quantityPerAreaUnit(BigDecimal.valueOf(0.5)).spray(sprayManager.getAllSprays(0).stream().findFirst().orElse(Spray.NONE)).farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(OperationType.SPRAY_APPLICATION, 0).stream().findFirst().orElse(FarmingMachine.UNDEFINED)).build());
-        cropOperationsManager.addSprayApplication(crop, sprayApplication);
 
-        Harvest harvest = cropOperationsManager.addHarvest(crop, Harvest.builder().dateStarted(LocalDate.now()).resourceType(ResourceType.GRAIN).dateFinished(LocalDate.now().plusDays(1)).quantityPerAreaUnit(BigDecimal.valueOf(10)).farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(OperationType.HARVEST, 0).stream().findFirst().orElse(FarmingMachine.UNDEFINED)).cropParameters(cropParametersManager.getUndefinedCropParameters()).build());
-        cropOperationsManager.addHarvest(crop, harvest);
+        SprayApplication sprayApplication = cropOperationsManager.addSprayApplication(crop.getId(),
+                SprayApplicationDTO.builder()
+                        .dateStarted(LocalDate.now())
+                        .dateFinished(LocalDate.now().plusDays(1))
+                        .quantityPerAreaUnit(0.5f)
+                        .spray(sprayManager.getAllSprays(0).getContent().getFirst().getId())
+                        .farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(
+                                OperationType.SPRAY_APPLICATION, 0).getContent().getFirst().getId())
+                        .build());
 
-        cropOperationsManager.addSubside(crop, subsideManager.getDefaultSubsides(0).stream().findFirst().orElse(Subside.NONE));
-        crop = (MainCrop) cropOperationsManager.getCropById(crop.getId());
-        cropOperationsManager.addCropSale(crop,
-                CropSale.builder()
+
+        Harvest harvest = cropOperationsManager.addHarvest(crop.getId(),
+                HarvestDTO.builder()
+                        .dateStarted(LocalDate.now())
                         .resourceType(ResourceType.GRAIN)
-                        .amountSold(BigDecimal.valueOf(100))
+                        .dateFinished(LocalDate.now().plusDays(1))
+                        .quantityPerAreaUnit(10)
+                        .farmingMachine(farmingMachineManager.getFarmingMachineBySupportedOperation(
+                                OperationType.HARVEST, 0).getContent().getFirst().getId())
+                        .cropParameters(cropParametersManager.getUndefinedCropParameters().getId())
+                        .build());
+
+
+        cropOperationsManager.addSubside(crop.getId(),
+                subsideManager.getDefaultSubsides(0).getContent().getFirst().getId());
+
+        cropOperationsManager.addCropSale(crop.getId(),
+                CropSaleDTO.builder()
+                        .resourceType(ResourceType.GRAIN)
+                        .amountSold(100)
                         .dateSold(LocalDate.now()
                                 .minusDays(111))
                         .soldTo("CEFETRA")
                         .cropParameters(cropParametersManager
-                                .createCropParameters(GrainParameters.builder()
-                                        .density(BigDecimal.valueOf(800))
-                                        .humidity(BigDecimal.valueOf(10))
+                                .createCropParameters(GrainParametersDTO.builder()
+                                        .density(800)
+                                        .humidity(10)
                                         .name("cefetra 11.01.2024")
                                         .resourceType(ResourceType.GRAIN)
-                                        .build())).build());
+                                        .build()).getId())
+                        .build());
 
-        crop = (MainCrop) cropOperationsManager.getCropById(crop.getId());
+        crop = cropOperationsManager.getCropById(crop.getId());
 
         assertThat(crop).isNotNull();
         assertThat(crop.getSeeding().size()).isEqualTo(1);
         assertThat(crop.getCultivations().size()).isEqualTo(1);
         assertThat(crop.getSprayApplications().size()).isEqualTo(1);
         assertThat(crop.getFertilizerApplications().size()).isEqualTo(1);
-        assertThat(crop.getHarvest().size()).isEqualTo(1);
-        assertThat(crop.getCropSales().size()).isEqualTo(1);
-        assertThat(crop.getSeeding().size()).isEqualTo(1);
+        assertThat(((MainCrop) crop).getHarvest().size()).isEqualTo(1);
+        assertThat(((MainCrop) crop).getCropSales().size()).isEqualTo(1);
         assertThat(crop.getSubsides().size()).isEqualTo(1);
     }
 

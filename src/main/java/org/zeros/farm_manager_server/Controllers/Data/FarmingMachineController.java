@@ -25,7 +25,7 @@ public class FarmingMachineController {
     public static final String LIST_ALL_PATH = BASE_PATH+"/ALL";
     public static final String LIST_USER_PATH = BASE_PATH+"/USER";
     public static final String LIST_DEFAULT_PATH = BASE_PATH+"/DEFAULT";
-    public static final String LIST_PARAM_PATH = BASE_PATH+"/PARAM";;
+    public static final String LIST_PARAM_PATH = BASE_PATH+"/PARAM";
     private final FarmingMachineManager farmingMachineManager;
 
     @GetMapping(BASE_PATH)
@@ -65,9 +65,7 @@ public class FarmingMachineController {
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody FarmingMachineDTO farmingMachineDTO)  {
 
-        FarmingMachine saved = farmingMachineManager.addFarmingMachine(
-                DefaultMappers.farmingMachineMapper.dtoToEntity(farmingMachineDTO)
-        );
+        FarmingMachine saved = farmingMachineManager.addFarmingMachine(farmingMachineDTO);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
@@ -76,16 +74,14 @@ public class FarmingMachineController {
 
     @PatchMapping(BASE_PATH)
     ResponseEntity<String> update(@RequestBody FarmingMachineDTO farmingMachineDTO)  {
-         farmingMachineManager.updateFarmingMachine(
-                DefaultMappers.farmingMachineMapper.dtoToEntity(farmingMachineDTO)
-        );
+         farmingMachineManager.updateFarmingMachine(farmingMachineDTO);
         return new ResponseEntity<>( HttpStatus.NO_CONTENT);
 
     }
 
     @DeleteMapping(BASE_PATH)
     ResponseEntity<String> deleteById(@RequestParam UUID id)  {
-        farmingMachineManager.deleteFarmingMachineSafe(farmingMachineManager.getFarmingMachineById(id));
+        farmingMachineManager.deleteFarmingMachineSafe(id);
         return new ResponseEntity<>( HttpStatus.NO_CONTENT);
     }
 

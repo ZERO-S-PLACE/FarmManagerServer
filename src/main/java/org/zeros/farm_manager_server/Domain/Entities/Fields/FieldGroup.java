@@ -29,6 +29,7 @@ public class FieldGroup extends BaseEntity {
     @Builder.Default
     private String description = "";
 
+    @Getter
     @NotNull
     @OneToMany(mappedBy = "fieldGroup", fetch = FetchType.EAGER)
     @Builder.Default
@@ -62,5 +63,6 @@ public class FieldGroup extends BaseEntity {
     public void removeField(Field field) {
         this.fields.remove(field);
     }
+
 
 }

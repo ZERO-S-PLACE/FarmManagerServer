@@ -8,33 +8,33 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.zeros.farm_manager_server.Bootstrap.DemoUserSetup;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Operations.SeedingDTO;
+import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.CropSummary;
+import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.ResourcesSummary;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
+import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
+import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.Services.Default.*;
 import org.zeros.farm_manager_server.Services.Default.Data.*;
 import org.zeros.farm_manager_server.Services.Interface.CropDataReader;
 import org.zeros.farm_manager_server.Services.Interface.CropOperationsManager;
 import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
-import org.zeros.farm_manager_server.Bootstrap.DemoUserSetup;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.Seeding;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.CropSummary;
-import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.ResourcesSummary;
-import org.zeros.farm_manager_server.Domain.Entities.User.User;
-import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
-import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,6 +67,8 @@ public class CropDataReaderTest {
     private CropDataReader cropDataReader;
     @Autowired
     private UserDataReaderDefault userDataReaderDefault;
+    @Autowired
+    private FarmingMachineManagerDefault farmingMachineManager;
 
 
     @BeforeEach
@@ -83,7 +85,7 @@ public class CropDataReaderTest {
 
     @Test
     void getCropSummary() {
-        CropSummary summaryActive = cropDataReader.getCropSummary(activeCrop);
+        CropSummary summaryActive = cropDataReader.getCropSummary(activeCrop.getId());
         assertThat(summaryActive).isNotNull();
         assertThat(summaryActive.getCropId()).isNotNull();
         assertThat(summaryActive.getArea().doubleValue()).isGreaterThan(0);
@@ -92,7 +94,7 @@ public class CropDataReaderTest {
         assertThat(summaryActive.getTotalFuelCostPerAreaUnit().doubleValue()).isGreaterThan(0);
         assertThat(summaryActive.getMeanSellPrice().size()).isEqualTo(0);
 
-        CropSummary summaryUnsold = cropDataReader.getCropSummary(unsoldCrop);
+        CropSummary summaryUnsold = cropDataReader.getCropSummary(unsoldCrop.getId());
         assertThat(summaryUnsold).isNotNull();
         assertThat(summaryUnsold.getCropId()).isNotNull();
         assertThat(summaryUnsold.getArea().doubleValue()).isGreaterThan(0);
@@ -104,7 +106,7 @@ public class CropDataReaderTest {
                 assertThat(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit().get(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit().keySet().stream().findFirst().orElse(null)).doubleValue()).isGreaterThan(0);
             }
         }
-        CropSummary summaryArchived = cropDataReader.getCropSummary(archivedCrop);
+        CropSummary summaryArchived = cropDataReader.getCropSummary(archivedCrop.getId());
         assertThat(summaryArchived).isNotNull();
         assertThat(summaryArchived.getCropId()).isNotNull();
         assertThat(summaryArchived.getArea().doubleValue()).isGreaterThan(0);
@@ -120,7 +122,7 @@ public class CropDataReaderTest {
 
     @Test
     void testGetCropResourcesSummary() {
-        ResourcesSummary summary = cropDataReader.getCropResourcesSummary(archivedCrop);
+        ResourcesSummary summary = cropDataReader.getCropResourcesSummary(archivedCrop.getId());
         assertThat(summary).isNotNull();
         assertThat(summary.getCropId()).isNotNull();
         assertThat(summary.getArea().doubleValue()).isGreaterThan(0);
@@ -133,18 +135,18 @@ public class CropDataReaderTest {
     @Test
     void testGetPlannedResourcesSummary() {
         Random random = new Random();
-        cropOperationsManager.planSeeding(activeCrop,
-                Seeding.builder()
-                        .sownPlants(Set.copyOf(activeCrop.getCultivatedPlants()))
-                        .farmingMachine(FarmingMachine.UNDEFINED)
-                        .quantityPerAreaUnit(BigDecimal.valueOf(random.nextDouble() * 100))
-                        .thousandSeedsMass(BigDecimal.valueOf(random.nextDouble() * 50))
-                        .depth(BigDecimal.valueOf(random.nextDouble() * 10))
-                        .seedsCostPerUnit(BigDecimal.valueOf(random.nextDouble() * 2000))
-                        .fuelConsumptionPerUnit(BigDecimal.valueOf(random.nextDouble() * 30))
-                        .fuelPrice(BigDecimal.valueOf(5.17))
-                .build());
-        ResourcesSummary summary = cropDataReader.getPlannedResourcesSummary(activeCrop);
+        cropOperationsManager.planSeeding(activeCrop.getId(),
+                SeedingDTO.builder()
+                        .sownPlants(Set.copyOf(activeCrop.getCultivatedPlants()).stream().map(BaseEntity::getId).collect(Collectors.toSet()))
+                        .farmingMachine(farmingMachineManager.getUndefinedFarmingMachine().getId())
+                        .quantityPerAreaUnit(random.nextFloat() * 100)
+                        .thousandSeedsMass(random.nextFloat() * 50)
+                        .depth(random.nextFloat() * 10)
+                        .seedsCostPerUnit(random.nextFloat() * 2000)
+                        .fuelConsumptionPerUnit(random.nextFloat() * 30)
+                        .fuelPrice(5.17f)
+                        .build());
+        ResourcesSummary summary = cropDataReader.getPlannedResourcesSummary(activeCrop.getId());
         assertThat(summary).isNotNull();
         assertThat(summary.getCropId()).isNotNull();
         assertThat(summary.getArea().doubleValue()).isGreaterThan(0);
@@ -153,7 +155,7 @@ public class CropDataReaderTest {
 
     @Test
     void getMeanCropParameters() {
-        Map<ResourceType, CropParameters> parameters = cropDataReader.getMeanCropParameters(archivedCrop);
+        Map<ResourceType, CropParameters> parameters = cropDataReader.getMeanCropParameters(archivedCrop.getId());
         assertThat(parameters.get(ResourceType.GRAIN)).isNotNull();
     }
 

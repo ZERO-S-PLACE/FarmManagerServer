@@ -1,15 +1,15 @@
 package org.zeros.farm_manager_server.Repositories.Data;
 
+import jakarta.validation.constraints.NotBlank;
+import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 
 public interface SubsideRepository extends JpaRepository<Subside, UUID> {
 
@@ -22,9 +22,10 @@ public interface SubsideRepository extends JpaRepository<Subside, UUID> {
 
     Page<Subside> findAllByCreatedByIn(Set<String> createdBy, Pageable pageable);
 
-    List<Object> findAllBySpeciesAllowedContains(Species species);
+    List<Subside> findAllBySpeciesAllowedContains(Species species);
 
-    Optional<Subside> findByNameAndCreatedByIn(String name, Set<String> createdBy);
 
     void deleteAllByCreatedBy(String username);
+
+    Page<Subside> findByNameAndYearOfSubsideAndCreatedByIn(String name,  LocalDate yearOfSubside, Collection<String> createdBy, Pageable pageable);
 }

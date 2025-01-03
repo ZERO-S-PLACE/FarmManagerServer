@@ -15,11 +15,13 @@ import java.util.UUID;
 public interface CropParametersRepository extends JpaRepository<CropParameters, UUID> {
 
 
-    Page<CropParameters> findAllByCreatedByIn(Set<String> strings, Pageable pageable);
+    Page<CropParameters> findAllByCreatedByIn(Set<String> createdBy, Pageable pageable);
 
-    Page<CropParameters> findAllByResourceTypeAndCreatedByIn(ResourceType resourceType, Set<String> strings, PageRequest name);
+    Page<CropParameters> findAllByResourceTypeAndCreatedByIn(ResourceType resourceType, Set<String> createdBy, Pageable pageable);
 
-    Page<CropParameters> findAllByNameContainingAndCreatedByIn(String name, Set<String> strings, PageRequest name1);
+    Page<CropParameters> findAllByNameContainingAndCreatedByIn(String name, Set<String> strings,Pageable pageable);
 
-    Optional<CropParameters> findAllByNameAndCreatedBy(@NonNull String name, @NonNull String createdBy);
+    Page<CropParameters> findAllByNameAndCreatedByIn( String name,  Set<String> createdBy,Pageable pageable);
+
+    Optional<CropParameters> findAllByNameAndCreatedBy(String name, String createdBy);
 }

@@ -10,6 +10,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.SpeciesDTO;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Default.Data.SpeciesManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.UserFieldsManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.UserManagerDefault;
@@ -52,23 +54,24 @@ public class SpeciesManagerTest {
 
     @Test
     void testCreateSpecies() {
-        Species species = speciesManager.addSpecies(Species.builder()
-                .name("test1")
-                .family("X11")
-                .build());
+        Species species = saveNewTestSpecies();
         assertThat(species.getId()).isNotNull();
-        assertThat(species.getName()).isEqualTo("test1");
-        assertThat(species.getFamily()).isEqualTo("X11");
+        assertThat(species.getName()).isEqualTo("TEST");
+        assertThat(species.getFamily()).isEqualTo("TEST");
         assertThat(species.getCreatedBy()).isEqualTo(user.getUsername());
         assertThat(speciesRepository.findById(species.getId()).get()).isEqualTo(species);
     }
 
+    private Species saveNewTestSpecies() {
+        return speciesManager.addSpecies(SpeciesDTO.builder()
+                .name("TEST")
+                .family("TEST")
+                .build());
+    }
+
     @Test
     void testGetAllSpecies() {
-        speciesManager.addSpecies(Species.builder()
-                .name("test13")
-                .family("X113")
-                .build());
+        saveNewTestSpecies();
         Page<Species> speciesAll = speciesManager.getAllSpecies(0);
         assertThat(speciesAll.getTotalElements()).isEqualTo(6);
     }
@@ -81,23 +84,15 @@ public class SpeciesManagerTest {
 
     @Test
     void testGetUserSpecies() {
-        speciesManager.addSpecies(Species.builder()
-                .name("test1323")
-                .family("X113232")
-                .build());
-
+        saveNewTestSpecies();
         Page<Species> speciesUser = speciesManager.getUserSpecies(0);
         assertThat(speciesUser.getTotalElements()).isEqualTo(1);
     }
 
     @Test
     void testUpdateSpecies() throws NoSuchObjectException {
-        Species species = speciesManager.addSpecies(Species.builder()
-                .name("test1212121")
-                .family("X1122222")
-                .build());
-        Species speciesToUpdate = speciesManager.getSpeciesById(species.getId());
-        entityManager.detach(speciesToUpdate);
+        Species species = saveNewTestSpecies();
+        SpeciesDTO speciesToUpdate = DefaultMappers.speciesMapper.entityToDto(species);
         speciesToUpdate.setName("TEST_UPDATE");
         Species speciesUpdated = speciesManager.updateSpecies(speciesToUpdate);
         assertThat(speciesUpdated.getId()).isEqualTo(species.getId());
@@ -106,8 +101,8 @@ public class SpeciesManagerTest {
 
     @Test
     void testUpdateFailedAccessDenied() {
-        Species speciesToUpdate = speciesManager.getDefaultSpecies(0).stream().findFirst().orElse(Species.NONE);
-        entityManager.detach(speciesToUpdate);
+        Species species = speciesManager.getDefaultSpecies(0).stream().findFirst().orElse(Species.NONE);
+        SpeciesDTO speciesToUpdate = DefaultMappers.speciesMapper.entityToDto(species);
         speciesToUpdate.setName("TEST_UPDATE");
         assertThrows(IllegalAccessError.class, () -> speciesManager.updateSpecies(speciesToUpdate));
         assertThat(speciesManager.getSpeciesById(speciesToUpdate.getId()).getName()).isNotEqualTo("TEST_UPDATE");
@@ -116,19 +111,16 @@ public class SpeciesManagerTest {
 
     @Test
     void testDeleteSpecies() {
-        Species species = speciesManager.addSpecies(Species.builder()
-                .name("test1333")
-                .family("X113323")
-                .build());
-        entityManager.detach(species);
-        speciesManager.deleteSpeciesSafe(species);
+        Species species = saveNewTestSpecies();
+        speciesManager.deleteSpeciesSafe(species.getId());
         assertThat(speciesManager.getSpeciesById(species.getId())).isEqualTo(Species.NONE);
     }
 
     @Test
     void testDeleteFailedAccessDenied() {
-        Species speciesToDelete = speciesManager.getDefaultSpecies(0).stream().findFirst().orElse(Species.NONE);
-        assertThrows(IllegalAccessError.class, () -> speciesManager.deleteSpeciesSafe(speciesToDelete));
-        assertThat(speciesManager.getSpeciesById(speciesToDelete.getId())).isNotEqualTo(Species.NONE);
+        Species species = speciesManager.getDefaultSpecies(0).stream().findFirst().orElse(Species.NONE);
+        assertThrows(IllegalAccessError.class, () -> speciesManager.deleteSpeciesSafe(species.getId()));
+        assertThat(speciesManager.getSpeciesById(species.getId())).isNotEqualTo(Species.NONE);
+        assertThat(speciesManager.getSpeciesById(species.getId())).isEqualTo(species);
     }
 }

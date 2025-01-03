@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,7 +33,7 @@ public class Subside extends BaseEntity {
 
     @NonNull
     @Builder.Default
-    private LocalDate yearOfSubside = LocalDate.now();
+    private LocalDate yearOfSubside = ApplicationDefaults.UNDEFINED_DATE_MIN;
 
     @NonNull
     @Builder.Default
@@ -52,6 +53,11 @@ public class Subside extends BaseEntity {
     @NonNull
     @Builder.Default
     private String createdBy = "ADMIN";
+
+
+    public void setYearOfSubside(LocalDate date){
+        yearOfSubside = LocalDate.ofYearDay(date.getYear(),1);
+    }
 
     @Transient
     public static final Subside NONE = Subside.builder()

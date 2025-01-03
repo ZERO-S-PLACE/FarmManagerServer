@@ -165,8 +165,9 @@ public class SprayControllerTest {
     void addNew() throws Exception {
         SprayDTO sprayDTO = SprayDTO.builder()
                 .activeSubstances(Set.of("X1"))
-                .producer("TEST32")
-                .name("TEST32")
+                .producer("TEST")
+                .name("TEST")
+                .sprayType(SprayType.HERBICIDE)
                 .build();
 
         MvcResult result = mockMvc.perform(post(SprayController.BASE_PATH)
@@ -223,13 +224,7 @@ public class SprayControllerTest {
     @Test
     @Transactional
     void update() throws Exception {
-        Spray spray = Spray.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST33")
-                .name("TEST33")
-                .build();
-        spray = sprayManager.addSpray(spray);
-
+        Spray spray = saveNewSpray();
         SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(spray);
         sprayDTO.setName("TEST_UPDATED");
         sprayDTO.setDescription(null);
@@ -245,6 +240,16 @@ public class SprayControllerTest {
                 .isEqualTo("TEST_UPDATED");
         assertThat(sprayManager.getSprayById(spray.getId()).getActiveSubstances())
                 .contains("X2");
+    }
+
+    private Spray saveNewSpray() {
+
+        return sprayManager.addSpray(SprayDTO.builder()
+                .activeSubstances(Set.of("X1","X2","X3"))
+                        .sprayType(SprayType.HERBICIDE)
+                .producer("TEST")
+                .name("TEST")
+                .build());
     }
 
     @Test
@@ -264,13 +269,7 @@ public class SprayControllerTest {
     @Test
     @Transactional
     void updateModelBlank() throws Exception {
-        Spray spray = Spray.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST33")
-                .name("TEST33")
-                .build();
-        spray = sprayManager.addSpray(spray);
-
+        Spray spray = saveNewSpray();
         SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(spray);
         sprayDTO.setName("");
         mockMvc.perform(patch(FarmingMachineController.BASE_PATH)
@@ -284,12 +283,7 @@ public class SprayControllerTest {
     @Test
     @Transactional
     void deleteSpray() throws Exception {
-        Spray spray = Spray.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST32")
-                .name("TEST32")
-                .build();
-        spray = sprayManager.addSpray(spray);
+        Spray spray = saveNewSpray();
 
         mockMvc.perform(delete(SprayController.BASE_PATH)
                         .param("id", spray.getId().toString())

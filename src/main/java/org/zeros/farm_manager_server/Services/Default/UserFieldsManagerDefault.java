@@ -1,24 +1,35 @@
 package org.zeros.farm_manager_server.Services.Default;
 
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCustom;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
+import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldGroupDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldPartDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.Repositories.UserRepository;
+import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -30,71 +41,95 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     private final FieldRepository fieldRepository;
     private final FieldPartRepository fieldPartRepository;
     private final EntityManager entityManager;
-    private User user;
+    private final LoggedUserConfiguration loggedUserConfiguration;
+    private final UserManagerDefault userManagerDefault;
 
     @Override
-    public FieldGroup createEmptyFieldGroup(String fieldGroupName, String description) {
-        if (fieldGroupName.isBlank()) {
-            fieldGroupName = "NewGroup" + fieldGroupRepository.findAll().size();
-        }
-        if (fieldGroupRepository.findByUserAndFieldGroupName(user, fieldGroupName).isPresent()) {
-            fieldGroupName = fieldGroupName + "_1";
-        }
+    public FieldGroup createEmptyFieldGroup(@NonNull String fieldGroupName, @NonNull String description) {
+        User user = loggedUserConfiguration.getLoggedUserProperty().get();
+        fieldGroupName = validateFieldGroupName(fieldGroupName);
         FieldGroup fieldGroup = FieldGroup.builder().
                 fieldGroupName(fieldGroupName)
                 .description(description)
                 .user(user)
                 .build();
-        user.addFieldGroup(fieldGroup);
         FieldGroup fieldGroupSaved = fieldGroupRepository.saveAndFlush(fieldGroup);
+        user.addFieldGroup(fieldGroup);
         flushChanges();
         return fieldGroupRepository.findById(fieldGroupSaved.getId()).orElse(FieldGroup.NONE);
     }
 
-    @Override
-    public FieldGroup getFieldGroupByName(String groupName) {
-        return fieldGroupRepository.findByUserAndFieldGroupName(user, groupName).orElse(FieldGroup.NONE);
+    private String validateFieldGroupName(String fieldGroupName) {
+        if (fieldGroupName.isBlank()) {
+            fieldGroupName = "NewGroup" + fieldGroupRepository.findAll().size();
+        }
+        if (fieldGroupRepository.findByUserAndFieldGroupName(loggedUserConfiguration.getLoggedUserProperty().get(), fieldGroupName).isPresent()) {
+            fieldGroupName = fieldGroupName + "_1";
+        }
+        return fieldGroupName;
     }
 
     @Override
-    public FieldGroup getFieldGroupById(UUID id) {
+    public FieldGroup getFieldGroupByName(@NonNull String groupName) {
+        return fieldGroupRepository.findByUserAndFieldGroupName(loggedUserConfiguration.getLoggedUserProperty().get(), groupName).orElse(FieldGroup.NONE);
+    }
+
+    @Override
+    public FieldGroup getFieldGroupById(@NonNull UUID id) {
         return fieldGroupRepository.findById(id).orElse(FieldGroup.NONE);
     }
 
     @Override
-    public FieldGroup updateFieldGroupAndDescription(FieldGroup group) {
-        Optional<FieldGroup> fieldGroupSaved = fieldGroupRepository.findById(group.getId());
-        if (fieldGroupSaved.isEmpty()) {
-            return createEmptyFieldGroup(group.getFieldGroupName(), group.getDescription());
+    public FieldGroup updateFieldGroup(@NonNull FieldGroupDTO groupDTO) {
+        FieldGroup originalFieldGroup = getFieldGroupIfExists(groupDTO.getId());
+        originalFieldGroup.setDescription(groupDTO.getDescription());
+        originalFieldGroup.setFieldGroupName(groupDTO.getFieldGroupName());
+        return fieldGroupRepository.saveAndFlush(originalFieldGroup);
+    }
+
+    private FieldGroup getFieldGroupIfExists(UUID groupId) {
+        if (groupId == null) {
+            throw new IllegalArgumentExceptionCustom(FieldGroup.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        FieldGroup fieldGroupUpdated = fieldGroupSaved.get();
-        fieldGroupUpdated.setDescription(group.getDescription());
-        fieldGroupUpdated.setFieldGroupName(group.getFieldGroupName());
-        return fieldGroupRepository.saveAndFlush(fieldGroupUpdated);
-    }
-
-    @Override
-    public List<FieldGroup> getAllFieldGroups() {
-        return fieldGroupRepository.findAllByUser(user);
-    }
-
-    @Override
-    public void deleteFieldGroupWithFields(FieldGroup group) {
-        fieldGroupRepository.delete(group);
-    }
-
-    @Override
-    @Transactional
-    public void deleteFieldGroupWithoutFields(FieldGroup group) {
-        if (group.getFieldGroupName().equals("DEFAULT")) {
-            throw new IllegalArgumentException("Cannot delete default field group without fields");
+        FieldGroup originalFieldGroup = getFieldGroupById(groupId);
+        if (originalFieldGroup.equals(FieldGroup.NONE)) {
+            throw new IllegalArgumentExceptionCustom(FieldGroup.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        moveFieldsToAnotherGroup(group.getFields(), getOrCreateDefaultFieldGroup());
-        fieldGroupRepository.delete(group);
+        return originalFieldGroup;
+    }
+
+    @Override
+    public Set<FieldGroup> getAllFieldGroups() {
+        return fieldGroupRepository.findAllByUser(loggedUserConfiguration.getLoggedUserProperty().get());
+    }
+
+    @Override
+    public void deleteFieldGroupWithFields(@NonNull UUID groupId) {
+        FieldGroup fieldGroup = getFieldGroupById(groupId);
+        if (fieldGroup == FieldGroup.NONE) {
+            return;
+        }
+        fieldGroup.getFields().forEach(field->deleteFieldWithData(field.getId()));
+        fieldGroupRepository.delete(fieldGroup);
         flushChanges();
     }
 
-    private @NonNull FieldGroup getOrCreateDefaultFieldGroup() {
+    @Override
+    public void deleteFieldGroupWithoutFields(@NonNull UUID groupId) {
+        FieldGroup fieldGroup = getFieldGroupById(groupId);
+        if (fieldGroup == FieldGroup.NONE) {
+            return;
+        }
+        if (fieldGroup.getFieldGroupName().equals("DEFAULT")) {
+            throw new IllegalAccessErrorCustom(FieldGroup.class, IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
+        }
+        moveFieldsToAnotherGroup(fieldGroup.getFields(), getOrCreateDefaultFieldGroup());
+        fieldGroupRepository.delete(fieldGroup);
+        flushChanges();
+    }
+
+    private FieldGroup getOrCreateDefaultFieldGroup() {
+        User user = loggedUserConfiguration.getLoggedUserProperty().get();
         FieldGroup defaultGroup;
         Optional<FieldGroup> optionalDefaultGroup =
                 fieldGroupRepository.findByUserAndFieldGroupName(user, "DEFAULT");
@@ -109,7 +144,20 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public void moveFieldsToAnotherGroup(Set<Field> fields, FieldGroup newGroup) {
+    public void moveFieldsToAnotherGroup(@NonNull Set<UUID> fieldsIds, @NonNull UUID newGroupId) {
+        Set<Field> fields = fieldsIds.stream().map(this::getFieldById).collect(Collectors.toSet());
+        if (fields.contains(Field.NONE)) {
+            throw new IllegalArgumentExceptionCustom(Field.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+        FieldGroup newGroup = getFieldGroupById(newGroupId);
+        if (newGroup == FieldGroup.NONE) {
+            newGroup = getOrCreateDefaultFieldGroup();
+        }
+        moveFieldsToAnotherGroup(fields, newGroup);
+
+    }
+
+    private void moveFieldsToAnotherGroup(Set<Field> fields, FieldGroup newGroup) {
         for (Field field : fields) {
             field = fieldRepository.findById(field.getId()).orElse(Field.NONE);
             if (!field.equals(Field.NONE)) {
@@ -118,108 +166,141 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
                 flushChanges();
             }
         }
-
     }
 
     @Override
-    public Field createFieldDefault(Field field) {
-        return createFieldInGroup(field, getOrCreateDefaultFieldGroup());
+    public Field createFieldDefault(FieldDTO fieldDTO) {
+        return createFieldInGroup(fieldDTO, getOrCreateDefaultFieldGroup().getId());
     }
 
     @Override
-    public Field createFieldInGroup(Field field, FieldGroup group) {
-        validateFieldName(field);
-        field.setFieldGroup(group);
-        group.addField(field);
-        field.setUser(user);
+    public Field createFieldInGroup(@NonNull FieldDTO fieldDTO, @NonNull UUID groupId) {
+        FieldGroup fieldGroup = getFieldGroupIfExists(groupId);
+        Field field = rewriteToEntity(fieldDTO, Field.NONE);
+        field.setFieldName(validateNewFieldName(fieldDTO.getFieldName()));
+        field.setFieldGroup(fieldGroup);
+        field.setUser(loggedUserConfiguration.getLoggedUserProperty().get());
         Field fieldSaved = fieldRepository.saveAndFlush(field);
         FieldPart defaultPart = FieldPart.getDefaultFieldPart(fieldSaved);
-        field.setFieldParts(Set.of(defaultPart));
+        fieldSaved.setFieldParts(Set.of(defaultPart));
         fieldPartRepository.saveAndFlush(defaultPart);
         flushChanges();
         return getFieldById(fieldSaved.getId());
     }
 
+    private Field rewriteToEntity(FieldDTO dto, Field entity) {
+        Field parsedEntity = DefaultMappers.fieldMapper.dtoToEntitySimpleProperties(dto);
+        parsedEntity.setUser(entity.getUser());
+        parsedEntity.setFieldGroup(entity.getFieldGroup());
+        parsedEntity.setFieldParts(entity.getFieldParts());
+        parsedEntity.setVersion(entity.getVersion());
+        parsedEntity.setLastModifiedDate(entity.getLastModifiedDate());
+        parsedEntity.setCreatedDate(entity.getCreatedDate());
+        return parsedEntity;
+    }
+
 
     @Override
-    public Field getFieldById(UUID id) {
+    public Field getFieldById(@NonNull UUID id) {
         return fieldRepository.findById(id).orElse(Field.NONE);
     }
 
     @Override
     public Set<Field> getAllFields() {
-        return userRepository.findUserById(user.getId()).orElse(User.NONE).getFields();
+        return userRepository.findUserById(loggedUserConfiguration.getLoggedUserProperty().get().getId())
+                .orElse(User.NONE).getFields();
     }
 
     @Override
-    public Field updateFieldInfo(Field field) {
-        Field currentField = fieldRepository.findById(field.getId()).orElse(Field.NONE);
-
-        if (currentField.equals(Field.NONE)) return Field.NONE;
-        field.setFieldParts(currentField.getFieldParts());
-
-        if (field.getFieldName().isBlank()) field.setFieldName(currentField.getFieldName());
-        else {
-            validateFieldName(field);
+    public Field updateField(@NonNull FieldDTO fieldDTO) {
+        Field originalField = getFieldIfExists(fieldDTO.getId());
+        if (!originalField.getFieldName().equals(fieldDTO.getFieldName())) {
+            fieldDTO.setFieldName(validateNewFieldName(fieldDTO.getFieldName()));
         }
-
-        if ((!(field.getArea().floatValue() == currentField.getArea().floatValue())) && field.getArea().floatValue() >= 0) {
-            FieldPart fieldPart = currentField.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
-            if (fieldPart.equals(FieldPart.NONE)) return Field.NONE;
-            if (currentField.getFieldParts().size() == 1) {
-                fieldPart.setArea(field.getArea());
-            } else {
-                return Field.NONE;
-            }
-            fieldPartRepository.saveAndFlush(fieldPart);
-        } else field.setArea(currentField.getArea());
+        Field field = rewriteToEntity(fieldDTO, originalField);
+        field.setArea(originalField.getArea());
 
         return fieldRepository.saveAndFlush(field);
     }
 
+    private Field getFieldIfExists(UUID fieldId) {
+        if (fieldId == null) {
+            throw new IllegalArgumentExceptionCustom(Field.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+        Field originalField = getFieldById(fieldId);
+        if (originalField.equals(Field.NONE)) {
+            throw new IllegalArgumentExceptionCustom(Field.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+        return originalField;
+    }
 
     @Override
-    public void deleteFieldWithData(Field field) {
+    public void deleteFieldWithData(@NonNull UUID fieldId) {
+        Field field = getFieldById(fieldId);
+        if (field == Field.NONE) {
+            return;
+        }
         fieldRepository.delete(field);
     }
 
     @Override
-    public void archiveField(Field field) {
-        field = fieldRepository.findById(field.getId()).orElse(Field.NONE);
+    public void archiveField(@NonNull UUID fieldId) {
+        Field field = getFieldById(fieldId);
         field.setIsArchived(true);
         flushChanges();
     }
 
     @Override
-    public Field deArchiveField(Field field) {
-        field = fieldRepository.findById(field.getId()).orElse(Field.NONE);
-        field.setIsArchived(true);
+    public void deArchiveField(@NonNull UUID fieldId) {
+        Field field = getFieldById(fieldId);
+        field.setIsArchived(false);
         flushChanges();
-        return field;
     }
 
     @Override
-    public Field divideFieldPart(FieldPart originPart, FieldPart part1, FieldPart part2) {
-        originPart = fieldPartRepository.findById(originPart.getId()).orElse(FieldPart.NONE);
-        if (originPart.equals(FieldPart.NONE)) return Field.NONE;
-        if (!(originPart.getArea().floatValue() == part1.getArea().floatValue() + part2.getArea().floatValue())) {
-            if (part1.getArea().floatValue() > originPart.getArea().floatValue()) {
-                return Field.NONE;
-            }
-            part2.setArea(originPart.getArea().subtract(part1.getArea()));
+    public Field divideFieldPart(@NonNull UUID originPartId, @NonNull FieldPartDTO part1DTO, @NonNull FieldPartDTO part2DTO) {
+        FieldPart originPart = fieldPartRepository.findById(originPartId).orElse(FieldPart.NONE);
+        if (originPart.equals(FieldPart.NONE)) {
+            throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        part1.setField(originPart.getField());
-        part2.setField(originPart.getField());
+        if (part1DTO.getArea() >= originPart.getArea().floatValue()) {
+            throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.NOT_COMPATIBLE);
+        }
+        Field field = originPart.getField();
+        FieldPart part1 = rewriteToEntity(part1DTO, FieldPart.NONE);
+        FieldPart part2 = rewriteToEntity(part1DTO, FieldPart.NONE);
+        part2.setArea(originPart.getArea().subtract(part1.getArea()));
+        part1.setField(field);
+        part2.setField(field);
         originPart.setIsArchived(true);
-        fieldPartRepository.saveAndFlush(part1);
-        fieldPartRepository.saveAndFlush(part2);
+        FieldPart part1Saved = fieldPartRepository.saveAndFlush(part1);
+        FieldPart part2Saved = fieldPartRepository.saveAndFlush(part2);
+        field.getFieldParts().add(part1Saved);
+        field.getFieldParts().add(part2Saved);
         flushChanges();
-        return fieldRepository.findById(originPart.getField().getId()).orElse(Field.NONE);
+        return getFieldById(field.getId());
+    }
+
+    private FieldPart rewriteToEntity(FieldPartDTO dto, FieldPart entity) {
+        FieldPart parsedEntity = DefaultMappers.fieldPartMapper.dtoToEntitySimpleProperties(dto);
+        parsedEntity.setField(entity.getField());
+        parsedEntity.setCrops(entity.getCrops());
+        parsedEntity.setCreatedDate(entity.getCreatedDate());
+        parsedEntity.setLastModifiedDate(entity.getLastModifiedDate());
+        parsedEntity.setCreatedDate(entity.getCreatedDate());
+        return parsedEntity;
     }
 
     @Override
-    public FieldPart mergeFieldParts(Set<FieldPart> fieldParts) {
-        if (fieldParts.isEmpty()) return FieldPart.NONE;
+    public FieldPart mergeFieldParts(@NonNull Set<UUID> fieldPartsIds) {
+        Set<FieldPart> fieldParts = fieldPartsIds.stream().map(this::getFieldPartById).collect(Collectors.toSet());
+        if (fieldParts.size() < 2) {
+            throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.NOT_COMPATIBLE);
+        }
+        if (fieldParts.contains(FieldPart.NONE)) {
+            throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+
         FieldPart firstPart = fieldParts.stream().findFirst().orElse(FieldPart.NONE);
         fieldParts.remove(firstPart);
         FieldPart merged = FieldPart.builder().fieldPartName(firstPart.getFieldPartName()).area(firstPart.getArea()).field(firstPart.getField()).build();
@@ -228,8 +309,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
             targetArea = targetArea.add(fieldPart.getArea());
             fieldPart.setIsArchived(true);
         }
-        merged.setFieldPartName(merged.getFieldPartName() + "_merged");
-        validateFieldPartName(merged);
+        merged.setFieldPartName(validateNewFieldPartName(merged.getFieldPartName() + "_merged", firstPart.getField().getId()));
         merged.setArea(targetArea);
         merged.setId(null);
         merged.setIsArchived(false);
@@ -240,29 +320,41 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public Set<FieldPart> getAllFieldParts(Field field) {
-        return fieldRepository.findById(field.getId()).orElse(Field.NONE).getFieldParts();
+    public Set<FieldPart> getAllFieldParts(@NonNull UUID fieldId) {
+        return getFieldById(fieldId).getFieldParts();
     }
 
     @Override
-    public Set<FieldPart> getAllNonArchivedFieldParts(Field field) {
-        return new HashSet<>(fieldPartRepository.findAllByFieldAndIsArchived(field, false));
+    public Set<FieldPart> getAllNonArchivedFieldParts(@NonNull UUID fieldId) {
+        return new HashSet<>(fieldPartRepository.findAllByFieldAndIsArchived(getFieldById(fieldId), false));
     }
 
     @Override
-    public FieldPart updateFieldPartName(FieldPart fieldPart, String newName) {
-        fieldPart = fieldPartRepository.findById(fieldPart.getId()).orElse(FieldPart.NONE);
-        fieldPart.setFieldPartName(newName);
-        validateFieldPartName(fieldPart);
+    public FieldPart updateFieldPartName(UUID fieldPartId, @NonNull String newName) {
+        FieldPart fieldPart = getFieldPartIfExist(fieldPartId);
+        if (newName.equals(fieldPart.getFieldPartName())) {
+            return fieldPart;
+        }
+        fieldPart.setFieldPartName(validateNewFieldPartName(newName, fieldPart.getField().getId()));
         flushChanges();
+        return getFieldPartById(fieldPartId);
+    }
+
+    private FieldPart getFieldPartIfExist(UUID fieldPartId) {
+        if (fieldPartId == null) {
+            throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+        FieldPart fieldPart = getFieldPartById(fieldPartId);
+        if (fieldPart.equals(FieldPart.NONE)) {
+            throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
         return fieldPart;
     }
 
     @Override
-    public Field updateFieldPartAreaResizeField(FieldPart fieldPart, BigDecimal newArea) {
-        fieldPart = fieldPartRepository.findById(fieldPart.getId()).orElse(FieldPart.NONE);
-        Field field = fieldRepository.findById(fieldPart.getField().getId()).orElse(Field.NONE);
-        if (fieldPart.equals(FieldPart.NONE) || field.equals(Field.NONE)) return Field.NONE;
+    public Field updateFieldPartAreaResizeField(@NonNull UUID fieldPartId, @NonNull BigDecimal newArea) {
+        FieldPart fieldPart = getFieldPartIfExist(fieldPartId);
+        Field field = fieldPart.getField();
         field.setArea(field.getArea().subtract(fieldPart.getArea()).add(newArea));
         fieldPart.setArea(newArea);
         flushChanges();
@@ -270,9 +362,9 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public Field updateFieldPartAreaTransfer(FieldPart basePart, FieldPart resizedPart, BigDecimal newArea) {
-        basePart = fieldPartRepository.findById(basePart.getId()).orElse(FieldPart.NONE);
-        resizedPart = fieldPartRepository.findById(resizedPart.getId()).orElse(FieldPart.NONE);
+    public Field updateFieldPartAreaTransfer(@NonNull UUID basePartId, @NonNull UUID resizedPartId, @NonNull BigDecimal newArea) {
+        FieldPart basePart = getFieldPartIfExist(basePartId);
+        FieldPart resizedPart = getFieldPartIfExist(resizedPartId);
         Field field = fieldRepository.findById(basePart.getField().getId()).orElse(Field.NONE);
         if (basePart.equals(FieldPart.NONE) || field.equals(Field.NONE) || resizedPart.equals(FieldPart.NONE))
             return Field.NONE;
@@ -283,36 +375,49 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public FieldPart getFieldPartById(UUID id) {
+    public FieldPart getFieldPartById(@NonNull UUID id) {
         return fieldPartRepository.findById(id).orElse(FieldPart.NONE);
     }
 
 
-    private void validateFieldName(Field field) {
-        if (field.getFieldName().isBlank()) {
-            field.setFieldName("NewField" + fieldRepository.findAllByUser(user).size());
+    private String validateNewFieldName(String name) {
+        User user = userManagerDefault.getUserById(loggedUserConfiguration.getLoggedUserProperty().get().getId());
+        if (name.isBlank()) {
+            name = "NewField" + fieldRepository.findAllByUser(user).size();
         }
-        for (Field field1 : user.getFields()) {
-            if (field1.getFieldName().equals(field.getFieldName())) {
-                if (!field1.getId().equals(field.getId())) {
-                    field.setFieldName(field.getFieldName() + "_1");
-                    break;
+        boolean nameUpdated;
+        do {
+            nameUpdated = false;
+            for (Field field : user.getFields()) {
+                if (field.getFieldName().equals(name)) {
+                    name = name + "_1";
+                    nameUpdated = true;
                 }
             }
-        }
+        } while (nameUpdated);
+        return name;
     }
 
-    private void validateFieldPartName(FieldPart fieldPart) {
-        if (fieldPart.getFieldPartName().isBlank()) {
-            fieldPart.setFieldPartName("NewPart" + fieldPartRepository.findAllByField(fieldPart.getField()).size());
+    private String validateNewFieldPartName(String name, UUID fieldId) {
+        Field field = getFieldById(fieldId);
+        if (field.equals(Field.NONE)) {
+            throw new IllegalArgumentExceptionCustom(
+                    FieldPart.class, Set.of("field"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        for (FieldPart fieldPart1 : fieldPart.getField().getFieldParts()) {
-            if (fieldPart1.getFieldPartName().equals(fieldPart.getFieldPartName()))
-                if (!fieldPart1.getId().equals(fieldPart.getId())) {
-                    fieldPart.setFieldPartName(fieldPart.getFieldPartName() + "_1");
-                    break;
+        if (name.isBlank()) {
+            name = "NewPart" + fieldPartRepository.findAllByField(field).size();
+        }
+        boolean nameUpdated;
+        do {
+            nameUpdated = false;
+            for (FieldPart fieldPart : field.getFieldParts()) {
+                if (fieldPart.getFieldPartName().equals(name)) {
+                    name = name + "_1";
+                    nameUpdated = true;
                 }
-        }
+            }
+        } while (nameUpdated);
+        return name;
     }
 
 

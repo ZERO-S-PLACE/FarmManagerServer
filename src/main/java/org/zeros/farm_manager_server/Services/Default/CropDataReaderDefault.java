@@ -28,6 +28,7 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @Primary
@@ -35,7 +36,7 @@ import java.util.Set;
 public class CropDataReaderDefault implements CropDataReader {
     private final CropOperationsManager cropOperationsManager;
 
-    private static Map<ResourceType, BigDecimal> getMeanYieldByCropSales(Set<CropSale> cropSales, BigDecimal area) {
+    private  Map<ResourceType, BigDecimal> getMeanYieldByCropSales(Set<CropSale> cropSales, BigDecimal area) {
         Map<ResourceType, BigDecimal> amountSold = new HashMap<>();
         Map<ResourceType, BigDecimal> meanYield = new HashMap<>();
         for (CropSale cropSale : cropSales) {
@@ -51,7 +52,7 @@ public class CropDataReaderDefault implements CropDataReader {
         return meanYield;
     }
 
-    private static Map<ResourceType, BigDecimal> getMeanYieldByHarvests(Set<Harvest> harvests) {
+    private  Map<ResourceType, BigDecimal> getMeanYieldByHarvests(Set<Harvest> harvests) {
         Map<ResourceType, BigDecimal> meanYield = new HashMap<>();
         for (Harvest harvest : harvests) {
             if (meanYield.containsKey(harvest.getResourceType())) {
@@ -64,8 +65,8 @@ public class CropDataReaderDefault implements CropDataReader {
     }
 
     @Override
-    public CropSummary getCropSummary(Crop crop) {
-        crop = cropOperationsManager.getCropById(crop.getId());
+    public CropSummary getCropSummary(UUID cropId) {
+        Crop crop = cropOperationsManager.getCropById(cropId);
         if (crop == MainCrop.NONE) {
             return CropSummary.NONE;
         }
@@ -211,8 +212,8 @@ public class CropDataReaderDefault implements CropDataReader {
     }
 
     @Override
-    public ResourcesSummary getCropResourcesSummary(Crop crop) {
-        crop = cropOperationsManager.getCropById(crop.getId());
+    public ResourcesSummary getCropResourcesSummary(UUID cropId) {
+        Crop crop = cropOperationsManager.getCropById(cropId);
         if (crop == MainCrop.NONE) {
             return ResourcesSummary.NONE;
         }
@@ -226,8 +227,8 @@ public class CropDataReaderDefault implements CropDataReader {
     }
 
     @Override
-    public ResourcesSummary getPlannedResourcesSummary(Crop crop) {
-        crop = cropOperationsManager.getCropById(crop.getId());
+    public ResourcesSummary getPlannedResourcesSummary(UUID cropId) {
+        Crop crop = cropOperationsManager.getCropById(cropId);
         if (crop == MainCrop.NONE) {
             return ResourcesSummary.NONE;
         }
@@ -307,7 +308,8 @@ public class CropDataReaderDefault implements CropDataReader {
     }
 
     @Override
-    public Map<ResourceType, CropParameters> getMeanCropParameters(Crop crop) {
+    public Map<ResourceType, CropParameters> getMeanCropParameters(UUID cropId) {
+        Crop crop = cropOperationsManager.getCropById(cropId);
         if (crop instanceof InterCrop) {
             return new HashMap<>();
         }

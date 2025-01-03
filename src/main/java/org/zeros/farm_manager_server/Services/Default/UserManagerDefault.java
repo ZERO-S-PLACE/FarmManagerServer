@@ -5,10 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 import org.zeros.farm_manager_server.Domain.Entities.User.LoginError;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Entities.User.UserCreationError;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Data.*;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.UserRepository;
@@ -25,7 +27,6 @@ public class UserManagerDefault implements UserManager {
     private final UserRepository userRepository;
     private final LoggedUserConfiguration loggedUserConfiguration;
     private final FieldGroupRepository fieldGroupRepository;
-    private final UserFieldsManager userFieldsManager;
     private final FarmingMachineRepository farmingMachineRepository;
     private final SubsideRepository subsideRepository;
     private final PlantRepository plantRepository;
@@ -35,30 +36,30 @@ public class UserManagerDefault implements UserManager {
 
 
     @Override
-    public User createNewUser(User user) {
-        if (user.getFirstName().isBlank()) {
+    public User createNewUser(UserDTO userDTO) {
+        if (userDTO.getFirstName().isBlank()) {
             return User.getBlankUserWithError(UserCreationError.FIRST_NAME_MISSING);
         }
-        if (user.getLastName().isBlank()) {
+        if (userDTO.getLastName().isBlank()) {
             return User.getBlankUserWithError(UserCreationError.LAST_NAME_MISSING);
         }
-        if (user.getEmail().isBlank()) {
+        if (userDTO.getEmail().isBlank()) {
             return User.getBlankUserWithError(UserCreationError.EMAIL_MISSING);
         }
-        if (user.getPassword().isBlank()) {
+        if (userDTO.getPassword().isBlank()) {
             return User.getBlankUserWithError(UserCreationError.PASSWORD_MISSING);
         }
-        if (user.getUsername().isBlank()) {
+        if (userDTO.getUsername().isBlank()) {
             return User.getBlankUserWithError(UserCreationError.USERNAME_MISSING);
         }
-        if (userRepository.findUserByEmail(user.getEmail()).isPresent()) {
+        if (userRepository.findUserByEmail(userDTO.getEmail()).isPresent()) {
             return User.getBlankUserWithError(UserCreationError.EMAIL_NOT_UNIQUE);
         }
-        if (userRepository.findUserByUsername(user.getUsername()).isPresent()) {
+        if (userRepository.findUserByUsername(userDTO.getUsername()).isPresent()) {
             return User.getBlankUserWithError(UserCreationError.USERNAME_NOT_UNIQUE);
         }
         try {
-            User userSaved = userRepository.saveAndFlush(user);
+            User userSaved = userRepository.saveAndFlush(rewriteToEntity(userDTO, User.NONE));
             FieldGroup defaultFieldGroup = FieldGroup.getDefaultFieldGroup(userSaved);
             userSaved.addFieldGroup(defaultFieldGroup);
             fieldGroupRepository.saveAndFlush(defaultFieldGroup);
@@ -66,6 +67,14 @@ public class UserManagerDefault implements UserManager {
         } catch (Exception e) {
             return User.getBlankUserWithError(UserCreationError.UNKNOWN);
         }
+    }
+
+    private User rewriteToEntity(UserDTO dto, User entity) {
+        User entityParsed = DefaultMappers.userMapper.dtoToEntitySimpleProperties(dto);
+        entityParsed.setVersion(entity.getVersion());
+        entityParsed.setCreatedDate(entity.getCreatedDate());
+        entityParsed.setLastModifiedDate(entity.getLastModifiedDate());
+        return entityParsed;
     }
 
     @Override
@@ -117,38 +126,35 @@ public class UserManagerDefault implements UserManager {
     }
 
     @Override
-    public User updateUserInfo(User user) {
-        User savedUser = userRepository.findUserById(user.getId()).orElse(User.NONE);
+    public User updateUserInfo(UserDTO userDTO) {
+        User savedUser = userRepository.findUserById(userDTO.getId()).orElse(User.NONE);
         if (savedUser.equals(User.NONE)) {
             return User.NONE;
         }
-        if (!user.getFirstName().isBlank()) {
-            savedUser.setFirstName(user.getFirstName());
+        if (!userDTO.getFirstName().isBlank()) {
+            savedUser.setFirstName(userDTO.getFirstName());
         }
-        if (!user.getSecondName().isBlank()) {
-            savedUser.setSecondName(user.getSecondName());
+        if (!userDTO.getSecondName().isBlank()) {
+            savedUser.setSecondName(userDTO.getSecondName());
         }
-        if (!user.getLastName().isBlank()) {
-            savedUser.setLastName(user.getLastName());
+        if (!userDTO.getLastName().isBlank()) {
+            savedUser.setLastName(userDTO.getLastName());
         }
-        if (!user.getPassword().isBlank()) {
-            savedUser.setPassword(user.getPassword());
+        if (!userDTO.getPassword().isBlank()) {
+            savedUser.setPassword(userDTO.getPassword());
         }
-        savedUser.setFields(user.getFields());
-        savedUser.setFieldGroups(user.getFieldGroups());
         try {
-            return userRepository.saveAndFlush(user);
+            return userRepository.saveAndFlush(savedUser);
         } catch (Exception e) {
             return User.getBlankUserWithError(UserCreationError.UNKNOWN);
         }
     }
 
     @Override
-    public void deleteAllUserData(User user) {
-        user = getUserById(user.getId());
-        for (FieldGroup fieldGroup : user.getFieldGroups()) {
-            userFieldsManager.deleteFieldGroupWithFields(fieldGroup);
-        }
+    public void deleteAllUserData(UUID userId) {
+        User user = getUserById(userId);
+        if (user == User.NONE) {return;}
+        fieldGroupRepository.deleteAll(user.getFieldGroups());
         farmingMachineRepository.deleteAllByCreatedBy(user.getUsername());
         subsideRepository.deleteAllByCreatedBy(user.getUsername());
         plantRepository.deleteAllByCreatedBy(user.getUsername());
@@ -156,6 +162,5 @@ public class UserManagerDefault implements UserManager {
         sprayRepository.deleteAllByCreatedBy(user.getUsername());
         fertilizerRepository.deleteAllByCreatedBy(user.getUsername());
         userRepository.delete(user);
-
     }
 }

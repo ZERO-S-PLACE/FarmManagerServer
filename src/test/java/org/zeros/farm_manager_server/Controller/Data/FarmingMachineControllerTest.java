@@ -227,12 +227,11 @@ public class FarmingMachineControllerTest {
     @Test
     @Transactional
     void updateFarmingMachine() throws Exception {
-        FarmingMachine farmingMachineUser = FarmingMachine.builder()
+        FarmingMachine farmingMachineUser = farmingMachineManager.addFarmingMachine(FarmingMachineDTO.builder()
                 .supportedOperationTypes(Set.of(OperationType.SEEDING))
                 .producer("TEST_TO_UPDATE")
                 .model("TEST")
-                .build();
-        farmingMachineUser = farmingMachineManager.addFarmingMachine(farmingMachineUser);
+                .build());
 
         FarmingMachineDTO farmingMachineDTO = DefaultMappers.farmingMachineMapper.entityToDto(farmingMachineUser);
         farmingMachineDTO.setModel("TEST_UPDATED");
@@ -278,12 +277,12 @@ public class FarmingMachineControllerTest {
     @Test
     @Transactional
     void deleteFarmingMachine() throws Exception {
-        FarmingMachine farmingMachineUser = FarmingMachine.builder()
-                .supportedOperationTypes(Set.of(OperationType.SEEDING))
-                .producer("TEST_TO_DELETE")
-                .model("TEST")
-                .build();
-        farmingMachineUser = farmingMachineManager.addFarmingMachine(farmingMachineUser);
+        FarmingMachine farmingMachineUser = farmingMachineManager.addFarmingMachine(
+                FarmingMachineDTO.builder()
+                        .supportedOperationTypes(Set.of(OperationType.SEEDING))
+                        .producer("TEST_TO_DELETE")
+                        .model("TEST")
+                        .build());
 
         mockMvc.perform(delete(FarmingMachineController.BASE_PATH)
                         .param("id", farmingMachineUser.getId().toString())

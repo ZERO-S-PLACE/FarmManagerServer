@@ -1,6 +1,7 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import org.springframework.data.domain.Page;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.SpeciesDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
 
 import java.rmi.NoSuchObjectException;
@@ -20,10 +21,12 @@ public interface SpeciesManager {
 
     Species getSpeciesById(UUID id);
 
-    Species addSpecies(Species species);
+    Species addSpecies(SpeciesDTO speciesDTO);
 
-    Species updateSpecies(Species species) throws NoSuchObjectException;
+    Species updateSpecies(SpeciesDTO speciesDTO);
 
-    void deleteSpeciesSafe(Species species);
+    void deleteSpeciesSafe(UUID speciesId);
+
+    Species getUndefinedSpecies();
 
 }

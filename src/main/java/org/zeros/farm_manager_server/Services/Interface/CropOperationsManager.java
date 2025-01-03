@@ -1,14 +1,13 @@
 package org.zeros.farm_manager_server.Services.Interface;
 
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
+import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Operations.*;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.*;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.InterCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
-import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -16,78 +15,73 @@ import java.util.UUID;
 
 public interface CropOperationsManager {
 
-    MainCrop createNewMainCrop(FieldPart fieldPart, Set<Plant> cultivatedPlants);
+    MainCrop createNewMainCrop(UUID fieldPartId, Set<UUID> cultivatedPlantsIds);
 
-    InterCrop createNewInterCrop(FieldPart fieldPart, Set<Plant> cultivatedPlants);
+    InterCrop createNewInterCrop(UUID fieldPartId, Set<UUID> cultivatedPlantsIds);
 
-    void deleteCropAndItsData(Crop crop);
+    void deleteCropAndItsData(UUID cropId);
 
-    Crop updateCultivatedPlants(Crop crop, Set<Plant> cultivatedPlants);
+    Crop updateCultivatedPlants(UUID cropId, Set<UUID> cultivatedPlantsIds);
 
-    Crop setDateDestroyed(InterCrop interCrop, LocalDate dateDestroyed);
+    Crop setDateDestroyed(UUID interCropId, LocalDate dateDestroyed);
 
-    void setWorkFinished(Crop crop);
+    void setWorkFinished(UUID cropId);
 
-    void setFullySold(MainCrop mainCrop);
+    void setFullySold(UUID mainCropId);
 
     Crop getCropById(UUID id);
 
-    AgriculturalOperation commitPlannedOperation(AgriculturalOperation agriculturalOperation);
+    AgriculturalOperation commitPlannedOperation(UUID operationId, OperationType operationType);
 
-    AgriculturalOperation updateOperationMachine(AgriculturalOperation agriculturalOperation, FarmingMachine farmingMachine);
+    AgriculturalOperation updateOperationMachine(UUID operationId, OperationType operationType, UUID machineId);
 
-    AgriculturalOperation updateOperationParameters(AgriculturalOperation agriculturalOperation);
+    AgriculturalOperation updateOperationParameters(AgriculturalOperationDTO agriculturalOperationDTO);
 
-    Seeding planSeeding(Crop crop, Seeding seeding);
+    void deleteOperation(UUID operationId, OperationType operationType);
 
-    Seeding addSeeding(Crop crop, Seeding seeding);
+    Seeding planSeeding(UUID cropId, SeedingDTO seedingDTO);
 
-    void deleteSeeding(Seeding seeding);
+    Seeding addSeeding(UUID cropId, SeedingDTO seedingDTO);
 
     Seeding getSeedingById(UUID id);
 
+    Cultivation planCultivation(UUID cropId, CultivationDTO cultivationDTO);
 
-    Cultivation planCultivation(Crop crop, Cultivation cultivation);
-
-    Cultivation addCultivation(Crop crop, Cultivation cultivation);
-
-    void deleteCultivation(Cultivation cultivation);
+    Cultivation addCultivation(UUID cropId, CultivationDTO cultivationDTO);
 
     Cultivation getCultivationById(UUID id);
 
-    FertilizerApplication planFertilizerApplication(Crop crop, FertilizerApplication fertilizerApplication);
 
-    FertilizerApplication addFertilizerApplication(Crop crop, FertilizerApplication fertilizerApplication);
+    FertilizerApplication planFertilizerApplication(UUID cropId, FertilizerApplicationDTO fertilizerApplicationDTO);
 
-    void deleteFertilizerApplication(FertilizerApplication fertilizerApplication);
+    FertilizerApplication addFertilizerApplication(UUID cropId, FertilizerApplicationDTO fertilizerApplicationDTO);
 
     FertilizerApplication getFertilizerApplicationById(UUID id);
 
-    SprayApplication planSprayApplication(Crop crop, SprayApplication sprayApplication);
 
-    SprayApplication addSprayApplication(Crop crop, SprayApplication sprayApplication);
+    SprayApplication planSprayApplication(UUID cropId, SprayApplicationDTO sprayApplicationDTO);
 
-    void deleteSprayApplication(SprayApplication sprayApplication);
+    SprayApplication addSprayApplication(UUID cropId, SprayApplicationDTO sprayApplicationDTO);
 
     SprayApplication getSprayApplicationById(UUID id);
 
-    Harvest planHarvest(MainCrop crop, Harvest harvest);
 
-    Harvest addHarvest(MainCrop crop, Harvest harvest);
+    Harvest planHarvest(UUID cropId, HarvestDTO harvestDTO);
 
-    void deleteHarvest(Harvest harvest);
+    Harvest addHarvest(UUID cropId, HarvestDTO harvestDTO);
 
     Harvest getHarvestById(UUID id);
 
-    Crop addSubside(Crop crop, Subside subside);
 
-    Crop removeSubside(Crop crop, Subside subside);
+    void addSubside(UUID cropId, UUID subsideId);
 
-    CropSale addCropSale(MainCrop crop, CropSale cropSale);
+    void removeSubside(UUID cropId, UUID subsideId);
 
-    CropSale updateCropSale(CropSale cropSale);
+    CropSale addCropSale(UUID cropId, CropSaleDTO cropSaleDTO);
 
-    void removeCropSale(CropSale cropSale);
+    CropSale updateCropSale(CropSaleDTO cropSaleDTO);
+
+    void removeCropSale(UUID cropSaleId);
 
     CropSale getCropSaleById(UUID id);
 

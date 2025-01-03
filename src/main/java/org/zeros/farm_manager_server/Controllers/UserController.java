@@ -11,7 +11,7 @@ import org.zeros.farm_manager_server.Services.Default.UserManagerDefault;
 
 import java.rmi.NoSuchObjectException;
 import java.util.UUID;
-
+/*
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -25,7 +25,7 @@ public class UserController {
 
     /*User createNewUser(User user){
 
-    }*/
+    }
 
     @GetMapping(USER_PATH)
     public User getUserById(@RequestParam UUID userId) throws NoSuchObjectException {
@@ -36,7 +36,6 @@ public class UserController {
     }
 
 
-    /*
     User getUserByEmail(String email);
 
     User getUserByUsername(String username);
@@ -51,6 +50,7 @@ public class UserController {
 
     void deleteAllUserData(User user);
 
-    */
+
 
 }
+*/

@@ -1,5 +1,6 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -7,13 +8,20 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCustom;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.SpeciesDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.Data.PlantRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SubsideRepository;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -26,12 +34,6 @@ public class SpeciesManagerDefault implements SpeciesManager {
     private final SubsideRepository subsideRepository;
     private final LoggedUserConfiguration config;
 
-
-    private static void checkSpeciesConstraints(Species species) {
-        if (species.getName().isBlank() || species.getFamily().isBlank()) {
-            throw new IllegalArgumentException("Species name and family are required");
-        }
-    }
 
     private static PageRequest getPageRequest(int pageNumber) {
         if (pageNumber < 0) pageNumber = 0;
@@ -54,57 +56,111 @@ public class SpeciesManagerDefault implements SpeciesManager {
     }
 
     @Override
-    public Page<Species> getSpeciesByNameAs(String name, int pageNumber) {
-        return speciesRepository.findAllByNameContainsIgnoreCaseAndCreatedByIn(name, config.allRows(), getPageRequest(pageNumber));
+    public Page<Species> getSpeciesByNameAs(@NotNull String name, int pageNumber) {
+        return speciesRepository.findAllByNameContainsIgnoreCaseAndCreatedByIn(name,
+                config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<Species> getSpeciesByFamilyAs(String family, int pageNumber) {
-        return speciesRepository.findAllByFamilyContainsIgnoreCaseAndCreatedByIn(family, config.allRows(), getPageRequest(pageNumber));
+    public Page<Species> getSpeciesByFamilyAs(@NotNull String family, int pageNumber) {
+        return speciesRepository.findAllByFamilyContainsIgnoreCaseAndCreatedByIn(family,
+                config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Species getSpeciesById(UUID id) {
+    public Species getSpeciesById(@NotNull UUID id) {
         return speciesRepository.findById(id).orElse(Species.NONE);
     }
 
     @Override
-    public Species addSpecies(Species species) {
-        checkSpeciesConstraints(species);
-        if (speciesRepository.findByNameAndFamilyAndCreatedByIn(species.getName(), species.getFamily(), config.allRows()).isPresent()) {
-            throw new IllegalArgumentException("This species already exists");
+    public Species addSpecies(@NotNull SpeciesDTO speciesDTO) {
+        checkIfRequiredFieldsPresent(speciesDTO);
+        checkIfUnique(speciesDTO);
+        return speciesRepository.saveAndFlush(rewriteValuesToEntity(speciesDTO, Species.NONE));
+    }
+
+    private void checkIfRequiredFieldsPresent(SpeciesDTO speciesDTO) {
+        if (speciesDTO.getName() == null || speciesDTO.getFamily() == null
+                || speciesDTO.getName().isBlank() || speciesDTO.getFamily().isBlank()) {
+            throw new IllegalArgumentExceptionCustom(Species.class,
+                    Set.of("name", "family"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        species.setCreatedBy(config.username());
-        return speciesRepository.saveAndFlush(species);
+    }
+
+    private void checkIfUnique(SpeciesDTO speciesDTO) {
+        if (speciesDTO.getId()==null&&speciesRepository.findByNameAndFamilyAndCreatedByIn(speciesDTO.getName(),
+                speciesDTO.getFamily(), config.allRows()).isPresent()) {
+            throw new IllegalArgumentExceptionCustom(Species.class,
+                    IllegalArgumentExceptionCause.OBJECT_EXISTS);
+        }
+    }
+
+    private Species rewriteValuesToEntity(SpeciesDTO dto, Species entity) {
+        Species entityParsed = DefaultMappers.speciesMapper.dtoToEntitySimpleProperties(dto);
+        entityParsed.setCreatedBy(config.username());
+        entityParsed.setVersion(entity.getVersion());
+        entityParsed.setCreatedDate(entity.getCreatedDate());
+        entityParsed.setLastModifiedDate(entity.getLastModifiedDate());
+        return entityParsed;
     }
 
     @Override
-    public Species updateSpecies(Species species) {
-        Species originalSpecies = speciesRepository.findById(species.getId()).orElse(Species.NONE);
+    public Species updateSpecies(@NotNull SpeciesDTO speciesDTO) {
+        Species originalSpecies = getSpeciesIfExists(speciesDTO);
+        checkAccess(originalSpecies);
+        checkIfRequiredFieldsPresent(speciesDTO);
+        return speciesRepository.saveAndFlush(rewriteValuesToEntity(speciesDTO, originalSpecies));
+    }
+
+    private void checkAccess(Species originalSpecies) {
+        if (originalSpecies.getCreatedBy().equals(config.username())) {
+            return;
+        }
+        throw new IllegalAccessErrorCustom(Species.class,
+                IllegalAccessErrorCause.USAGE_IN_OTHER_PLACES);
+    }
+
+    private Species getSpeciesIfExists(SpeciesDTO speciesDTO) {
+        if (speciesDTO.getId() == null) {
+            throw new IllegalArgumentExceptionCustom(
+                    Species.class,
+                    Set.of("Id"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        }
+        Species originalSpecies = speciesRepository.findById(speciesDTO.getId()).orElse(Species.NONE);
         if (originalSpecies.equals(Species.NONE)) {
-            throw new IllegalArgumentException("Species not found");
+            throw new IllegalArgumentExceptionCustom(
+                    Species.class,
+                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        if (originalSpecies.getCreatedBy().equals(config.username())) {
-            checkSpeciesConstraints(species);
-            return speciesRepository.saveAndFlush(species);
-        }
-        throw new IllegalAccessError("You can't modify this object-no access");
+        return originalSpecies;
     }
 
     @Override
-    public void deleteSpeciesSafe(Species species) {
-        Species originalSpecies = speciesRepository.findById(species.getId()).orElse(Species.NONE);
-        if (originalSpecies.getCreatedBy().equals(config.username())) {
-            if (plantRepository.findAllBySpeciesAndCreatedByIn(species, config.allRows(), PageRequest.of(0, 1)).isEmpty()) {
-                if (subsideRepository.findAllBySpeciesAllowedContains(species).isEmpty()) {
-                    speciesRepository.delete(species);
-                    return;
-                }
-            }
-            throw new IllegalAccessError("You can't modify this object-usage in other places");
+    public void deleteSpeciesSafe(@NotNull UUID speciesId) {
+        Species originalSpecies = getSpeciesById(speciesId);
+        if (originalSpecies == Species.NONE) {
+            return;
         }
-        throw new IllegalAccessError("You can't modify this object-no access");
+        checkAccess(originalSpecies);
+        checkUsages(originalSpecies);
+        speciesRepository.delete(originalSpecies);
+    }
 
+    @Override
+    public Species getUndefinedSpecies() {
+        return speciesRepository.getSpeciesByName("ANY").orElse(Species.ANY);
+    }
+
+    private void checkUsages(Species originalSpecies) {
+        if (plantRepository.findAllBySpeciesAndCreatedByIn(originalSpecies,
+                config.allRows(), PageRequest.of(0,1)).isEmpty()
+                && subsideRepository.findAllBySpeciesAllowedContains(originalSpecies).isEmpty()) {
+            return;
+        }
+        throw new IllegalAccessErrorCustom(Species.class,
+                IllegalAccessErrorCause.USAGE_IN_OTHER_PLACES);
     }
 
 }
