@@ -1,6 +1,7 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import org.springframework.data.domain.Page;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.SubsideDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
 
@@ -20,11 +21,11 @@ public interface SubsideManager {
 
     Subside getSubsideById(UUID id);
 
-    Subside addSubside(Subside subside);
+    Subside addSubside(SubsideDTO subsideDTO);
 
-    Subside updateSubside(Subside subside) throws NoSuchObjectException;
+    Subside updateSubside(SubsideDTO subsideDAO) throws NoSuchObjectException;
 
-    void deleteSubsideSafe(Subside subside);
+    void deleteSubsideSafe(UUID subsideId);
 
 
 }

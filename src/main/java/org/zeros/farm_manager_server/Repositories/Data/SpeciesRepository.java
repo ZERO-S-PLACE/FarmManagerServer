@@ -24,5 +24,7 @@ public interface SpeciesRepository extends JpaRepository<Species, UUID> {
     Optional<Species> getSpeciesByName(String rapeSeed);
 
     void deleteAllByCreatedBy(String username);
+
+    Optional<Species> getSpeciesById(UUID uuid);
 }
 

@@ -2,6 +2,7 @@ package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Range;
+import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FertilizerDTO;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
 
 import java.util.UUID;
@@ -20,15 +21,15 @@ public interface FertilizerManager {
 
     Page<Fertilizer> getSyntheticFertilizers(int pageNumber);
 
+    Page<Fertilizer> getFertilizersCriteria(String name, Boolean isNatural, int pageNumber);
+
     Fertilizer getFertilizerById(UUID id);
 
-    Fertilizer addFertilizer(Fertilizer fertilizer);
+    Fertilizer addFertilizer(FertilizerDTO fertilizerDTO);
 
-    Fertilizer updateFertilizer(Fertilizer fertilizer);
+    Fertilizer updateFertilizer(FertilizerDTO fertilizerDTO);
 
-    void deleteFertilizerSafe(Fertilizer fertilizer);
+    void deleteFertilizerSafe(UUID fertilizerId);
 
     Fertilizer getUndefinedFertilizer();
-
-    Page<Fertilizer> getFertilizersCriteria(String name, Boolean isNatural, Integer pageNumber);
 }

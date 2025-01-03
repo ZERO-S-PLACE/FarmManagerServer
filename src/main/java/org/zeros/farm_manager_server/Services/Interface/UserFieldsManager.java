@@ -1,11 +1,13 @@
 package org.zeros.farm_manager_server.Services.Interface;
 
+import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldGroupDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldPartDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,45 +19,45 @@ public interface UserFieldsManager {
 
     FieldGroup getFieldGroupById(UUID id);
 
-    FieldGroup updateFieldGroupAndDescription(FieldGroup group);
+    FieldGroup updateFieldGroup(FieldGroupDTO groupDTO);
 
-    List<FieldGroup> getAllFieldGroups();
+    Set<FieldGroup> getAllFieldGroups();
 
-    void deleteFieldGroupWithFields(FieldGroup group);
+    void deleteFieldGroupWithFields(UUID groupId);
 
-    void deleteFieldGroupWithoutFields(FieldGroup group);
+    void deleteFieldGroupWithoutFields(UUID groupId);
 
-    void moveFieldsToAnotherGroup(Set<Field> fields, FieldGroup newGroup);
+    void moveFieldsToAnotherGroup(Set<UUID> fieldsIds, UUID newGroupId);
 
-    Field createFieldDefault(Field field);
+    Field createFieldDefault(FieldDTO fieldDTO);
 
-    Field createFieldInGroup(Field field, FieldGroup group);
+    Field createFieldInGroup(FieldDTO fieldDTO, UUID groupId);
 
     Field getFieldById(UUID id);
 
     Set<Field> getAllFields();
 
-    Field updateFieldInfo(Field field);
+    Field updateField(FieldDTO fieldDTO);
 
-    void deleteFieldWithData(Field field);
+    void deleteFieldWithData(UUID fieldId);
 
-    void archiveField(Field field);
+    void archiveField(UUID fieldId);
 
-    Field deArchiveField(Field field);
+    void deArchiveField(UUID fieldId);
 
-    Field divideFieldPart(FieldPart originPart, FieldPart part1, FieldPart part2);
+    Field divideFieldPart(UUID originPartId, FieldPartDTO part1DTO, FieldPartDTO part2DTO);
 
-    FieldPart mergeFieldParts(Set<FieldPart> fieldParts);
+    FieldPart mergeFieldParts(Set<UUID> fieldPartsIds);
 
-    Set<FieldPart> getAllFieldParts(Field field);
+    Set<FieldPart> getAllFieldParts(UUID fieldId);
 
-    Set<FieldPart> getAllNonArchivedFieldParts(Field field);
+    Set<FieldPart> getAllNonArchivedFieldParts(UUID fieldId);
 
-    FieldPart updateFieldPartName(FieldPart fieldPart, String newName);
+    FieldPart updateFieldPartName(UUID fieldPartId, String newName);
 
-    Field updateFieldPartAreaResizeField(FieldPart fieldPart, BigDecimal newArea);
+    Field updateFieldPartAreaResizeField(UUID fieldPartId, BigDecimal newArea);
 
-    Field updateFieldPartAreaTransfer(FieldPart changedPart, FieldPart resizedPart, BigDecimal newArea);
+    Field updateFieldPartAreaTransfer(UUID changedPartId, UUID resizedPartId, BigDecimal newArea);
 
     FieldPart getFieldPartById(UUID id);
 

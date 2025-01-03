@@ -62,7 +62,7 @@ public class PlantControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(plant.getId().toString())))
                 .andExpect(jsonPath("$.variety", is(plant.getVariety())))
-                .andExpect(jsonPath("$.speciesId",is(plant.getSpecies().getId().toString())))
+                .andExpect(jsonPath("$.species",is(plant.getSpecies().getId().toString())))
                 .andReturn();
 
         displayResponse(result);
@@ -123,6 +123,7 @@ public class PlantControllerTest {
                         get(PlantController.LIST_PARAM_PATH)
                                 .param("variety", plant.getVariety().substring(0, 3))
                                 .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size", is(Matchers.greaterThan(0))))
@@ -227,13 +228,7 @@ public class PlantControllerTest {
     @Test
     @Transactional
     void update() throws Exception {
-        Plant plantWithSameSpecies = plantManager.getAllPlants(0).getContent().get(1);
-        Plant plant = Plant.builder()
-                .variety("Test")
-                .species(plantWithSameSpecies.getSpecies())
-                .productionCompany("RAGT")
-                .build();
-        plant = plantManager.addPlant(plant);
+        Plant plant = createNewPlant();
 
         PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(plant);
         plantDTO.setDescription("TEST_UPDATED");
@@ -249,6 +244,16 @@ public class PlantControllerTest {
                 .isEqualTo("TEST_UPDATED");
         assertThat(plantManager.getPlantById(plant.getId()).getCountryOfOrigin())
                 .isEqualTo("TEST_UPDATED");
+    }
+
+    private Plant createNewPlant() {
+        Plant plantWithSameSpecies = plantManager.getAllPlants(0).getContent().get(1);
+
+        return  plantManager.addPlant(PlantDTO.builder()
+                .variety("Test")
+                .species(plantWithSameSpecies.getSpecies().getId())
+                .productionCompany("RAGT")
+                .build());
     }
 
     @Test
@@ -268,13 +273,7 @@ public class PlantControllerTest {
     @Test
     @Transactional
     void updateVarietyBlank() throws Exception {
-        Plant plantWithSameSpecies = plantManager.getAllPlants(0).getContent().get(1);
-        Plant plant = Plant.builder()
-                .variety("Test")
-                .species(plantWithSameSpecies.getSpecies())
-                .productionCompany("RAGT")
-                .build();
-        plant = plantManager.addPlant(plant);
+        Plant plant = createNewPlant();
 
         PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(plant);
         plantDTO.setVariety("");
@@ -289,13 +288,7 @@ public class PlantControllerTest {
     @Test
     @Transactional
     void deletePlant() throws Exception {
-        Plant plantWithSameSpecies = plantManager.getAllPlants(0).getContent().get(1);
-        Plant plant = Plant.builder()
-                .variety("Test")
-                .species(plantWithSameSpecies.getSpecies())
-                .productionCompany("RAGT")
-                .build();
-        plant = plantManager.addPlant(plant);
+        Plant plant = createNewPlant();
 
         mockMvc.perform(delete(PlantController.BASE_PATH)
                         .param("id", plant.getId().toString())

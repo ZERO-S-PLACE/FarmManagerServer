@@ -74,9 +74,7 @@ public class FertilizerController {
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody FertilizerDTO fertilizerDTO) {
 
-        Fertilizer saved = fertilizerManager.addFertilizer(
-                DefaultMappers.fertilizerMapper.dtoToEntity(fertilizerDTO)
-        );
+        Fertilizer saved = fertilizerManager.addFertilizer(fertilizerDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
@@ -85,15 +83,13 @@ public class FertilizerController {
 
     @PatchMapping(BASE_PATH)
     ResponseEntity<String> update(@RequestBody FertilizerDTO fertilizerDTO) {
-        fertilizerManager.updateFertilizer(
-                DefaultMappers.fertilizerMapper.dtoToEntity(fertilizerDTO)
-        );
+        fertilizerManager.updateFertilizer(fertilizerDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(BASE_PATH)
     ResponseEntity<String> deleteById(@RequestParam UUID id) {
-        fertilizerManager.deleteFertilizerSafe(fertilizerManager.getFertilizerById(id));
+        fertilizerManager.deleteFertilizerSafe(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

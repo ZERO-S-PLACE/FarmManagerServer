@@ -75,9 +75,7 @@ public class SprayController {
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody SprayDTO sprayDTO) {
 
-        Spray saved = sprayManager.addSpray(
-                DefaultMappers.sprayMapper.dtoToEntity(sprayDTO)
-        );
+        Spray saved = sprayManager.addSpray(sprayDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
@@ -86,15 +84,13 @@ public class SprayController {
 
     @PatchMapping(BASE_PATH)
     ResponseEntity<String> update(@RequestBody SprayDTO sprayDTO) {
-        sprayManager.updateSpray(
-                DefaultMappers.sprayMapper.dtoToEntity(sprayDTO)
-        );
+        sprayManager.updateSpray(sprayDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(BASE_PATH)
     ResponseEntity<String> deleteById(@RequestParam UUID id) {
-        sprayManager.deleteSpraySafe(sprayManager.getSprayById(id));
+        sprayManager.deleteSpraySafe(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

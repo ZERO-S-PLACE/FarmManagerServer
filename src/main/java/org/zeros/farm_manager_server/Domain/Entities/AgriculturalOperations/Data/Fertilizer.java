@@ -111,7 +111,13 @@ public class Fertilizer extends BaseEntity {
     private BigDecimal  totalSiPercent = BigDecimal.ZERO;
 
     @Transient
-    public final static Fertilizer NONE = Fertilizer.builder().name("NONE").producer("NONE").build();
+    public final static Fertilizer NONE = Fertilizer.builder()
+            .name("NONE")
+            .producer("NONE")
+            .build();
     @Transient
-    public final static Fertilizer UNDEFINED = Fertilizer.builder().name("UNDEFINED").producer("UNDEFINED").build();
+    public final static Fertilizer UNDEFINED = Fertilizer.builder()
+            .name("UNDEFINED")
+            .producer("UNDEFINED")
+            .build();
 }

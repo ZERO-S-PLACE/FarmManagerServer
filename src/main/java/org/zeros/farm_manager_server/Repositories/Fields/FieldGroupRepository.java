@@ -8,11 +8,12 @@ import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface FieldGroupRepository extends JpaRepository<FieldGroup, UUID> {
 
-    List<FieldGroup> findAllByUser(@NotNull User user);
+    Set<FieldGroup> findAllByUser(@NotNull User user);
 
     Optional<FieldGroup> findByUserAndFieldGroupName(@NotNull User user, @NotNull @NotBlank String fieldGroupName);
 

@@ -1,6 +1,5 @@
 package org.zeros.farm_manager_server.Domain.Mappers;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
@@ -18,7 +17,6 @@ import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
-import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -29,10 +27,10 @@ import java.util.stream.Collectors;
 
 @Component
 
-public interface DtoEntityMapper<D, E> {
+public interface DtoFromEntityMapper<D, E> {
 
     D entityToDto(E entity);
-    E dtoToEntity(D dto);
+    E dtoToEntitySimpleProperties(D dto);
 
 
     default float map(BigDecimal value) {
@@ -118,4 +116,6 @@ public interface DtoEntityMapper<D, E> {
     default Species mapUUIDtoSpecies(UUID value){
         return Species.NONE;
     }
+
+
 }

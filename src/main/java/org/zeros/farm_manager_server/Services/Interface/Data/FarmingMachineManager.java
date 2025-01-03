@@ -1,6 +1,7 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import org.springframework.data.domain.Page;
+import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FarmingMachineDTO;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
 
@@ -25,11 +26,11 @@ public interface FarmingMachineManager {
 
     FarmingMachine getFarmingMachineById(UUID id);
 
-    FarmingMachine addFarmingMachine(FarmingMachine farmingMachine);
+    FarmingMachine addFarmingMachine(FarmingMachineDTO farmingMachineDTO);
 
-    FarmingMachine updateFarmingMachine(FarmingMachine farmingMachine);
+    FarmingMachine updateFarmingMachine(FarmingMachineDTO farmingMachineDTO);
 
-    void deleteFarmingMachineSafe(FarmingMachine farmingMachine);
+    void deleteFarmingMachineSafe(UUID farmingMachineId);
 
     FarmingMachine getUndefinedFarmingMachine();
 }

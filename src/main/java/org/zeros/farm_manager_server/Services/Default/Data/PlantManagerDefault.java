@@ -1,5 +1,6 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -7,14 +8,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCustom;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.PlantDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.Crop.CropRepository;
 import org.zeros.farm_manager_server.Repositories.Data.PlantRepository;
 import org.zeros.farm_manager_server.Services.Interface.Data.PlantManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -27,12 +35,6 @@ public class PlantManagerDefault implements PlantManager {
     private final CropRepository cropRepository;
     private final SpeciesManager speciesManager;
 
-
-    private static void checkPlantConstraints(Plant plant) {
-        if (plant.getVariety().isBlank() || plant.getSpecies().equals(Species.NONE)) {
-            throw new IllegalArgumentException("Variety and species must be specified");
-        }
-    }
 
     private static PageRequest getPageRequest(int pageNumber) {
         return PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("variety"));
@@ -55,76 +57,135 @@ public class PlantManagerDefault implements PlantManager {
     }
 
     @Override
-    public Page<Plant> getPlantsByVarietyAs(String variety, int pageNumber) {
-        return plantRepository.findAllByVarietyContainingIgnoreCaseAndCreatedByIn(variety, config.allRows(), getPageRequest(pageNumber));
+    public Page<Plant> getPlantsByVarietyAs(@NotNull String variety, int pageNumber) {
+        return plantRepository.findAllByVarietyContainingIgnoreCaseAndCreatedByIn(variety,
+                config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<Plant> getPlantsBySpecies(Species species, int pageNumber) {
+    public Page<Plant> getPlantsBySpecies(@NotNull Species species, int pageNumber) {
         return plantRepository.findAllBySpeciesAndCreatedByIn(species, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<Plant> getPlantsByVarietyAndSpecies(String variety, Species species, int pageNumber) {
-        return plantRepository.findAllBySpeciesAndVarietyContainingIgnoreCaseAndCreatedByIn(species, variety, config.allRows(), getPageRequest(pageNumber));
+    public Page<Plant> getPlantsByVarietyAndSpecies(@NotNull String variety,@NotNull Species species, int pageNumber) {
+        return plantRepository.findAllBySpeciesAndVarietyContainingIgnoreCaseAndCreatedByIn(species, variety,
+                config.allRows(), getPageRequest(pageNumber));
     }
-
     @Override
-    public Plant getPlantById(UUID uuid) {
-        return plantRepository.findById(uuid).orElse(Plant.NONE);
-    }
-
-    @Override
-    public Plant addPlant(Plant plant) {
-        checkPlantConstraints(plant);
-        if (plantRepository.findAllBySpeciesAndVarietyAndCreatedByIn(plant.getSpecies(), plant.getVariety(), config.allRows(), PageRequest.of(0, 1)).isEmpty()) {
-            plant.setCreatedBy(config.username());
-            return plantRepository.saveAndFlush(plant);
-        }
-        throw new IllegalArgumentException("Plant already exists");
-    }
-
-    @Override
-    public Plant updatePlant(Plant plant) {
-        Plant originalPlant = plantRepository.findById(plant.getId()).orElse(Plant.NONE);
-        if (originalPlant.equals(Plant.NONE)) {
-            throw new IllegalArgumentException("Plant not found");
-        }
-        if (originalPlant.getCreatedBy().equals(config.username())) {
-            checkPlantConstraints(plant);
-            return plantRepository.saveAndFlush(plant);
-        }
-        throw new IllegalAccessError("You can't modify this object-no access");
-    }
-
-    @Override
-    public void deletePlantSafe(Plant plant) {
-
-        Plant originalPlant = plantRepository.findById(plant.getId()).orElse(Plant.NONE);
-        if (originalPlant.getCreatedBy().equals(config.username())) {
-            if (cropRepository.findAllByCultivatedPlantsContains(plant).isEmpty()) {
-                plantRepository.delete(plant);
-                return;
-            }
-
-            throw new IllegalAccessError("You can't modify this object-usage in other places");
-        }
-        throw new IllegalAccessError("You can't modify this object-no access");
-    }
-
-    @Override
-    public Page<Plant> getPlantsCriteria(String variety, UUID speciesId, Integer pageNumber) {
+    public Page<Plant> getPlantsCriteria( String variety, UUID speciesId, int pageNumber) {
         boolean varietyNotPresent = variety == null || variety.isEmpty();
-        Species species = speciesManager.getSpeciesById(speciesId);
-        if (species == Species.NONE) {
+        boolean speciesNotPresent;
+        Species species = Species.NONE;
+        if(speciesId != null ){
+            species= speciesManager.getSpeciesById(speciesId);
+        }
+        speciesNotPresent = species.equals(Species.NONE);
+
+        if (speciesNotPresent) {
             if (varietyNotPresent) {
                 return getAllPlants(pageNumber);
             }
             return getPlantsByVarietyAs(variety, pageNumber);
-        }
-        if (varietyNotPresent) {
+        }else if (varietyNotPresent) {
             return getPlantsBySpecies(species, pageNumber);
         }
         return getPlantsByVarietyAndSpecies(variety, species, pageNumber);
     }
+
+    @Override
+    public Plant getPlantById(@NotNull UUID uuid) {
+        return plantRepository.findById(uuid).orElse(Plant.NONE);
+    }
+
+    @Override
+    public Plant addPlant(@NotNull PlantDTO plantDTO) {
+        checkIfRequiredFieldsPresent(plantDTO);
+        checkIfUnique(plantDTO);
+        return plantRepository.saveAndFlush(rewriteValuesToEntity(plantDTO, Plant.NONE));
+    }
+
+    private void checkIfRequiredFieldsPresent(PlantDTO plantDTO) {
+        if (plantDTO.getVariety() == null || plantDTO.getVariety().isBlank()
+                || plantDTO.getSpecies() == null) {
+            throw new IllegalArgumentExceptionCustom(Plant.class,
+                    Set.of("variety", "species"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        }
+    }
+    private void checkIfUnique(PlantDTO plantDTO) {
+        if (plantDTO.getId()==null&&plantRepository.findAllBySpeciesAndVarietyAndCreatedByIn(
+                speciesManager.getSpeciesById(plantDTO.getSpecies()),
+                plantDTO.getVariety(),
+                config.allRows(),
+                getPageRequest(0)).isEmpty()) {
+            return;
+        }
+        throw new IllegalArgumentExceptionCustom(Plant.class,
+                IllegalArgumentExceptionCause.OBJECT_EXISTS);
+    }
+
+    private Plant rewriteValuesToEntity(PlantDTO dto, Plant entity) {
+        Plant entityParsed = DefaultMappers.plantMapper.dtoToEntitySimpleProperties(dto);
+        entityParsed.setCreatedBy(config.username());
+        entityParsed.setVersion(entity.getVersion());
+        entityParsed.setCreatedDate(entity.getCreatedDate());
+        entityParsed.setLastModifiedDate(entity.getLastModifiedDate());
+        entityParsed.setSpecies(speciesManager.getSpeciesById(dto.getSpecies()));
+        return entityParsed;
+
+    }
+
+    @Override
+    public Plant updatePlant(@NotNull PlantDTO plantDTO) {
+        Plant originalPlant = getPlantIfExists(plantDTO);
+        checkAccess(originalPlant);
+        checkIfRequiredFieldsPresent(plantDTO);
+        return plantRepository.saveAndFlush(rewriteValuesToEntity(plantDTO, originalPlant));
+    }
+
+    private void checkAccess(Plant originalPlant) {
+        if (originalPlant.getCreatedBy().equals(config.username())) {
+            return;
+        }
+        throw new IllegalAccessErrorCustom(Plant.class,
+                IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
+    }
+
+    private Plant getPlantIfExists(PlantDTO plantDTO) {
+        if (plantDTO.getId() == null) {
+            throw new IllegalArgumentExceptionCustom(
+                    Plant.class,
+                    Set.of("Id"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        }
+        Plant originalPlant = plantRepository.findById(plantDTO.getId()).orElse(Plant.NONE);
+        if (originalPlant.equals(Plant.NONE)) {
+            throw new IllegalArgumentExceptionCustom(
+                    Plant.class,
+                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+        return originalPlant;
+    }
+
+    @Override
+    public void deletePlantSafe(@NotNull UUID plantId) {
+
+        Plant originalPlant = getPlantById(plantId);
+        if (originalPlant.equals(Plant.NONE)) {return;}
+        checkAccess(originalPlant);
+        checkUsages(originalPlant);
+        plantRepository.delete(originalPlant);
+
+    }
+
+    private void checkUsages(Plant originalPlant) {
+        if (cropRepository.findAllByCultivatedPlantsContains(originalPlant).isEmpty()) {
+            return;
+        }
+        throw new IllegalAccessErrorCustom(Plant.class,
+                IllegalAccessErrorCause.USAGE_IN_OTHER_PLACES);
+    }
+
+
 }

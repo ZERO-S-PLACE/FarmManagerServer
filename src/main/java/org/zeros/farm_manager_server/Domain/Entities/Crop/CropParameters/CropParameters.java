@@ -53,7 +53,6 @@ public class CropParameters extends BaseEntity {
     @Transient
     public static final CropParameters UNDEFINED = CropParameters.builder()
             .name("UNDEFINED")
-            .createdBy("UNDEFINED")
             .resourceType(ResourceType.ANY)
             .comment("UNDEFINED")
             .build();

@@ -7,14 +7,15 @@ import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.CropSummary;
 import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.ResourcesSummary;
 
 import java.util.Map;
+import java.util.UUID;
 
 public interface CropDataReader {
 
-    CropSummary getCropSummary(Crop crop);
+    CropSummary getCropSummary(UUID cropId);
 
-    ResourcesSummary getCropResourcesSummary(Crop crop);
+    ResourcesSummary getCropResourcesSummary(UUID cropId);
 
-    ResourcesSummary getPlannedResourcesSummary(Crop crop);
+    ResourcesSummary getPlannedResourcesSummary(UUID cropId);
 
-    Map<ResourceType, CropParameters> getMeanCropParameters(Crop crop);
+    Map<ResourceType, CropParameters> getMeanCropParameters(UUID cropId);
 }

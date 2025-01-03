@@ -1,12 +1,13 @@
 package org.zeros.farm_manager_server.Services.Interface;
 
+import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 
 import java.util.UUID;
 
 public interface UserManager {
 
-    User createNewUser(User user);
+    User createNewUser(UserDTO userDTO);
 
     User getUserById(UUID id);
 
@@ -20,7 +21,7 @@ public interface UserManager {
 
     void logOutUser();
 
-    User updateUserInfo(User user);
+    User updateUserInfo(UserDTO userDTO);
 
-    void deleteAllUserData(User user);
+    void deleteAllUserData(UUID userId);
 }
