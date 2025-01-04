@@ -15,7 +15,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Controllers.CropParametersController;
 import org.zeros.farm_manager_server.Controllers.UserDataReaderController;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.OperationType;
+
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
