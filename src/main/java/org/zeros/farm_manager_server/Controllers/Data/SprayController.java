@@ -8,9 +8,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.SprayDTO;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.SprayManager;
 
@@ -32,7 +35,7 @@ public class SprayController {
     public SprayDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
         Spray spray = sprayManager.getSprayById(id);
         if (spray == Spray.NONE) {
-            throw new NoSuchObjectException("Machine do not exist");
+            throw new IllegalArgumentExceptionCustom(Spray.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         return DefaultMappers.sprayMapper.entityToDto(spray);
 

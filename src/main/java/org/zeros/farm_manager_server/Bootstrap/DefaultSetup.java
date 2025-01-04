@@ -261,7 +261,7 @@ public class DefaultSetup {
 
     private void createTestCropParameters() {
         if (cropParametersManager.getUndefinedCropParameters().equals(CropParameters.NONE)) {
-            cropParametersManager.createCropParameters(CropParametersDTO.UNDEFINED);
+            cropParametersManager.addCropParameters(CropParametersDTO.UNDEFINED);
         }
     }
 

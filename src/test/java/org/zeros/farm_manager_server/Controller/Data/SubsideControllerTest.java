@@ -14,15 +14,16 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
-import org.zeros.farm_manager_server.Controllers.Data.SprayController;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.SprayDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
+import org.zeros.farm_manager_server.Controllers.Data.SubsideController;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.SubsideDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Services.Interface.Data.SprayManager;
+import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
+import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,20 +33,23 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/*
+
 @SpringBootTest
 public class SubsideControllerTest {
     @Autowired
-    SprayController sprayController;
+    SubsideController subsideController;
     @Autowired
-    SprayManager sprayManager;
+    SubsideManager subsideManager;
     @Autowired
     UserManager userManager;
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
+    private SpeciesManager speciesManager;
+    @Autowired
     WebApplicationContext wac;
     MockMvc mockMvc;
+
 
     @BeforeEach
     void setUp() {
@@ -55,15 +59,15 @@ public class SubsideControllerTest {
 
     @Test
     void getById() throws Exception {
-        Spray spray = sprayManager.getAllSprays(0).getContent().get(1);
+        Subside subside = subsideManager.getAllSubsides(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SprayController.BASE_PATH)
-                                .queryParam("id", spray.getId().toString())
+                        get(SubsideController.BASE_PATH)
+                                .queryParam("id", subside.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(spray.getId().toString())))
-                .andExpect(jsonPath("$.name", is(spray.getName())))
+                .andExpect(jsonPath("$.id", is(subside.getId().toString())))
+                .andExpect(jsonPath("$.name", is(subside.getName())))
                 .andReturn();
 
         displayResponse(result);
@@ -72,7 +76,7 @@ public class SubsideControllerTest {
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(SprayController.BASE_PATH)
+                        get(SubsideController.BASE_PATH)
                                 .queryParam("id", UUID.randomUUID().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -83,7 +87,7 @@ public class SubsideControllerTest {
     @Test
     void getAll() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_ALL_PATH)
+                        get(SubsideController.LIST_ALL_PATH)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -95,7 +99,7 @@ public class SubsideControllerTest {
     @Test
     void getDefault() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_DEFAULT_PATH)
+                        get(SubsideController.LIST_DEFAULT_PATH)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -107,7 +111,7 @@ public class SubsideControllerTest {
     @Test
     void getUserCreated() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_USER_PATH)
+                        get(SubsideController.LIST_USER_PATH)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -119,10 +123,10 @@ public class SubsideControllerTest {
 
     @Test
     void getByNameAs() throws Exception {
-        Spray spray = sprayManager.getAllSprays(0).getContent().get(1);
+        Subside subside = subsideManager.getAllSubsides(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_PARAM_PATH)
-                                .param("name", spray.getName().substring(0,3))
+                        get(SubsideController.LIST_PARAM_PATH)
+                                .param("name", subside.getName().substring(0, 3))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -133,24 +137,27 @@ public class SubsideControllerTest {
 
 
     @Test
-    void getBySprayType() throws Exception {
+    void getBySpeciesAllowed() throws Exception {
+        Subside subside = subsideManager.getAllSubsides(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_PARAM_PATH)
-                                .param("sprayType", SprayType.INSECTICIDE.toString())
+                        get(SubsideController.LIST_PARAM_PATH)
+                                .param("speciesId", String.valueOf(
+                                        subside.getSpeciesAllowed().stream().toList().getFirst().getId()))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size", is(Matchers.greaterThan(0))))
                 .andReturn();
         displayResponse(result);
-
     }
-
     @Test
-    void getByActiveSubstance() throws Exception {
+    void getByNameAndSpeciesAllowed() throws Exception {
+        Subside subside = subsideManager.getAllSubsides(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_PARAM_PATH)
-                                .param("activeSubstance", "X1")
+                        get(SubsideController.LIST_PARAM_PATH)
+                                .param("name", subside.getName().substring(0, 3))
+                                .param("speciesId", String.valueOf(
+                                        subside.getSpeciesAllowed().stream().toList().getFirst().getId()))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -158,19 +165,21 @@ public class SubsideControllerTest {
                 .andReturn();
         displayResponse(result);
     }
+
 
     @Test
     @Transactional
     void addNew() throws Exception {
-        SprayDTO sprayDTO = SprayDTO.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST32")
-                .name("TEST32")
+        SubsideDTO subsideDTO = SubsideDTO.builder()
+                .name("TEST")
+                .yearOfSubside(LocalDate.now())
+                .subsideValuePerAreaUnit(321.21f)
+                .speciesAllowed(Set.of(speciesManager.getAllSpecies(0).getContent().get(3).getId()))
                 .build();
 
-        MvcResult result = mockMvc.perform(post(SprayController.BASE_PATH)
+        MvcResult result = mockMvc.perform(post(SubsideController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated())
@@ -179,10 +188,10 @@ public class SubsideControllerTest {
         assertThat(result.getResponse().getHeaders("Location")).isNotNull();
 
         String[] locationUUID = result.getResponse().getHeaders("Location")
-                .get(0).split("/");
+                .getFirst().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[4]);
 
-        assertThat(sprayManager.getSprayById(savedUUID).equals(Spray.NONE)).isFalse();
+        assertThat(subsideManager.getSubsideById(savedUUID).equals(Subside.NONE)).isFalse();
         displayResponse(result);
     }
 
@@ -190,12 +199,11 @@ public class SubsideControllerTest {
     @Transactional
     void addNewErrorAlreadyExists() throws Exception {
 
-
-        SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(
-                sprayManager.getAllSprays(0).getContent().get(2));
+        SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(
+                subsideManager.getAllSubsides(0).getContent().get(2));
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -204,15 +212,16 @@ public class SubsideControllerTest {
     @Test
     @Transactional
     void addNewMissingName() throws Exception {
-        SprayDTO sprayDTO = SprayDTO.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST")
-                .name("TEST")
+        SubsideDTO subsideDTO = SubsideDTO.builder()
+                .yearOfSubside(LocalDate.now())
+                .subsideValuePerAreaUnit(321.21f)
+                .speciesAllowed(Set.of(speciesManager.getAllSpecies(0).getContent().get(3).getId()))
                 .build();
+
 
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -222,39 +231,42 @@ public class SubsideControllerTest {
     @Test
     @Transactional
     void update() throws Exception {
-        Spray spray = Spray.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST33")
-                .name("TEST33")
-                .build();
-        spray = sprayManager.addSpray(spray);
-
-        SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(spray);
-        sprayDTO.setName("TEST_UPDATED");
-        sprayDTO.setDescription(null);
-        sprayDTO.getActiveSubstances().add("X2");
-        mockMvc.perform(patch(SprayController.BASE_PATH)
+        Subside subside = saveNewSubside();
+        SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(subside);
+        subsideDTO.setName("TEST_UPDATED");
+        subsideDTO.setDescription("DESCRIPTION_UPDATED");
+        mockMvc.perform(patch(SubsideController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(sprayManager.getSprayById(spray.getId())).isNotNull();
-        assertThat(sprayManager.getSprayById(spray.getId()).getName())
-                .isEqualTo("TEST_UPDATED");
-        assertThat(sprayManager.getSprayById(spray.getId()).getActiveSubstances())
-                .contains("X2");
+
+        Subside subsideUpdated = subsideManager.getSubsideById(subside.getId());
+        assertThat(subsideUpdated).isNotNull();
+        assertThat(subsideUpdated.getName()).isEqualTo("TEST_UPDATED");
+        assertThat(subsideUpdated.getDescription()).isEqualTo("DESCRIPTION_UPDATED");
+    }
+
+    private Subside saveNewSubside() {
+        return subsideManager.addSubside(SubsideDTO.builder()
+                .name("TEST")
+                .yearOfSubside(LocalDate.now())
+                .subsideValuePerAreaUnit(321.21f)
+                .speciesAllowed(Set.of(speciesManager.getAllSpecies(0).getContent().get(3).getId()))
+                .build());
+
     }
 
     @Test
     @Transactional
     void updateAccessDenied() throws Exception {
-        SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(
-                sprayManager.getDefaultSprays(0).getContent().get(2));
-        sprayDTO.setName("TEST_UPDATED");
-        mockMvc.perform(patch(SprayController.BASE_PATH)
+        SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(
+                subsideManager.getDefaultSubsides(0).getContent().get(2));
+        subsideDTO.setName("TEST_UPDATED");
+        mockMvc.perform(patch(SubsideController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
@@ -263,18 +275,12 @@ public class SubsideControllerTest {
     @Test
     @Transactional
     void updateModelBlank() throws Exception {
-        Spray spray = Spray.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST33")
-                .name("TEST33")
-                .build();
-        spray = sprayManager.addSpray(spray);
-
-        SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(spray);
-        sprayDTO.setName("");
-        mockMvc.perform(patch(FarmingMachineController.BASE_PATH)
+        Subside subside = saveNewSubside();
+        SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(subside);
+        subsideDTO.setName("");
+        mockMvc.perform(patch(SubsideController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -282,35 +288,29 @@ public class SubsideControllerTest {
 
     @Test
     @Transactional
-    void deleteSpray() throws Exception {
-        Spray spray = Spray.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST32")
-                .name("TEST32")
-                .build();
-        spray = sprayManager.addSpray(spray);
+    void deleteSubside() throws Exception {
+        Subside subside = saveNewSubside();
 
-        mockMvc.perform(delete(SprayController.BASE_PATH)
-                        .param("id", spray.getId().toString())
+        mockMvc.perform(delete(SubsideController.BASE_PATH)
+                        .param("id", subside.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(sprayManager.getSprayById(spray.getId())).isEqualTo(Spray.NONE);
+        assertThat(subsideManager.getSubsideById(subside.getId())).isEqualTo(Subside.NONE);
     }
 
     @Test
     void deleteFailed() throws Exception {
-        Spray spray = sprayManager
-                .getAllSprays(0).getContent().get(0);
+        Subside subside = subsideManager.getAllSubsides(0).getContent().getFirst();
 
-        mockMvc.perform(delete(SprayController.BASE_PATH)
-                        .param("id", spray.getId().toString())
+        mockMvc.perform(delete(SubsideController.BASE_PATH)
+                        .param("id", subside.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
-        assertThat(sprayManager.getSprayById(spray.getId()).equals(Spray.NONE)).isFalse();
+        assertThat(subsideManager.getSubsideById(subside.getId()).equals(Subside.NONE)).isFalse();
 
     }
 
@@ -325,4 +325,3 @@ public class SubsideControllerTest {
 
 }
 
-*/

@@ -272,7 +272,7 @@ public class SprayControllerTest {
         Spray spray = saveNewSpray();
         SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(spray);
         sprayDTO.setName("");
-        mockMvc.perform(patch(FarmingMachineController.BASE_PATH)
+        mockMvc.perform(patch(SprayController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sprayDTO))
                         .accept(MediaType.APPLICATION_JSON))

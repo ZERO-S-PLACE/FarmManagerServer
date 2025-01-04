@@ -1,5 +1,6 @@
 package org.zeros.farm_manager_server.Services.Interface;
 
+import jakarta.validation.constraints.NotNull;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
@@ -11,11 +12,11 @@ import java.util.UUID;
 
 public interface CropDataReader {
 
-    CropSummary getCropSummary(UUID cropId);
+    CropSummary getCropSummary(@NotNull UUID cropId);
 
-    ResourcesSummary getCropResourcesSummary(UUID cropId);
+    ResourcesSummary getCropResourcesSummary(@NotNull UUID cropId);
 
-    ResourcesSummary getPlannedResourcesSummary(UUID cropId);
+    ResourcesSummary getPlannedResourcesSummary(@NotNull UUID cropId);
 
-    Map<ResourceType, CropParameters> getMeanCropParameters(UUID cropId);
+    Map<ResourceType, CropParameters> getMeanCropParameters(@NotNull UUID cropId);
 }

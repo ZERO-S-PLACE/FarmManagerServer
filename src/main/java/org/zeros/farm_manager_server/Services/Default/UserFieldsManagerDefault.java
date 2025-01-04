@@ -1,7 +1,6 @@
 package org.zeros.farm_manager_server.Services.Default;
 
 import jakarta.persistence.EntityManager;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -45,7 +44,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     private final UserManagerDefault userManagerDefault;
 
     @Override
-    public FieldGroup createEmptyFieldGroup(@NonNull String fieldGroupName, @NonNull String description) {
+    public FieldGroup createEmptyFieldGroup(String fieldGroupName, String description) {
         User user = loggedUserConfiguration.getLoggedUserProperty().get();
         fieldGroupName = validateFieldGroupName(fieldGroupName);
         FieldGroup fieldGroup = FieldGroup.builder().
@@ -70,17 +69,17 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public FieldGroup getFieldGroupByName(@NonNull String groupName) {
+    public FieldGroup getFieldGroupByName(String groupName) {
         return fieldGroupRepository.findByUserAndFieldGroupName(loggedUserConfiguration.getLoggedUserProperty().get(), groupName).orElse(FieldGroup.NONE);
     }
 
     @Override
-    public FieldGroup getFieldGroupById(@NonNull UUID id) {
+    public FieldGroup getFieldGroupById(UUID id) {
         return fieldGroupRepository.findById(id).orElse(FieldGroup.NONE);
     }
 
     @Override
-    public FieldGroup updateFieldGroup(@NonNull FieldGroupDTO groupDTO) {
+    public FieldGroup updateFieldGroup(FieldGroupDTO groupDTO) {
         FieldGroup originalFieldGroup = getFieldGroupIfExists(groupDTO.getId());
         originalFieldGroup.setDescription(groupDTO.getDescription());
         originalFieldGroup.setFieldGroupName(groupDTO.getFieldGroupName());
@@ -104,18 +103,18 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public void deleteFieldGroupWithFields(@NonNull UUID groupId) {
+    public void deleteFieldGroupWithFields(UUID groupId) {
         FieldGroup fieldGroup = getFieldGroupById(groupId);
         if (fieldGroup == FieldGroup.NONE) {
             return;
         }
-        fieldGroup.getFields().forEach(field->deleteFieldWithData(field.getId()));
+        fieldGroup.getFields().forEach(field -> deleteFieldWithData(field.getId()));
         fieldGroupRepository.delete(fieldGroup);
         flushChanges();
     }
 
     @Override
-    public void deleteFieldGroupWithoutFields(@NonNull UUID groupId) {
+    public void deleteFieldGroupWithoutFields(UUID groupId) {
         FieldGroup fieldGroup = getFieldGroupById(groupId);
         if (fieldGroup == FieldGroup.NONE) {
             return;
@@ -144,7 +143,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public void moveFieldsToAnotherGroup(@NonNull Set<UUID> fieldsIds, @NonNull UUID newGroupId) {
+    public void moveFieldsToAnotherGroup(Set<UUID> fieldsIds, UUID newGroupId) {
         Set<Field> fields = fieldsIds.stream().map(this::getFieldById).collect(Collectors.toSet());
         if (fields.contains(Field.NONE)) {
             throw new IllegalArgumentExceptionCustom(Field.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
@@ -174,7 +173,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public Field createFieldInGroup(@NonNull FieldDTO fieldDTO, @NonNull UUID groupId) {
+    public Field createFieldInGroup(FieldDTO fieldDTO, UUID groupId) {
         FieldGroup fieldGroup = getFieldGroupIfExists(groupId);
         Field field = rewriteToEntity(fieldDTO, Field.NONE);
         field.setFieldName(validateNewFieldName(fieldDTO.getFieldName()));
@@ -201,7 +200,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
 
 
     @Override
-    public Field getFieldById(@NonNull UUID id) {
+    public Field getFieldById(UUID id) {
         return fieldRepository.findById(id).orElse(Field.NONE);
     }
 
@@ -212,7 +211,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public Field updateField(@NonNull FieldDTO fieldDTO) {
+    public Field updateField(FieldDTO fieldDTO) {
         Field originalField = getFieldIfExists(fieldDTO.getId());
         if (!originalField.getFieldName().equals(fieldDTO.getFieldName())) {
             fieldDTO.setFieldName(validateNewFieldName(fieldDTO.getFieldName()));
@@ -235,7 +234,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public void deleteFieldWithData(@NonNull UUID fieldId) {
+    public void deleteFieldWithData(UUID fieldId) {
         Field field = getFieldById(fieldId);
         if (field == Field.NONE) {
             return;
@@ -244,21 +243,21 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public void archiveField(@NonNull UUID fieldId) {
+    public void archiveField(UUID fieldId) {
         Field field = getFieldById(fieldId);
         field.setIsArchived(true);
         flushChanges();
     }
 
     @Override
-    public void deArchiveField(@NonNull UUID fieldId) {
+    public void deArchiveField(UUID fieldId) {
         Field field = getFieldById(fieldId);
         field.setIsArchived(false);
         flushChanges();
     }
 
     @Override
-    public Field divideFieldPart(@NonNull UUID originPartId, @NonNull FieldPartDTO part1DTO, @NonNull FieldPartDTO part2DTO) {
+    public Field divideFieldPart(UUID originPartId, FieldPartDTO part1DTO, FieldPartDTO part2DTO) {
         FieldPart originPart = fieldPartRepository.findById(originPartId).orElse(FieldPart.NONE);
         if (originPart.equals(FieldPart.NONE)) {
             throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
@@ -292,7 +291,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public FieldPart mergeFieldParts(@NonNull Set<UUID> fieldPartsIds) {
+    public FieldPart mergeFieldParts(Set<UUID> fieldPartsIds) {
         Set<FieldPart> fieldParts = fieldPartsIds.stream().map(this::getFieldPartById).collect(Collectors.toSet());
         if (fieldParts.size() < 2) {
             throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.NOT_COMPATIBLE);
@@ -320,17 +319,17 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public Set<FieldPart> getAllFieldParts(@NonNull UUID fieldId) {
+    public Set<FieldPart> getAllFieldParts(UUID fieldId) {
         return getFieldById(fieldId).getFieldParts();
     }
 
     @Override
-    public Set<FieldPart> getAllNonArchivedFieldParts(@NonNull UUID fieldId) {
+    public Set<FieldPart> getAllNonArchivedFieldParts(UUID fieldId) {
         return new HashSet<>(fieldPartRepository.findAllByFieldAndIsArchived(getFieldById(fieldId), false));
     }
 
     @Override
-    public FieldPart updateFieldPartName(UUID fieldPartId, @NonNull String newName) {
+    public FieldPart updateFieldPartName(UUID fieldPartId, String newName) {
         FieldPart fieldPart = getFieldPartIfExist(fieldPartId);
         if (newName.equals(fieldPart.getFieldPartName())) {
             return fieldPart;
@@ -352,7 +351,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public Field updateFieldPartAreaResizeField(@NonNull UUID fieldPartId, @NonNull BigDecimal newArea) {
+    public Field updateFieldPartAreaResizeField(UUID fieldPartId, BigDecimal newArea) {
         FieldPart fieldPart = getFieldPartIfExist(fieldPartId);
         Field field = fieldPart.getField();
         field.setArea(field.getArea().subtract(fieldPart.getArea()).add(newArea));
@@ -362,7 +361,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public Field updateFieldPartAreaTransfer(@NonNull UUID basePartId, @NonNull UUID resizedPartId, @NonNull BigDecimal newArea) {
+    public Field updateFieldPartAreaTransfer(UUID basePartId, UUID resizedPartId, BigDecimal newArea) {
         FieldPart basePart = getFieldPartIfExist(basePartId);
         FieldPart resizedPart = getFieldPartIfExist(resizedPartId);
         Field field = fieldRepository.findById(basePart.getField().getId()).orElse(Field.NONE);
@@ -375,7 +374,7 @@ public class UserFieldsManagerDefault implements UserFieldsManager {
     }
 
     @Override
-    public FieldPart getFieldPartById(@NonNull UUID id) {
+    public FieldPart getFieldPartById(UUID id) {
         return fieldPartRepository.findById(id).orElse(FieldPart.NONE);
     }
 

@@ -1,7 +1,6 @@
 package org.zeros.farm_manager_server.Services.Default;
 
 import jakarta.persistence.EntityManager;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -61,14 +60,13 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     private final LoggedUserConfiguration loggedUserConfiguration;
 
 
-
     private void flushChanges() {
         entityManager.flush();
         entityManager.clear();
     }
 
     @Override
-    public MainCrop createNewMainCrop(@NonNull UUID fieldPartId, @NonNull Set<UUID> cultivatedPlantsIds) {
+    public MainCrop createNewMainCrop(UUID fieldPartId, Set<UUID> cultivatedPlantsIds) {
         FieldPart fieldPart = getFieldPartIfExists(fieldPartId);
         Set<Plant> cultivatedPlants = getPlantsIfExist(cultivatedPlantsIds);
         Crop crop = MainCrop.builder().cultivatedPlants(cultivatedPlants).fieldPart(fieldPart).build();
@@ -77,24 +75,26 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
         flushChanges();
         return (MainCrop) getCropById(cropSaved.getId());
     }
+
     private FieldPart getFieldPartIfExists(UUID fieldPartId) {
         FieldPart fieldPart = userFieldsManager.getFieldPartById(fieldPartId);
-        if(fieldPart==FieldPart.NONE){
-            throw new IllegalArgumentExceptionCustom(MainCrop.class,Set.of("fieldPart"),
-                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
-        } return fieldPart;
-    }
-
-    private Set<Plant> getPlantsIfExist(@NonNull Set<UUID> cultivatedPlantsIds) {
-        if(cultivatedPlantsIds.isEmpty()){
-            throw new IllegalArgumentExceptionCustom(MainCrop.class,Set.of("cultivatedPlants"),
+        if (fieldPart == FieldPart.NONE) {
+            throw new IllegalArgumentExceptionCustom(MainCrop.class, Set.of("fieldPart"),
                     IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        Set<Plant> cultivatedPlants= cultivatedPlantsIds.stream()
+        return fieldPart;
+    }
+
+    private Set<Plant> getPlantsIfExist(Set<UUID> cultivatedPlantsIds) {
+        if (cultivatedPlantsIds.isEmpty()) {
+            throw new IllegalArgumentExceptionCustom(MainCrop.class, Set.of("cultivatedPlants"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        }
+        Set<Plant> cultivatedPlants = cultivatedPlantsIds.stream()
                 .map(plantManager::getPlantById)
                 .collect(Collectors.toSet());
-        if(cultivatedPlants.contains(Plant.NONE)||cultivatedPlants.isEmpty()){
-            throw new IllegalArgumentExceptionCustom(MainCrop.class,Set.of("cultivatedPlants"),
+        if (cultivatedPlants.contains(Plant.NONE) || cultivatedPlants.isEmpty()) {
+            throw new IllegalArgumentExceptionCustom(MainCrop.class, Set.of("cultivatedPlants"),
                     IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         return cultivatedPlants;
@@ -102,7 +102,7 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
 
 
     @Override
-    public InterCrop createNewInterCrop(@NonNull UUID fieldPartId, @NonNull Set<UUID> cultivatedPlantsIds) {
+    public InterCrop createNewInterCrop(UUID fieldPartId, Set<UUID> cultivatedPlantsIds) {
         FieldPart fieldPart = getFieldPartIfExists(fieldPartId);
         Set<Plant> cultivatedPlants = getPlantsIfExist(cultivatedPlantsIds);
         Crop crop = InterCrop.builder().cultivatedPlants(cultivatedPlants).fieldPart(fieldPart).build();
@@ -113,53 +113,57 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     @Override
-    public void deleteCropAndItsData(@NonNull UUID cropId) {
+    public void deleteCropAndItsData(UUID cropId) {
         Crop crop = getCropById(cropId);
-        if(crop==MainCrop.NONE){return;}
+        if (crop == MainCrop.NONE) {
+            return;
+        }
         cropRepository.delete(crop);
         flushChanges();
     }
 
     @Override
-    public Crop updateCultivatedPlants(@NonNull UUID cropId, @NonNull Set<UUID> cultivatedPlantsIds) {
-        Crop crop=getCropIfExists(cropId);
+    public Crop updateCultivatedPlants(UUID cropId, Set<UUID> cultivatedPlantsIds) {
+        Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         Crop cropOriginal = cropRepository.findById(crop.getId()).orElse(MainCrop.NONE);
         if (cropOriginal.equals(MainCrop.NONE)) {
             return MainCrop.NONE;
         }
-        Set<Plant> cultivatedPlants= getPlantsIfExist(cultivatedPlantsIds);
+        Set<Plant> cultivatedPlants = getPlantsIfExist(cultivatedPlantsIds);
         cropOriginal.setCultivatedPlants(cultivatedPlants);
         cropRepository.save(cropOriginal);
         flushChanges();
         return getCropById(cropId);
     }
+
     private Crop getCropIfExists(UUID cropId) {
-        Crop crop=getCropById(cropId);
-        if(crop.equals(MainCrop.NONE)||crop.equals(InterCrop.NONE)){
-            throw new IllegalArgumentExceptionCustom(Crop.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        Crop crop = getCropById(cropId);
+        if (crop.equals(MainCrop.NONE) || crop.equals(InterCrop.NONE)) {
+            throw new IllegalArgumentExceptionCustom(Crop.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         return crop;
     }
-    private  void checkOperationModificationAccess(Crop crop) {
+
+    private void checkOperationModificationAccess(Crop crop) {
         if (crop.getWorkFinished()) {
             throw new IllegalAccessErrorCustom(Crop.class, IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
         }
     }
 
     @Override
-    public Crop setDateDestroyed(@NonNull UUID interCropId, @NonNull LocalDate dateDestroyed) {
+    public Crop setDateDestroyed(UUID interCropId, LocalDate dateDestroyed) {
         Crop crop = getCropIfExists(interCropId);
-        if(crop instanceof InterCrop) {
+        if (crop instanceof InterCrop) {
             ((InterCrop) crop).setDateDestroyed(dateDestroyed);
             flushChanges();
             return getCropById(crop.getId());
         }
-        throw new IllegalArgumentExceptionCustom(Crop.class,IllegalArgumentExceptionCause.TYPE_MISMATCH);
+        throw new IllegalArgumentExceptionCustom(Crop.class, IllegalArgumentExceptionCause.TYPE_MISMATCH);
     }
 
     @Override
-    public void setWorkFinished(@NonNull UUID cropId) {
+    public void setWorkFinished(UUID cropId) {
         Crop crop = getCropIfExists(cropId);
         for (AgriculturalOperation operation : crop.getAllOperations()) {
             if (operation.getIsPlannedOperation()) {
@@ -170,11 +174,13 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
         flushChanges();
         getCropById(crop.getId());
     }
+
     @Override
-    public void deleteOperation(UUID operationId,OperationType operationType) {
-        AgriculturalOperation operation=getOperationAccordingToType(operationId,operationType);
+    public void deleteOperation(UUID operationId, OperationType operationType) {
+        AgriculturalOperation operation = getOperationAccordingToType(operationId, operationType);
         deleteOperationByType(operation);
     }
+
     private void deleteOperationByType(AgriculturalOperation operation) {
         switch (operation.getOperationType()) {
             case CULTIVATION -> cultivationRepository.delete((Cultivation) operation);
@@ -189,9 +195,9 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     @Override
-    public void setFullySold(@NonNull UUID mainCropId) {
+    public void setFullySold(UUID mainCropId) {
         Crop crop = getCropIfExists(mainCropId);
-        if(crop instanceof MainCrop) {
+        if (crop instanceof MainCrop) {
             ((MainCrop) crop).setIsFullySold(true);
             flushChanges();
             return;
@@ -201,41 +207,41 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     @Override
-    public Crop getCropById(@NonNull UUID id) {
+    public Crop getCropById(UUID id) {
         return cropRepository.findById(id).orElse(MainCrop.NONE);
     }
 
     @Override
-    public AgriculturalOperation commitPlannedOperation(@NonNull UUID operationId, @NonNull OperationType operationType) {
-        AgriculturalOperation operation=getOperationAccordingToType(operationId,operationType);
+    public AgriculturalOperation commitPlannedOperation(UUID operationId, OperationType operationType) {
+        AgriculturalOperation operation = getOperationAccordingToType(operationId, operationType);
         operation.setIsPlannedOperation(false);
         return saveOperationAccordingToType(operation);
     }
 
     @Override
-    public AgriculturalOperation updateOperationMachine(@NonNull UUID operationId,@NonNull OperationType operationType,UUID farmingMachineId) {
-        AgriculturalOperation operation=getOperationAccordingToType(operationId,operationType);
+    public AgriculturalOperation updateOperationMachine(UUID operationId, OperationType operationType, UUID farmingMachineId) {
+        AgriculturalOperation operation = getOperationAccordingToType(operationId, operationType);
         checkOperationModificationAccess(operation.getCrop());
-        FarmingMachine farmingMachine=getMachineIfExists(farmingMachineId);
+        FarmingMachine farmingMachine = getMachineIfExists(farmingMachineId);
         checkCompatibility(operationType, farmingMachine);
         operation.setFarmingMachine(farmingMachine);
         return saveOperationAccordingToType(operation);
     }
 
     private void checkCompatibility(OperationType operationType, FarmingMachine farmingMachine) {
-        if (farmingMachine.getSupportedOperationTypes().contains(operationType)||farmingMachine.getSupportedOperationTypes().contains(OperationType.ANY)) {
-          return;
+        if (farmingMachine.getSupportedOperationTypes().contains(operationType) || farmingMachine.getSupportedOperationTypes().contains(OperationType.ANY)) {
+            return;
         }
         throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class,
                 IllegalArgumentExceptionCause.NOT_COMPATIBLE);
     }
 
-    private FarmingMachine getMachineIfExists( UUID farmingMachineId) {
-        if(farmingMachineId==null) {
+    private FarmingMachine getMachineIfExists(UUID farmingMachineId) {
+        if (farmingMachineId == null) {
             return farmingMachineManager.getUndefinedFarmingMachine();
         }
-        FarmingMachine farmingMachine=farmingMachineManager.getFarmingMachineById(farmingMachineId);
-        if(farmingMachine==FarmingMachine.NONE){
+        FarmingMachine farmingMachine = farmingMachineManager.getFarmingMachineById(farmingMachineId);
+        if (farmingMachine == FarmingMachine.NONE) {
             throw new IllegalArgumentExceptionCustom(FarmingMachine.class,
                     IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
@@ -244,36 +250,46 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
 
     @Override
     public AgriculturalOperation updateOperationParameters(AgriculturalOperationDTO agriculturalOperationDTO) {
-        AgriculturalOperation operation =getOperationAccordingToType(agriculturalOperationDTO.getId(),agriculturalOperationDTO.getOperationType());
+        AgriculturalOperation operation = getOperationAccordingToType(agriculturalOperationDTO.getId(), agriculturalOperationDTO.getOperationType());
         checkOperationModificationAccess(operation.getCrop());
-        return saveOperationAccordingToType(rewriteOperationDTOToEntity(agriculturalOperationDTO,operation));
+        return saveOperationAccordingToType(rewriteOperationDTOToEntity(agriculturalOperationDTO, operation));
     }
 
     private AgriculturalOperation rewriteOperationDTOToEntity(AgriculturalOperationDTO dto, AgriculturalOperation entity) {
         switch (dto.getOperationType()) {
-            case CULTIVATION -> {return rewriteToEntity((CultivationDTO) dto,(Cultivation) entity);}
-            case SEEDING ->{return rewriteToEntity((SeedingDTO) dto,(Seeding) entity);}
-            case FERTILIZER_APPLICATION -> {return rewriteToEntity((FertilizerApplicationDTO) dto,(FertilizerApplication) entity);}
-            case SPRAY_APPLICATION -> {return rewriteToEntity((SprayApplicationDTO) dto,(SprayApplication) entity);}
-            case HARVEST -> {return rewriteToEntity((HarvestDTO) dto,(Harvest) entity);}
+            case CULTIVATION -> {
+                return rewriteToEntity((CultivationDTO) dto, (Cultivation) entity);
+            }
+            case SEEDING -> {
+                return rewriteToEntity((SeedingDTO) dto, (Seeding) entity);
+            }
+            case FERTILIZER_APPLICATION -> {
+                return rewriteToEntity((FertilizerApplicationDTO) dto, (FertilizerApplication) entity);
+            }
+            case SPRAY_APPLICATION -> {
+                return rewriteToEntity((SprayApplicationDTO) dto, (SprayApplication) entity);
+            }
+            case HARVEST -> {
+                return rewriteToEntity((HarvestDTO) dto, (Harvest) entity);
+            }
             default -> throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class,
                     IllegalArgumentExceptionCause.TYPE_MISMATCH);
         }
-        }
+    }
 
 
-    public AgriculturalOperation getOperationAccordingToType(UUID operationId,OperationType operationType) {
+    public AgriculturalOperation getOperationAccordingToType(UUID operationId, OperationType operationType) {
         AgriculturalOperation operation;
         switch (operationType) {
-            case CULTIVATION -> operation=getCultivationById(operationId);
-            case SEEDING ->operation= getSeedingById(operationId);
-            case FERTILIZER_APPLICATION ->operation= getFertilizerApplicationById(operationId);
-            case SPRAY_APPLICATION ->operation= getSprayApplicationById(operationId);
-            case HARVEST ->operation= getHarvestById(operationId);
+            case CULTIVATION -> operation = getCultivationById(operationId);
+            case SEEDING -> operation = getSeedingById(operationId);
+            case FERTILIZER_APPLICATION -> operation = getFertilizerApplicationById(operationId);
+            case SPRAY_APPLICATION -> operation = getSprayApplicationById(operationId);
+            case HARVEST -> operation = getHarvestById(operationId);
             default -> throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class,
                     IllegalArgumentExceptionCause.TYPE_MISMATCH);
         }
-        if(operation.getId()==null){
+        if (operation.getId() == null) {
             throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class,
                     IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
@@ -282,32 +298,42 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
 
     private AgriculturalOperation saveOperationAccordingToType(AgriculturalOperation agriculturalOperation) {
         switch (agriculturalOperation.getOperationType()) {
-            case CULTIVATION ->{return cultivationRepository.saveAndFlush((Cultivation) agriculturalOperation);}
-            case SEEDING ->{return seedingRepository.saveAndFlush((Seeding) agriculturalOperation);}
-            case FERTILIZER_APPLICATION ->{return fertilizerApplicationRepository.saveAndFlush((FertilizerApplication) agriculturalOperation);}
-            case SPRAY_APPLICATION ->{return sprayApplicationRepository.saveAndFlush((SprayApplication) agriculturalOperation);}
-            case HARVEST ->{return harvestRepository.saveAndFlush((Harvest) agriculturalOperation);}
+            case CULTIVATION -> {
+                return cultivationRepository.saveAndFlush((Cultivation) agriculturalOperation);
+            }
+            case SEEDING -> {
+                return seedingRepository.saveAndFlush((Seeding) agriculturalOperation);
+            }
+            case FERTILIZER_APPLICATION -> {
+                return fertilizerApplicationRepository.saveAndFlush((FertilizerApplication) agriculturalOperation);
+            }
+            case SPRAY_APPLICATION -> {
+                return sprayApplicationRepository.saveAndFlush((SprayApplication) agriculturalOperation);
+            }
+            case HARVEST -> {
+                return harvestRepository.saveAndFlush((Harvest) agriculturalOperation);
+            }
             default -> throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class,
                     IllegalArgumentExceptionCause.TYPE_MISMATCH);
         }
     }
 
     @Override
-    public Seeding planSeeding(@NonNull UUID cropId, @NonNull SeedingDTO seedingDTO) {
+    public Seeding planSeeding(UUID cropId, SeedingDTO seedingDTO) {
         return createNewSeeding(cropId, seedingDTO, true);
     }
 
     @Override
-    public Seeding addSeeding(@NonNull UUID cropId, @NonNull SeedingDTO seedingDTO) {
+    public Seeding addSeeding(UUID cropId, SeedingDTO seedingDTO) {
         return createNewSeeding(cropId, seedingDTO, false);
     }
 
     private Seeding createNewSeeding(UUID cropId, SeedingDTO seedingDTO, boolean planned) {
-        Crop crop=getCropIfExists(cropId);
+        Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         checkIfUniqueOperation(seedingDTO);
-        Seeding seeding=rewriteToEntity(seedingDTO,Seeding.NONE);
-        FarmingMachine farmingMachine=getMachineIfExists(seedingDTO.getFarmingMachine());
+        Seeding seeding = rewriteToEntity(seedingDTO, Seeding.NONE);
+        FarmingMachine farmingMachine = getMachineIfExists(seedingDTO.getFarmingMachine());
         checkCompatibility(OperationType.SEEDING, farmingMachine);
         seeding.setFarmingMachine(farmingMachine);
         seeding.setIsPlannedOperation(planned);
@@ -320,7 +346,7 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     private Seeding rewriteToEntity(SeedingDTO dto, Seeding entity) {
-        Seeding entityParsed=DefaultMappers.seedingMapper.dtoToEntitySimpleProperties(dto);
+        Seeding entityParsed = DefaultMappers.seedingMapper.dtoToEntitySimpleProperties(dto);
         entityParsed.setSownPlants(getPlantsIfExist(dto.getSownPlants()));
         rewriteNotModifiedParameters(entity, entityParsed);
         return entityParsed;
@@ -335,8 +361,8 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     private void checkIfUniqueOperation(AgriculturalOperationDTO operationDTO) {
-        if(operationDTO.getId()!=null){
-            throw new IllegalArgumentExceptionCustom(Seeding.class,IllegalArgumentExceptionCause.OBJECT_EXISTS);
+        if (operationDTO.getId() != null) {
+            throw new IllegalArgumentExceptionCustom(Seeding.class, IllegalArgumentExceptionCause.OBJECT_EXISTS);
         }
     }
 
@@ -346,21 +372,21 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     @Override
-    public Cultivation planCultivation(@NonNull UUID cropId, @NonNull CultivationDTO cultivationDTO) {
+    public Cultivation planCultivation(UUID cropId, CultivationDTO cultivationDTO) {
         return createNewCultivation(cropId, cultivationDTO, true);
     }
 
     @Override
-    public Cultivation addCultivation(@NonNull UUID cropId, CultivationDTO cultivationDTO) {
+    public Cultivation addCultivation(UUID cropId, CultivationDTO cultivationDTO) {
         return createNewCultivation(cropId, cultivationDTO, false);
     }
 
     private Cultivation createNewCultivation(UUID cropId, CultivationDTO cultivationDTO, boolean planned) {
-        Crop crop=getCropIfExists(cropId);
+        Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         checkIfUniqueOperation(cultivationDTO);
-        Cultivation cultivation=rewriteToEntity(cultivationDTO,Cultivation.NONE);
-        FarmingMachine farmingMachine=getMachineIfExists(cultivationDTO.getFarmingMachine());
+        Cultivation cultivation = rewriteToEntity(cultivationDTO, Cultivation.NONE);
+        FarmingMachine farmingMachine = getMachineIfExists(cultivationDTO.getFarmingMachine());
         checkCompatibility(OperationType.CULTIVATION, farmingMachine);
         cultivation.setFarmingMachine(farmingMachine);
         cultivation.setIsPlannedOperation(planned);
@@ -373,7 +399,7 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     private Cultivation rewriteToEntity(CultivationDTO dto, Cultivation entity) {
-        Cultivation entityParsed=DefaultMappers.cultivationMapper.dtoToEntitySimpleProperties(dto);
+        Cultivation entityParsed = DefaultMappers.cultivationMapper.dtoToEntitySimpleProperties(dto);
         rewriteNotModifiedParameters(entity, entityParsed);
         return entityParsed;
     }
@@ -384,21 +410,21 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     @Override
-    public FertilizerApplication planFertilizerApplication(@NonNull UUID cropId, @NonNull FertilizerApplicationDTO fertilizerApplicationDTO) {
+    public FertilizerApplication planFertilizerApplication(UUID cropId, FertilizerApplicationDTO fertilizerApplicationDTO) {
         return createNewFertilizerApplication(cropId, fertilizerApplicationDTO, true);
     }
 
     @Override
-    public FertilizerApplication addFertilizerApplication(@NonNull UUID cropId, @NonNull FertilizerApplicationDTO fertilizerApplicationDTO) {
+    public FertilizerApplication addFertilizerApplication(UUID cropId, FertilizerApplicationDTO fertilizerApplicationDTO) {
         return createNewFertilizerApplication(cropId, fertilizerApplicationDTO, false);
     }
 
     private FertilizerApplication createNewFertilizerApplication(UUID cropId, FertilizerApplicationDTO fertilizerApplicationDTO, boolean planned) {
-        Crop crop=getCropIfExists(cropId);
+        Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         checkIfUniqueOperation(fertilizerApplicationDTO);
-        FertilizerApplication fertilizerApplication=rewriteToEntity(fertilizerApplicationDTO,FertilizerApplication.NONE);
-        FarmingMachine farmingMachine=getMachineIfExists(fertilizerApplicationDTO.getFarmingMachine());
+        FertilizerApplication fertilizerApplication = rewriteToEntity(fertilizerApplicationDTO, FertilizerApplication.NONE);
+        FarmingMachine farmingMachine = getMachineIfExists(fertilizerApplicationDTO.getFarmingMachine());
         checkCompatibility(OperationType.FERTILIZER_APPLICATION, farmingMachine);
         fertilizerApplication.setFarmingMachine(farmingMachine);
         fertilizerApplication.setIsPlannedOperation(planned);
@@ -410,10 +436,10 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     private FertilizerApplication rewriteToEntity(FertilizerApplicationDTO dto, FertilizerApplication entity) {
-        FertilizerApplication entityParsed=DefaultMappers.fertilizerApplicationMapper.dtoToEntitySimpleProperties(dto);
-        Fertilizer fertilizer=getFertilizerIfExist(dto.getFertilizer());
-        if(fertilizer.equals(fertilizerManager.getUndefinedFertilizer())){
-            throw new IllegalArgumentExceptionCustom(FertilizerApplication.class,Set.of("fertilizer"),
+        FertilizerApplication entityParsed = DefaultMappers.fertilizerApplicationMapper.dtoToEntitySimpleProperties(dto);
+        Fertilizer fertilizer = getFertilizerIfExist(dto.getFertilizer());
+        if (fertilizer.equals(fertilizerManager.getUndefinedFertilizer())) {
+            throw new IllegalArgumentExceptionCustom(FertilizerApplication.class, Set.of("fertilizer"),
                     IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
         entityParsed.setFertilizer(fertilizer);
@@ -422,28 +448,27 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
 
-
     @Override
-    public FertilizerApplication getFertilizerApplicationById(@NonNull UUID id) {
+    public FertilizerApplication getFertilizerApplicationById(UUID id) {
         return fertilizerApplicationRepository.findById(id).orElse(FertilizerApplication.NONE);
     }
 
     @Override
-    public SprayApplication planSprayApplication(@NonNull UUID cropId, @NonNull SprayApplicationDTO sprayApplicationDTO) {
+    public SprayApplication planSprayApplication(UUID cropId, SprayApplicationDTO sprayApplicationDTO) {
         return createNewSprayApplication(cropId, sprayApplicationDTO, true);
     }
 
     @Override
-    public SprayApplication addSprayApplication(@NonNull UUID cropId, @NonNull SprayApplicationDTO sprayApplicationDTO) {
+    public SprayApplication addSprayApplication(UUID cropId, SprayApplicationDTO sprayApplicationDTO) {
         return createNewSprayApplication(cropId, sprayApplicationDTO, false);
     }
 
     private SprayApplication createNewSprayApplication(UUID cropId, SprayApplicationDTO sprayApplicationDTO, boolean planned) {
-        Crop crop=getCropIfExists(cropId);
+        Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         checkIfUniqueOperation(sprayApplicationDTO);
-        SprayApplication sprayApplication=rewriteToEntity(sprayApplicationDTO,SprayApplication.NONE);
-        FarmingMachine farmingMachine=getMachineIfExists(sprayApplicationDTO.getFarmingMachine());
+        SprayApplication sprayApplication = rewriteToEntity(sprayApplicationDTO, SprayApplication.NONE);
+        FarmingMachine farmingMachine = getMachineIfExists(sprayApplicationDTO.getFarmingMachine());
         checkCompatibility(OperationType.SPRAY_APPLICATION, farmingMachine);
         sprayApplication.setFarmingMachine(farmingMachine);
         sprayApplication.setIsPlannedOperation(planned);
@@ -455,11 +480,11 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     private SprayApplication rewriteToEntity(SprayApplicationDTO dto, SprayApplication entity) {
-        SprayApplication entityParsed=DefaultMappers.sprayApplicationMapper.dtoToEntitySimpleProperties(dto);
-        Fertilizer fertilizer=getFertilizerIfExist(dto.getFertilizer());
-        Spray spray=getSprayIfExists(dto.getSpray());
-        if(fertilizer.equals(fertilizerManager.getUndefinedFertilizer())&&spray.equals(sprayManager.getUndefinedSpray())){
-            throw new IllegalArgumentExceptionCustom(FertilizerApplication.class,Set.of("fertilizer","spray"),
+        SprayApplication entityParsed = DefaultMappers.sprayApplicationMapper.dtoToEntitySimpleProperties(dto);
+        Fertilizer fertilizer = getFertilizerIfExist(dto.getFertilizer());
+        Spray spray = getSprayIfExists(dto.getSpray());
+        if (fertilizer.equals(fertilizerManager.getUndefinedFertilizer()) && spray.equals(sprayManager.getUndefinedSpray())) {
+            throw new IllegalArgumentExceptionCustom(FertilizerApplication.class, Set.of("fertilizer", "spray"),
                     IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
         entityParsed.setFertilizer(fertilizer);
@@ -467,30 +492,32 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
         rewriteNotModifiedParameters(entity, entityParsed);
         return entityParsed;
     }
+
     private Fertilizer getFertilizerIfExist(UUID fertilizerId) {
-        if(fertilizerId==null){
+        if (fertilizerId == null) {
             return fertilizerManager.getUndefinedFertilizer();
         }
-        Fertilizer fertilizer=fertilizerManager.getFertilizerById(fertilizerId);
-        if(fertilizer.equals(Fertilizer.NONE)){
-            throw new IllegalArgumentExceptionCustom(Fertilizer.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        Fertilizer fertilizer = fertilizerManager.getFertilizerById(fertilizerId);
+        if (fertilizer.equals(Fertilizer.NONE)) {
+            throw new IllegalArgumentExceptionCustom(Fertilizer.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         return fertilizer;
     }
+
     private Spray getSprayIfExists(UUID sprayId) {
-        if(sprayId==null){
+        if (sprayId == null) {
             return sprayManager.getUndefinedSpray();
         }
-        Spray spray=sprayManager.getSprayById(sprayId);
-        if(spray.equals(Spray.NONE)){
-            throw new IllegalArgumentExceptionCustom(Fertilizer.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        Spray spray = sprayManager.getSprayById(sprayId);
+        if (spray.equals(Spray.NONE)) {
+            throw new IllegalArgumentExceptionCustom(Fertilizer.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         return spray;
     }
 
 
     @Override
-    public SprayApplication getSprayApplicationById(@NonNull UUID id) {
+    public SprayApplication getSprayApplicationById(UUID id) {
         return sprayApplicationRepository.findById(id).orElse(SprayApplication.NONE);
     }
 
@@ -505,14 +532,14 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     private Harvest createNewHarvest(UUID cropId, HarvestDTO harvestDTO, boolean planned) {
-        Crop crop=getCropIfExists(cropId);
-        if(!(crop instanceof MainCrop)){
-            throw new IllegalArgumentExceptionCustom(Harvest.class,IllegalArgumentExceptionCause.TYPE_MISMATCH);
+        Crop crop = getCropIfExists(cropId);
+        if (!(crop instanceof MainCrop)) {
+            throw new IllegalArgumentExceptionCustom(Harvest.class, IllegalArgumentExceptionCause.TYPE_MISMATCH);
         }
         checkOperationModificationAccess(crop);
         checkIfUniqueOperation(harvestDTO);
-        Harvest harvest=rewriteToEntity(harvestDTO,Harvest.NONE);
-        FarmingMachine farmingMachine=getMachineIfExists(harvestDTO.getFarmingMachine());
+        Harvest harvest = rewriteToEntity(harvestDTO, Harvest.NONE);
+        FarmingMachine farmingMachine = getMachineIfExists(harvestDTO.getFarmingMachine());
         checkCompatibility(OperationType.HARVEST, farmingMachine);
         harvest.setFarmingMachine(farmingMachine);
         harvest.setIsPlannedOperation(planned);
@@ -524,10 +551,10 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     private Harvest rewriteToEntity(HarvestDTO dto, Harvest entity) {
-        Harvest entityParsed=DefaultMappers.harvestMapper.dtoToEntitySimpleProperties(dto);
-        CropParameters cropParameters=cropParametersManager.getCropParametersById(dto.getCropParameters());
-        if(cropParameters==CropParameters.NONE){
-            cropParameters=cropParametersManager.getUndefinedCropParameters();
+        Harvest entityParsed = DefaultMappers.harvestMapper.dtoToEntitySimpleProperties(dto);
+        CropParameters cropParameters = cropParametersManager.getCropParametersById(dto.getCropParameters());
+        if (cropParameters == CropParameters.NONE) {
+            cropParameters = cropParametersManager.getUndefinedCropParameters();
         }
         entityParsed.setCropParameters(cropParameters);
         rewriteNotModifiedParameters(entity, entityParsed);
@@ -535,25 +562,25 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
     }
 
     @Override
-    public Harvest getHarvestById(@NonNull UUID id) {
+    public Harvest getHarvestById(UUID id) {
         return harvestRepository.findById(id).orElse(Harvest.NONE);
     }
 
     @Override
-    public void addSubside(@NonNull UUID cropId, @NonNull UUID subsideId) {
-        Crop crop=getCropIfExists(cropId);
+    public void addSubside(UUID cropId, UUID subsideId) {
+        Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         Subside subside = subsideManager.getSubsideById(subsideId);
         if (crop.getSubsides().contains(subside)) {
-           return;
+            return;
         }
         crop.getSubsides().add(subside);
         flushChanges();
     }
 
     @Override
-    public void removeSubside(@NonNull UUID cropId, @NonNull UUID subsideId) {
-        Crop crop=getCropIfExists(cropId);
+    public void removeSubside(UUID cropId, UUID subsideId) {
+        Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         Subside subside = subsideManager.getSubsideById(subsideId);
         crop.getSubsides().remove(subside);
@@ -562,11 +589,11 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
 
     @Override
     public CropSale addCropSale(UUID cropId, CropSaleDTO cropSaleDTO) {
-        Crop crop=getCropIfExists(cropId);
+        Crop crop = getCropIfExists(cropId);
         checkSaleModificationAccess(crop);
         Crop cropOriginal = cropRepository.findById(crop.getId()).orElse(MainCrop.NONE);
         checkIfUnique(cropSaleDTO);
-        CropSale cropSale=rewriteToEntity(cropSaleDTO,CropSale.NONE);
+        CropSale cropSale = rewriteToEntity(cropSaleDTO, CropSale.NONE);
         cropSale.setCrop(cropOriginal);
         CropSale cropSaleSaved = cropSaleRepository.saveAndFlush(cropSale);
         ((MainCrop) cropOriginal).getCropSales().add(cropSaleSaved);
@@ -574,15 +601,15 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
         return getCropSaleById(cropSaleSaved.getId());
     }
 
-    private  void checkIfUnique(CropSaleDTO cropSaleDTO) {
+    private void checkIfUnique(CropSaleDTO cropSaleDTO) {
         if (cropSaleDTO.getId() != null) {
             throw new IllegalArgumentExceptionCustom(Crop.class, IllegalArgumentExceptionCause.OBJECT_EXISTS);
         }
     }
 
-    private  void checkSaleModificationAccess(Crop crop) {
-        if(crop instanceof MainCrop) {
-            if (((MainCrop)crop).getIsFullySold()) {
+    private void checkSaleModificationAccess(Crop crop) {
+        if (crop instanceof MainCrop) {
+            if (((MainCrop) crop).getIsFullySold()) {
                 throw new IllegalAccessErrorCustom(Crop.class, IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
             }
             return;
@@ -590,15 +617,15 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
         throw new IllegalArgumentExceptionCustom(Crop.class, IllegalArgumentExceptionCause.TYPE_MISMATCH);
     }
 
-    private CropSale rewriteToEntity(CropSaleDTO dto,CropSale entity){
-        CropSale entityParsed=DefaultMappers.cropSaleMapper.dtoToEntitySimpleProperties(dto);
-        if (dto.getCropParameters()==null) {
+    private CropSale rewriteToEntity(CropSaleDTO dto, CropSale entity) {
+        CropSale entityParsed = DefaultMappers.cropSaleMapper.dtoToEntitySimpleProperties(dto);
+        if (dto.getCropParameters() == null) {
             entityParsed.setCropParameters(cropParametersManager.getUndefinedCropParameters());
-        }else {
-            CropParameters cropParameters=cropParametersManager.getCropParametersById(dto.getCropParameters());
-            if(cropParameters==CropParameters.NONE) {
+        } else {
+            CropParameters cropParameters = cropParametersManager.getCropParametersById(dto.getCropParameters());
+            if (cropParameters == CropParameters.NONE) {
                 entityParsed.setCropParameters(cropParametersManager.getUndefinedCropParameters());
-            }else {
+            } else {
                 entityParsed.setCropParameters(cropParameters);
             }
         }
@@ -611,27 +638,29 @@ public class CropOperationsManagerDefault implements CropOperationsManager {
 
     @Override
     public CropSale updateCropSale(CropSaleDTO cropSaleDTO) {
-        Crop crop=getCropIfExists(cropSaleDTO.getCrop());
+        Crop crop = getCropIfExists(cropSaleDTO.getCrop());
         checkSaleModificationAccess(crop);
         CropSale cropSaleOriginal = getCropSaleIfExist(cropSaleDTO);
-        return cropSaleRepository.saveAndFlush(rewriteToEntity(cropSaleDTO,cropSaleOriginal));
+        return cropSaleRepository.saveAndFlush(rewriteToEntity(cropSaleDTO, cropSaleOriginal));
     }
 
     private CropSale getCropSaleIfExist(CropSaleDTO cropSaleDTO) {
-        if(cropSaleDTO.getId()==null){
-            throw new IllegalArgumentExceptionCustom(CropSale.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        if (cropSaleDTO.getId() == null) {
+            throw new IllegalArgumentExceptionCustom(CropSale.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         CropSale cropSaleOriginal = getCropSaleById(cropSaleDTO.getId());
         if (cropSaleOriginal.equals(CropSale.NONE)) {
-            throw new IllegalArgumentExceptionCustom(CropSale.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+            throw new IllegalArgumentExceptionCustom(CropSale.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         return cropSaleOriginal;
     }
 
     @Override
-    public void removeCropSale(@NonNull UUID cropSaleId) {
-        CropSale cropSale=getCropSaleById(cropSaleId);
-        if(cropSale==CropSale.NONE) {return;}
+    public void removeCropSale(UUID cropSaleId) {
+        CropSale cropSale = getCropSaleById(cropSaleId);
+        if (cropSale == CropSale.NONE) {
+            return;
+        }
         checkSaleModificationAccess(cropSale.getCrop());
         MainCrop crop = (MainCrop) cropSale.getCrop();
         crop.getCropSales().remove(cropSale);

@@ -277,7 +277,7 @@ public class PlantControllerTest {
 
         PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(plant);
         plantDTO.setVariety("");
-        mockMvc.perform(patch(FarmingMachineController.BASE_PATH)
+        mockMvc.perform(patch(PlantController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(plantDTO))
                         .accept(MediaType.APPLICATION_JSON))

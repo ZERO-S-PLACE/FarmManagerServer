@@ -63,7 +63,7 @@ public class SubsidesManagerTest {
         assertThat(subside.getId()).isNotNull();
         assertThat(subside.getName()).isEqualTo("test1");
         assertThat(subside.getCreatedBy()).isEqualTo(user.getUsername());
-        assertThat(subside.getSubsideValuePerAreaUnit()).isEqualTo(BigDecimal.valueOf(10));
+        assertThat(subside.getSubsideValuePerAreaUnit().floatValue() ).isEqualTo(10);
         assertThat(subsideRepository.findById(subside.getId()).get()).isEqualTo(subside);
     }
 

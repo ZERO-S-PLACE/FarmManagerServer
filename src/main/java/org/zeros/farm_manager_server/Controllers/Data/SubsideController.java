@@ -8,95 +8,82 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.SprayDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.SubsideDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Services.Interface.Data.SprayManager;
+import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
 
 import java.rmi.NoSuchObjectException;
 import java.util.UUID;
-/*
+
 @Slf4j
 @RequiredArgsConstructor
 @RestController
 public class SubsideController {
-    public static final String BASE_PATH = "/api/user/spray";
+    public static final String BASE_PATH = "/api/user/subside";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String LIST_USER_PATH = BASE_PATH + "/USER";
     public static final String LIST_DEFAULT_PATH = BASE_PATH + "/DEFAULT";
     public static final String LIST_PARAM_PATH = BASE_PATH + "/PARAM";
-    private final SprayManager sprayManager;
+    private final SubsideManager subsideManager;
 
     @GetMapping(BASE_PATH)
-    public SprayDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
-        Spray spray = sprayManager.getSprayById(id);
-        if (spray == Spray.NONE) {
-            throw new NoSuchObjectException("Machine do not exist");
+    public SubsideDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
+        Subside subside = subsideManager.getSubsideById(id);
+        if (subside == Subside.NONE) {
+            throw new IllegalArgumentExceptionCustom(Subside.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        return DefaultMappers.sprayMapper.entityToDto(spray);
+        return DefaultMappers.subsideMapper.entityToDto(subside);
 
     }
 
     @GetMapping(LIST_ALL_PATH)
-    public Page<SprayDTO> getAll(
+    public Page<SubsideDTO> getAll(
             @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return sprayManager.getAllSprays(pageNumber)
-                .map(DefaultMappers.sprayMapper::entityToDto);
+        return subsideManager.getAllSubsides(pageNumber).map(DefaultMappers.subsideMapper::entityToDto);
 
     }
 
     @GetMapping(LIST_DEFAULT_PATH)
-    public Page<SprayDTO> getDefault(
+    public Page<SubsideDTO> getDefault(
             @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return sprayManager.getDefaultSprays(pageNumber)
-                .map(DefaultMappers.sprayMapper::entityToDto);
+        return subsideManager.getDefaultSubsides(pageNumber).map(DefaultMappers.subsideMapper::entityToDto);
     }
 
     @GetMapping(LIST_USER_PATH)
-    public Page<SprayDTO> getUserCreated
+    public Page<SubsideDTO> getUserCreated
             (@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return sprayManager.getUserSprays(pageNumber)
-                .map(DefaultMappers.sprayMapper::entityToDto);
+        return subsideManager.getUserSubsides(pageNumber).map(DefaultMappers.subsideMapper::entityToDto);
 
     }
 
     @GetMapping(LIST_PARAM_PATH)
-    public Page<SprayDTO> getCriteria(@RequestParam(required = false, defaultValue = "0") Integer pageNumber,
-                                      @RequestParam(required = false) String name,
-                                      @RequestParam(required = false) String producer,
-                                      @RequestParam(required = false) SprayType sprayType,
-                                      @RequestParam(required = false) String activeSubstance) {
-        return sprayManager.getSpraysCriteria(name, producer, sprayType, activeSubstance, pageNumber)
-                .map(DefaultMappers.sprayMapper::entityToDto);
+    public Page<SubsideDTO> getCriteria(@RequestParam(required = false, defaultValue = "0") Integer pageNumber,
+                                        @RequestParam(required = false) String name,
+                                        @RequestParam(required = false) UUID speciesId) {
+        return subsideManager.getSubsidesCriteria(name, speciesId, pageNumber).map(DefaultMappers.subsideMapper::entityToDto);
 
     }
 
     @PostMapping(BASE_PATH)
-    ResponseEntity<String> addNew(@RequestBody SprayDTO sprayDTO) {
-
-        Spray saved = sprayManager.addSpray(
-                DefaultMappers.sprayMapper.dtoToEntity(sprayDTO)
-        );
+    ResponseEntity<String> addNew(@RequestBody SubsideDTO subsideDTO) {
+        Subside saved = subsideManager.addSubside(subsideDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
-
     }
 
     @PatchMapping(BASE_PATH)
-    ResponseEntity<String> update(@RequestBody SprayDTO sprayDTO) {
-        sprayManager.updateSpray(
-                DefaultMappers.sprayMapper.dtoToEntity(sprayDTO)
-        );
+    ResponseEntity<String> update(@RequestBody SubsideDTO subsideDTO) {
+        subsideManager.updateSubside(subsideDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(BASE_PATH)
     ResponseEntity<String> deleteById(@RequestParam UUID id) {
-        sprayManager.deleteSpraySafe(sprayManager.getSprayById(id));
+        subsideManager.deleteSubsideSafe(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
 }
-*/

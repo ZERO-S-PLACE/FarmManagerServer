@@ -12,9 +12,6 @@ import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.GrainParametersDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.RapeSeedParametersDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.SugarBeetParametersDTO;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
@@ -56,10 +53,35 @@ public class CropParametersManagerDefault implements CropParametersManager {
 
     @Override
     public Page<CropParameters> getParametersByName(String name, int pageNumber) {
-        return cropParametersRepository.findAllByNameContainingAndCreatedByIn(
+        return cropParametersRepository.findAllByNameContainingIgnoreCaseAndCreatedByIn(
                 name,
                 config.userRows(),
                 getPageRequest(pageNumber));
+    }
+
+    @Override
+    public Page<CropParameters> getParametersByNameAndResourceType(String name, ResourceType resourceType, int pageNumber) {
+        return cropParametersRepository.findAllByNameContainingIgnoreCaseAndResourceTypeAndCreatedByIn(
+                name,
+                resourceType,
+                config.userRows(),
+                getPageRequest(pageNumber));
+    }
+
+    @Override
+    public Page<CropParameters> getCropParametersCriteria(String name, ResourceType resourceType, int pageNumber) {
+        boolean nameNotPresent = name == null || name.isEmpty();
+        boolean resourceTypeNotPresent = resourceType == null || resourceType.equals(ResourceType.ANY);
+        if (nameNotPresent && resourceTypeNotPresent) {
+            return getAllCropParameters(pageNumber);
+        }
+        if (resourceTypeNotPresent) {
+            return getParametersByName(name, pageNumber);
+        }
+        if (nameNotPresent) {
+            return getParametersByResourceType(resourceType, pageNumber);
+        }
+        return getParametersByNameAndResourceType(name, resourceType, pageNumber);
     }
 
     @Override
@@ -68,7 +90,7 @@ public class CropParametersManagerDefault implements CropParametersManager {
     }
 
     @Override
-    public CropParameters createCropParameters(CropParametersDTO cropParametersDTO) {
+    public CropParameters addCropParameters(CropParametersDTO cropParametersDTO) {
         checkIfRequiredFieldsPresent(cropParametersDTO);
         checkIfUniqueObject(cropParametersDTO);
         return cropParametersRepository.saveAndFlush(rewriteToEntity(cropParametersDTO, CropParameters.NONE));
@@ -95,16 +117,7 @@ public class CropParametersManagerDefault implements CropParametersManager {
     }
 
     private CropParameters rewriteToEntity(CropParametersDTO dto, CropParameters entity) {
-        CropParameters entityParsed;
-        if (dto instanceof GrainParametersDTO) {
-            entityParsed = DefaultMappers.grainParametersMapper.dtoToEntitySimpleProperties((GrainParametersDTO) dto);
-        } else if (dto instanceof RapeSeedParametersDTO) {
-            entityParsed = DefaultMappers.rapeSeedParametersMapper.dtoToEntitySimpleProperties((RapeSeedParametersDTO) dto);
-        } else if (dto instanceof SugarBeetParametersDTO) {
-            entityParsed = DefaultMappers.sugarBeetParametersMapper.dtoToEntitySimpleProperties((SugarBeetParametersDTO) dto);
-        } else {
-            entityParsed = DefaultMappers.cropParametersMapper.dtoToEntitySimpleProperties(dto);
-        }
+        CropParameters entityParsed = DefaultMappers.cropParametersMapper.dtoToEntitySimpleProperties(dto);
         entityParsed.setCreatedBy(config.username());
         entityParsed.setVersion(entity.getVersion());
         entityParsed.setCreatedDate(entity.getCreatedDate());

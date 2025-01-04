@@ -1,8 +1,6 @@
 package org.zeros.farm_manager_server.Repositories.Crop;
 
-import lombok.NonNull;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
@@ -19,7 +17,9 @@ public interface CropParametersRepository extends JpaRepository<CropParameters, 
 
     Page<CropParameters> findAllByResourceTypeAndCreatedByIn(ResourceType resourceType, Set<String> createdBy, Pageable pageable);
 
-    Page<CropParameters> findAllByNameContainingAndCreatedByIn(String name, Set<String> strings,Pageable pageable);
+    Page<CropParameters> findAllByNameContainingIgnoreCaseAndCreatedByIn(String name, Set<String> strings, Pageable pageable);
+
+    Page<CropParameters> findAllByNameContainingIgnoreCaseAndResourceTypeAndCreatedByIn(String name,ResourceType resourceType, Set<String> strings, Pageable pageable);
 
     Page<CropParameters> findAllByNameAndCreatedByIn( String name,  Set<String> createdBy,Pageable pageable);
 

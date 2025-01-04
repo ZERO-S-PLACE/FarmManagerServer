@@ -8,9 +8,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FarmingMachineDTO;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.FarmingMachineManager;
 
@@ -32,7 +35,7 @@ public class FarmingMachineController {
     public FarmingMachineDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
         FarmingMachine farmingMachine = farmingMachineManager.getFarmingMachineById(id);
         if (farmingMachine == FarmingMachine.NONE) {
-            throw new NoSuchObjectException("Machine do not exist");
+            throw new IllegalArgumentExceptionCustom(FarmingMachine.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         return DefaultMappers.farmingMachineMapper.entityToDto(farmingMachine);
     }

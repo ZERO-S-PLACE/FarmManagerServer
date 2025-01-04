@@ -1,6 +1,5 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -57,28 +56,29 @@ public class PlantManagerDefault implements PlantManager {
     }
 
     @Override
-    public Page<Plant> getPlantsByVarietyAs(@NotNull String variety, int pageNumber) {
+    public Page<Plant> getPlantsByVarietyAs(String variety, int pageNumber) {
         return plantRepository.findAllByVarietyContainingIgnoreCaseAndCreatedByIn(variety,
                 config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<Plant> getPlantsBySpecies(@NotNull Species species, int pageNumber) {
+    public Page<Plant> getPlantsBySpecies(Species species, int pageNumber) {
         return plantRepository.findAllBySpeciesAndCreatedByIn(species, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<Plant> getPlantsByVarietyAndSpecies(@NotNull String variety,@NotNull Species species, int pageNumber) {
+    public Page<Plant> getPlantsByVarietyAndSpecies(String variety, Species species, int pageNumber) {
         return plantRepository.findAllBySpeciesAndVarietyContainingIgnoreCaseAndCreatedByIn(species, variety,
                 config.allRows(), getPageRequest(pageNumber));
     }
+
     @Override
-    public Page<Plant> getPlantsCriteria( String variety, UUID speciesId, int pageNumber) {
+    public Page<Plant> getPlantsCriteria(String variety, UUID speciesId, int pageNumber) {
         boolean varietyNotPresent = variety == null || variety.isEmpty();
         boolean speciesNotPresent;
         Species species = Species.NONE;
-        if(speciesId != null ){
-            species= speciesManager.getSpeciesById(speciesId);
+        if (speciesId != null) {
+            species = speciesManager.getSpeciesById(speciesId);
         }
         speciesNotPresent = species.equals(Species.NONE);
 
@@ -87,19 +87,19 @@ public class PlantManagerDefault implements PlantManager {
                 return getAllPlants(pageNumber);
             }
             return getPlantsByVarietyAs(variety, pageNumber);
-        }else if (varietyNotPresent) {
+        } else if (varietyNotPresent) {
             return getPlantsBySpecies(species, pageNumber);
         }
         return getPlantsByVarietyAndSpecies(variety, species, pageNumber);
     }
 
     @Override
-    public Plant getPlantById(@NotNull UUID uuid) {
+    public Plant getPlantById(UUID uuid) {
         return plantRepository.findById(uuid).orElse(Plant.NONE);
     }
 
     @Override
-    public Plant addPlant(@NotNull PlantDTO plantDTO) {
+    public Plant addPlant(PlantDTO plantDTO) {
         checkIfRequiredFieldsPresent(plantDTO);
         checkIfUnique(plantDTO);
         return plantRepository.saveAndFlush(rewriteValuesToEntity(plantDTO, Plant.NONE));
@@ -113,8 +113,9 @@ public class PlantManagerDefault implements PlantManager {
                     IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
     }
+
     private void checkIfUnique(PlantDTO plantDTO) {
-        if (plantDTO.getId()==null&&plantRepository.findAllBySpeciesAndVarietyAndCreatedByIn(
+        if (plantDTO.getId() == null && plantRepository.findAllBySpeciesAndVarietyAndCreatedByIn(
                 speciesManager.getSpeciesById(plantDTO.getSpecies()),
                 plantDTO.getVariety(),
                 config.allRows(),
@@ -137,7 +138,7 @@ public class PlantManagerDefault implements PlantManager {
     }
 
     @Override
-    public Plant updatePlant(@NotNull PlantDTO plantDTO) {
+    public Plant updatePlant(PlantDTO plantDTO) {
         Plant originalPlant = getPlantIfExists(plantDTO);
         checkAccess(originalPlant);
         checkIfRequiredFieldsPresent(plantDTO);
@@ -169,10 +170,12 @@ public class PlantManagerDefault implements PlantManager {
     }
 
     @Override
-    public void deletePlantSafe(@NotNull UUID plantId) {
+    public void deletePlantSafe(UUID plantId) {
 
         Plant originalPlant = getPlantById(plantId);
-        if (originalPlant.equals(Plant.NONE)) {return;}
+        if (originalPlant.equals(Plant.NONE)) {
+            return;
+        }
         checkAccess(originalPlant);
         checkUsages(originalPlant);
         plantRepository.delete(originalPlant);

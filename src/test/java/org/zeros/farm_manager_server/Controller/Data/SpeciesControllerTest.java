@@ -14,16 +14,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
-import org.zeros.farm_manager_server.Controllers.Data.SprayController;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.SprayDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
+import org.zeros.farm_manager_server.Controllers.Data.SpeciesController;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.SpeciesDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Services.Interface.Data.SprayManager;
+import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,14 +30,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/*
+
 @SpringBootTest
 public class SpeciesControllerTest {
-
     @Autowired
-    SprayController sprayController;
+    SpeciesController speciesController;
     @Autowired
-    SprayManager sprayManager;
+    SpeciesManager speciesManager;
     @Autowired
     UserManager userManager;
     @Autowired
@@ -56,15 +53,15 @@ public class SpeciesControllerTest {
 
     @Test
     void getById() throws Exception {
-        Spray spray = sprayManager.getAllSprays(0).getContent().get(1);
+        Species species = speciesManager.getAllSpecies(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SprayController.BASE_PATH)
-                                .queryParam("id", spray.getId().toString())
+                        get(SpeciesController.BASE_PATH)
+                                .queryParam("id", species.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(spray.getId().toString())))
-                .andExpect(jsonPath("$.name", is(spray.getName())))
+                .andExpect(jsonPath("$.id", is(species.getId().toString())))
+                .andExpect(jsonPath("$.name", is(species.getName())))
                 .andReturn();
 
         displayResponse(result);
@@ -73,7 +70,7 @@ public class SpeciesControllerTest {
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(SprayController.BASE_PATH)
+                        get(SpeciesController.BASE_PATH)
                                 .queryParam("id", UUID.randomUUID().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -84,7 +81,7 @@ public class SpeciesControllerTest {
     @Test
     void getAll() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_ALL_PATH)
+                        get(SpeciesController.LIST_ALL_PATH)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -96,7 +93,7 @@ public class SpeciesControllerTest {
     @Test
     void getDefault() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_DEFAULT_PATH)
+                        get(SpeciesController.LIST_DEFAULT_PATH)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -108,7 +105,7 @@ public class SpeciesControllerTest {
     @Test
     void getUserCreated() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_USER_PATH)
+                        get(SpeciesController.LIST_USER_PATH)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -120,10 +117,10 @@ public class SpeciesControllerTest {
 
     @Test
     void getByNameAs() throws Exception {
-        Spray spray = sprayManager.getAllSprays(0).getContent().get(1);
+        Species species = speciesManager.getAllSpecies(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_PARAM_PATH)
-                                .param("name", spray.getName().substring(0,3))
+                        get(SpeciesController.LIST_PARAM_PATH)
+                                .param("name", species.getName().substring(0, 3))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -134,10 +131,11 @@ public class SpeciesControllerTest {
 
 
     @Test
-    void getBySprayType() throws Exception {
+    void getByFamily() throws Exception {
+        Species species = speciesManager.getAllSpecies(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_PARAM_PATH)
-                                .param("sprayType", SprayType.INSECTICIDE.toString())
+                        get(SpeciesController.LIST_PARAM_PATH)
+                                .param("family", species.getFamily())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -147,31 +145,18 @@ public class SpeciesControllerTest {
 
     }
 
-    @Test
-    void getByActiveSubstance() throws Exception {
-        MvcResult result = mockMvc.perform(
-                        get(SprayController.LIST_PARAM_PATH)
-                                .param("activeSubstance", "X1")
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.size", is(Matchers.greaterThan(0))))
-                .andReturn();
-        displayResponse(result);
-    }
 
     @Test
     @Transactional
     void addNew() throws Exception {
-        SprayDTO sprayDTO = SprayDTO.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST32")
-                .name("TEST32")
+        SpeciesDTO speciesDTO = SpeciesDTO.builder()
+                .family("TEST")
+                .name("TEST")
                 .build();
 
-        MvcResult result = mockMvc.perform(post(SprayController.BASE_PATH)
+        MvcResult result = mockMvc.perform(post(SpeciesController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated())
@@ -180,10 +165,10 @@ public class SpeciesControllerTest {
         assertThat(result.getResponse().getHeaders("Location")).isNotNull();
 
         String[] locationUUID = result.getResponse().getHeaders("Location")
-                .get(0).split("/");
+                .getFirst().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[4]);
 
-        assertThat(sprayManager.getSprayById(savedUUID).equals(Spray.NONE)).isFalse();
+        assertThat(speciesManager.getSpeciesById(savedUUID).equals(Species.NONE)).isFalse();
         displayResponse(result);
     }
 
@@ -191,12 +176,11 @@ public class SpeciesControllerTest {
     @Transactional
     void addNewErrorAlreadyExists() throws Exception {
 
-
-        SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(
-                sprayManager.getAllSprays(0).getContent().get(2));
+        SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(
+                speciesManager.getAllSpecies(0).getContent().get(2));
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -205,15 +189,14 @@ public class SpeciesControllerTest {
     @Test
     @Transactional
     void addNewMissingName() throws Exception {
-        SprayDTO sprayDTO = SprayDTO.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST")
+        SpeciesDTO speciesDTO = SpeciesDTO.builder()
+                .family("TEST")
                 .name("TEST")
                 .build();
 
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -223,39 +206,39 @@ public class SpeciesControllerTest {
     @Test
     @Transactional
     void update() throws Exception {
-        Spray spray = Spray.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST33")
-                .name("TEST33")
-                .build();
-        spray = sprayManager.addSpray(spray);
-
-        SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(spray);
-        sprayDTO.setName("TEST_UPDATED");
-        sprayDTO.setDescription(null);
-        sprayDTO.getActiveSubstances().add("X2");
-        mockMvc.perform(patch(SprayController.BASE_PATH)
+        Species species = saveNewSpecies();
+        SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(species);
+        speciesDTO.setName("TEST_UPDATED");
+        speciesDTO.setDescription("DESCRIPTION_UPDATED");
+        mockMvc.perform(patch(SpeciesController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(sprayManager.getSprayById(spray.getId())).isNotNull();
-        assertThat(sprayManager.getSprayById(spray.getId()).getName())
-                .isEqualTo("TEST_UPDATED");
-        assertThat(sprayManager.getSprayById(spray.getId()).getActiveSubstances())
-                .contains("X2");
+
+        Species speciesUpdated = speciesManager.getSpeciesById(species.getId());
+        assertThat(speciesUpdated).isNotNull();
+        assertThat(speciesUpdated.getName()).isEqualTo("TEST_UPDATED");
+        assertThat(speciesUpdated.getDescription()).isEqualTo("DESCRIPTION_UPDATED");
+    }
+
+    private Species saveNewSpecies() {
+        return speciesManager.addSpecies(SpeciesDTO.builder()
+                .family("TEST")
+                .name("TEST")
+                .build());
     }
 
     @Test
     @Transactional
     void updateAccessDenied() throws Exception {
-        SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(
-                sprayManager.getDefaultSprays(0).getContent().get(2));
-        sprayDTO.setName("TEST_UPDATED");
-        mockMvc.perform(patch(SprayController.BASE_PATH)
+        SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(
+                speciesManager.getDefaultSpecies(0).getContent().get(2));
+        speciesDTO.setName("TEST_UPDATED");
+        mockMvc.perform(patch(SpeciesController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
@@ -264,18 +247,12 @@ public class SpeciesControllerTest {
     @Test
     @Transactional
     void updateModelBlank() throws Exception {
-        Spray spray = Spray.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST33")
-                .name("TEST33")
-                .build();
-        spray = sprayManager.addSpray(spray);
-
-        SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(spray);
-        sprayDTO.setName("");
-        mockMvc.perform(patch(FarmingMachineController.BASE_PATH)
+        Species species = saveNewSpecies();
+        SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(species);
+        speciesDTO.setName("");
+        mockMvc.perform(patch(SpeciesController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sprayDTO))
+                        .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -283,35 +260,29 @@ public class SpeciesControllerTest {
 
     @Test
     @Transactional
-    void deleteSpray() throws Exception {
-        Spray spray = Spray.builder()
-                .activeSubstances(Set.of("X1"))
-                .producer("TEST32")
-                .name("TEST32")
-                .build();
-        spray = sprayManager.addSpray(spray);
+    void deleteSpecies() throws Exception {
+        Species species = saveNewSpecies();
 
-        mockMvc.perform(delete(SprayController.BASE_PATH)
-                        .param("id", spray.getId().toString())
+        mockMvc.perform(delete(SpeciesController.BASE_PATH)
+                        .param("id", species.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(sprayManager.getSprayById(spray.getId())).isEqualTo(Spray.NONE);
+        assertThat(speciesManager.getSpeciesById(species.getId())).isEqualTo(Species.NONE);
     }
 
     @Test
     void deleteFailed() throws Exception {
-        Spray spray = sprayManager
-                .getAllSprays(0).getContent().get(0);
+        Species species = speciesManager.getAllSpecies(0).getContent().getFirst();
 
-        mockMvc.perform(delete(SprayController.BASE_PATH)
-                        .param("id", spray.getId().toString())
+        mockMvc.perform(delete(SpeciesController.BASE_PATH)
+                        .param("id", species.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
-        assertThat(sprayManager.getSprayById(spray.getId()).equals(Spray.NONE)).isFalse();
+        assertThat(speciesManager.getSpeciesById(species.getId()).equals(Species.NONE)).isFalse();
 
     }
 
@@ -326,4 +297,3 @@ public class SpeciesControllerTest {
 
 }
 
-*/

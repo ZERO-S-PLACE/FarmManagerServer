@@ -1,5 +1,6 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FarmingMachineDTO;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
@@ -14,23 +15,23 @@ public interface FarmingMachineManager {
 
     Page<FarmingMachine> getUserFarmingMachines(int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineByNameAs(String name, int pageNumber);
+    Page<FarmingMachine> getFarmingMachineByNameAs(@NotNull String name, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineByProducerAs(String producer, int pageNumber);
+    Page<FarmingMachine> getFarmingMachineByProducerAs(@NotNull String producer, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineByProducerAndNameAs(String producer, String model, int pageNumber);
+    Page<FarmingMachine> getFarmingMachineByProducerAndNameAs(@NotNull String producer,@NotNull String model, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineBySupportedOperation(OperationType operationType, int pageNumber);
+    Page<FarmingMachine> getFarmingMachineBySupportedOperation(@NotNull OperationType operationType, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineCriteria( String model,String producer,OperationType operationType, int pageNumber);
+    Page<FarmingMachine> getFarmingMachineCriteria(String model,String producer,OperationType operationType, int pageNumber);
 
-    FarmingMachine getFarmingMachineById(UUID id);
+    FarmingMachine getFarmingMachineById(@NotNull UUID id);
 
-    FarmingMachine addFarmingMachine(FarmingMachineDTO farmingMachineDTO);
+    FarmingMachine addFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO);
 
-    FarmingMachine updateFarmingMachine(FarmingMachineDTO farmingMachineDTO);
+    FarmingMachine updateFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO);
 
-    void deleteFarmingMachineSafe(UUID farmingMachineId);
+    void deleteFarmingMachineSafe(@NotNull UUID farmingMachineId);
 
     FarmingMachine getUndefinedFarmingMachine();
 }

@@ -1,6 +1,5 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -18,7 +17,6 @@ import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.Crop.CropRepository;
-import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SubsideRepository;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
@@ -58,24 +56,66 @@ public class SubsideManagerDefault implements SubsideManager {
     }
 
     @Override
-    public Page<Subside> getSubsidesByNameAs(@NotNull String name, int pageNumber) {
+    public Page<Subside> getSubsidesByNameAs(String name, int pageNumber) {
         return subsideRepository.findAllByNameContainingIgnoreCaseAndCreatedByIn(
                 name, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<Subside> getSubsidesBySpeciesAllowed(@NotNull Species species, int pageNumber) {
+    public Page<Subside> getSubsidesBySpeciesAllowed(UUID speciesId, int pageNumber) {
+        Species species = speciesManager.getSpeciesById(speciesId);
+        if (species.equals(Species.NONE)) {
+            return Page.empty();
+        }
+        return getSubsidesBySpeciesAllowed(species, pageNumber);
+    }
+
+    public Page<Subside> getSubsidesBySpeciesAllowed(Species species, int pageNumber) {
         return subsideRepository.findAllBySpeciesAllowedContainsAndCreatedByIn(
                 species, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Subside getSubsideById(@NotNull UUID id) {
+    public Page<Subside> getSubsidesByNameAsAndSpeciesAllowed(String name, UUID speciesId, int pageNumber) {
+        Species species = speciesManager.getSpeciesById(speciesId);
+        if (species.equals(Species.NONE)) {
+            return Page.empty();
+        }
+        return getSubsidesByNameAsAndSpeciesAllowed(name, species, pageNumber);
+    }
+
+    private Page<Subside> getSubsidesByNameAsAndSpeciesAllowed(String name, Species species, int pageNumber) {
+        return subsideRepository.findAllByNameContainingIgnoreCaseAndSpeciesAllowedContainsAndCreatedByIn(
+                name, species, config.allRows(), getPageRequest(pageNumber));
+    }
+
+    @Override
+    public Page<Subside> getSubsidesCriteria(String name, UUID speciesId, int pageNumber) {
+        boolean nameNotPresent = name == null || name.isEmpty();
+        Species species = Species.NONE;
+        if (speciesId != null) {
+            species = speciesManager.getSpeciesById(speciesId);
+        }
+        boolean speciesNotPresent = species == Species.NONE;
+        if (speciesNotPresent && nameNotPresent) {
+            return getAllSubsides(pageNumber);
+        }
+        if (speciesNotPresent) {
+            return getSubsidesByNameAs(name, pageNumber);
+        }
+        if (nameNotPresent) {
+            return getSubsidesBySpeciesAllowed(species, pageNumber);
+        }
+        return getSubsidesByNameAsAndSpeciesAllowed(name, species, pageNumber);
+    }
+
+    @Override
+    public Subside getSubsideById(UUID id) {
         return subsideRepository.getSubsideById(id).orElse(Subside.NONE);
     }
 
     @Override
-    public Subside addSubside(@NotNull SubsideDTO subsideDTO) {
+    public Subside addSubside(SubsideDTO subsideDTO) {
         checkIfRequiredFieldsPresent(subsideDTO);
         checkIfUnique(subsideDTO);
         return subsideRepository.saveAndFlush(rewriteValuesToEntity(subsideDTO, Subside.NONE));
@@ -102,9 +142,9 @@ public class SubsideManagerDefault implements SubsideManager {
 
     private Subside rewriteValuesToEntity(SubsideDTO dto, Subside entity) {
         Subside entityParsed = DefaultMappers.subsideMapper.dtoToEntitySimpleProperties(dto);
-        if(dto.getSpeciesAllowed()==null||dto.getSpeciesAllowed().isEmpty()){
+        if (dto.getSpeciesAllowed() == null || dto.getSpeciesAllowed().isEmpty()) {
             entityParsed.setSpeciesAllowed(Set.of(speciesManager.getUndefinedSpecies()));
-        }else {
+        } else {
             entityParsed.setSpeciesAllowed(dto.getSpeciesAllowed().stream()
                     .map(speciesManager::getSpeciesById).collect(Collectors.toSet()));
         }
@@ -116,7 +156,7 @@ public class SubsideManagerDefault implements SubsideManager {
     }
 
     @Override
-    public Subside updateSubside(@NotNull SubsideDTO subsideDTO) {
+    public Subside updateSubside(SubsideDTO subsideDTO) {
         Subside originalSubside = getSubsideIfExists(subsideDTO);
         checkAccess(originalSubside);
         checkIfRequiredFieldsPresent(subsideDTO);
@@ -149,7 +189,7 @@ public class SubsideManagerDefault implements SubsideManager {
     }
 
     @Override
-    public void deleteSubsideSafe(@NotNull UUID subsideId) {
+    public void deleteSubsideSafe(UUID subsideId) {
         Subside originalSubside = getSubsideById(subsideId);
         if (originalSubside.equals(Subside.NONE)) {
             return;

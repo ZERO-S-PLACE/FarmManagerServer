@@ -1,6 +1,5 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -56,25 +55,25 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     @Override
-    public Page<Spray> getSpraysByNameAs(@NotNull String name, int pageNumber) {
+    public Page<Spray> getSpraysByNameAs(String name, int pageNumber) {
         return sprayRepository.findAllByNameContainingIgnoreCaseAndCreatedByIn(name,
                 config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<Spray> getSpraysByProducerAs(@NotNull String producer, int pageNumber) {
+    public Page<Spray> getSpraysByProducerAs(String producer, int pageNumber) {
         return sprayRepository.findAllByProducerContainingIgnoreCaseAndCreatedByIn(producer,
                 config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<Spray> getSpraysBySprayType(@NotNull SprayType sprayType, int pageNumber) {
+    public Page<Spray> getSpraysBySprayType(SprayType sprayType, int pageNumber) {
         return sprayRepository.findAllBySprayTypeAndCreatedByIn(sprayType,
                 config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<Spray> getSpraysByActiveSubstance(@NotNull String activeSubstance, int pageNumber) {
+    public Page<Spray> getSpraysByActiveSubstance(String activeSubstance, int pageNumber) {
         return sprayRepository.findAllByActiveSubstancesContainsAndCreatedByIn(activeSubstance,
                 config.allRows(), getPageRequest(pageNumber));
     }
@@ -102,12 +101,12 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     @Override
-    public Spray getSprayById(@NotNull UUID uuid) {
+    public Spray getSprayById(UUID uuid) {
         return sprayRepository.findById(uuid).orElse(Spray.NONE);
     }
 
     @Override
-    public Spray addSpray(@NotNull SprayDTO sprayDTO) {
+    public Spray addSpray(SprayDTO sprayDTO) {
         checkIfRequiredFieldsPresent(sprayDTO);
         checkIfUnique(sprayDTO);
         return sprayRepository.saveAndFlush(rewriteValuesToEntity(sprayDTO, Spray.NONE));
@@ -122,7 +121,7 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     private void checkIfUnique(SprayDTO sprayDTO) {
-        if (sprayDTO.getId()==null&&sprayRepository.findByNameAndSprayTypeAndCreatedByIn(
+        if (sprayDTO.getId() == null && sprayRepository.findByNameAndSprayTypeAndCreatedByIn(
                 sprayDTO.getName(), sprayDTO.getSprayType(), config.allRows()).isPresent()) {
             throw new IllegalArgumentExceptionCustom(Spray.class,
                     IllegalArgumentExceptionCause.OBJECT_EXISTS);
@@ -139,7 +138,7 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     @Override
-    public Spray updateSpray(@NotNull SprayDTO sprayDTO) {
+    public Spray updateSpray(SprayDTO sprayDTO) {
         Spray originalSpray = getSprayIfExists(sprayDTO);
         checkAccess(originalSpray);
         checkIfRequiredFieldsPresent(sprayDTO);
@@ -171,7 +170,7 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     @Override
-    public void deleteSpraySafe(@NotNull UUID sprayId) {
+    public void deleteSpraySafe(UUID sprayId) {
         Spray originalSpray = getSprayById(sprayId);
         if (originalSpray == Spray.NONE) {
             return;

@@ -1,6 +1,5 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -58,7 +57,7 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     @Override
-    public Page<Fertilizer> getFertilizerByNameAs(@NotNull String name, int pageNumber) {
+    public Page<Fertilizer> getFertilizerByNameAs(String name, int pageNumber) {
         return fertilizerRepository.findAllByNameContainingAndCreatedByIn(
                 name, config.allRows(), getPageRequest(pageNumber));
 
@@ -78,7 +77,7 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     @Override
-    public Page<Fertilizer> getFertilizersCriteria(@NotNull String name, @NotNull Boolean isNatural, int pageNumber) {
+    public Page<Fertilizer> getFertilizersCriteria(String name, Boolean isNatural, int pageNumber) {
         if (name == null || name.isBlank()) {
 
             if (isNatural == null) {
@@ -94,12 +93,12 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     @Override
-    public Fertilizer getFertilizerById(@NotNull UUID id) {
+    public Fertilizer getFertilizerById(UUID id) {
         return fertilizerRepository.findById(id).orElse(Fertilizer.NONE);
     }
 
     @Override
-    public Fertilizer addFertilizer(@NotNull FertilizerDTO fertilizerDTO) {
+    public Fertilizer addFertilizer(FertilizerDTO fertilizerDTO) {
         checkIfRequiredFieldsPresent(fertilizerDTO);
         checkIfUnique(fertilizerDTO);
         return fertilizerRepository.saveAndFlush(
@@ -116,7 +115,7 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     private void checkIfUnique(FertilizerDTO fertilizerDTO) {
-        if (fertilizerDTO.getId()==null&&fertilizerRepository.findByNameAndProducerAndCreatedByIn(fertilizerDTO.getName()
+        if (fertilizerDTO.getId() == null && fertilizerRepository.findByNameAndProducerAndCreatedByIn(fertilizerDTO.getName()
                 , fertilizerDTO.getProducer(), config.allRows()).isEmpty()) {
             return;
         }
@@ -134,7 +133,7 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     @Override
-    public Fertilizer updateFertilizer(@NotNull FertilizerDTO fertilizerDTO) {
+    public Fertilizer updateFertilizer(FertilizerDTO fertilizerDTO) {
 
         Fertilizer originalFertilizer = getFertilizerIfExists(fertilizerDTO);
         checkAccess(originalFertilizer);
@@ -169,7 +168,7 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     @Override
-    public void deleteFertilizerSafe(@NotNull UUID fertilizerId) {
+    public void deleteFertilizerSafe(UUID fertilizerId) {
         Fertilizer originalFertilizer = getFertilizerById(fertilizerId);
         if (originalFertilizer.equals(Fertilizer.NONE)) {
             return;

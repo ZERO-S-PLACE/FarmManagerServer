@@ -1,5 +1,6 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.PlantDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
@@ -15,21 +16,21 @@ public interface PlantManager {
 
     Page<Plant> getUserPlants(int pageNumber);
 
-    Page<Plant> getPlantsByVarietyAs(String variety, int pageNumber);
+    Page<Plant> getPlantsByVarietyAs(@NotNull String variety, int pageNumber);
 
-    Page<Plant> getPlantsBySpecies(Species species, int pageNumber);
+    Page<Plant> getPlantsBySpecies(@NotNull Species species, int pageNumber);
 
-    Page<Plant> getPlantsByVarietyAndSpecies(String variety, Species species, int pageNumber);
+    Page<Plant> getPlantsByVarietyAndSpecies(@NotNull String variety,@NotNull Species species, int pageNumber);
 
-    Page<Plant> getPlantsCriteria(String variety, UUID speciesId, int pageNumber);
+    Page<Plant> getPlantsCriteria( String variety,  UUID speciesId, int pageNumber);
 
-    Plant getPlantById(UUID uuid);
+    Plant getPlantById(@NotNull UUID uuid);
 
-    Plant addPlant(PlantDTO plantDTO);
+    Plant addPlant(@NotNull PlantDTO plantDTO);
 
-    Plant updatePlant(PlantDTO plantDTO);
+    Plant updatePlant(@NotNull PlantDTO plantDTO);
 
-    void deletePlantSafe(UUID plantId);
+    void deletePlantSafe(@NotNull UUID plantId);
 
 
 }

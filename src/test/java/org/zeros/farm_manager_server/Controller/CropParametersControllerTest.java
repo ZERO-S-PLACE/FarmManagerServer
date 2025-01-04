@@ -1,4 +1,4 @@
-package org.zeros.farm_manager_server.Controller.Data;
+package org.zeros.farm_manager_server.Controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,16 +13,18 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.zeros.farm_manager_server.Controllers.CropParametersController;
 import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
-import org.zeros.farm_manager_server.Controllers.Data.FertilizerController;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FertilizerDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.GrainParametersDTO;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.GrainParameters;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Services.Interface.Data.FertilizerManager;
+import org.zeros.farm_manager_server.Services.Interface.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,11 +35,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @SpringBootTest
-public class FertilizerControllerTest {
+public class CropParametersControllerTest {
     @Autowired
-    FertilizerController fertilizerController;
+    CropParametersController cropParametersController;
     @Autowired
-    FertilizerManager fertilizerManager;
+    CropParametersManager cropParametersManager;
     @Autowired
     UserManager userManager;
     @Autowired
@@ -45,6 +47,7 @@ public class FertilizerControllerTest {
     @Autowired
     WebApplicationContext wac;
     MockMvc mockMvc;
+
 
     @BeforeEach
     void setUp() {
@@ -54,15 +57,15 @@ public class FertilizerControllerTest {
 
     @Test
     void getById() throws Exception {
-        Fertilizer fertilizer = fertilizerManager.getAllFertilizers(0).getContent().get(1);
+        CropParameters cropParameters = cropParametersManager.getAllCropParameters(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(FertilizerController.BASE_PATH)
-                                .queryParam("id", fertilizer.getId().toString())
+                        get(CropParametersController.BASE_PATH)
+                                .queryParam("id", cropParameters.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(fertilizer.getId().toString())))
-                .andExpect(jsonPath("$.name", is(fertilizer.getName())))
+                .andExpect(jsonPath("$.id", is(cropParameters.getId().toString())))
+                .andExpect(jsonPath("$.name", is(cropParameters.getName())))
                 .andReturn();
 
         displayResponse(result);
@@ -70,10 +73,9 @@ public class FertilizerControllerTest {
 
     @Test
     void getByIdNotFound() throws Exception {
-        mockMvc.perform(
-                        get(FertilizerController.BASE_PATH)
-                                .queryParam("id", UUID.randomUUID().toString())
-                                .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(CropParametersController.BASE_PATH)
+                        .queryParam("id", UUID.randomUUID().toString())
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
     }
@@ -82,46 +84,21 @@ public class FertilizerControllerTest {
     @Test
     void getAll() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get(FertilizerController.LIST_ALL_PATH)
+                        get(CropParametersController.LIST_ALL_PATH)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size", is(Matchers.greaterThan(0))))
                 .andReturn();
         displayResponse(result);
-    }
-
-    @Test
-    void getDefault() throws Exception {
-        MvcResult result = mockMvc.perform(
-                        get(FertilizerController.LIST_DEFAULT_PATH)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.size", is(Matchers.greaterThan(0))))
-                .andReturn();
-        displayResponse(result);
-    }
-
-    @Test
-    void getUserCreated() throws Exception {
-        MvcResult result = mockMvc.perform(
-                        get(FertilizerController.LIST_USER_PATH)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.size", is(Matchers.greaterThanOrEqualTo(0))))
-                .andReturn();
-        displayResponse(result);
-
     }
 
     @Test
     void getByNameAs() throws Exception {
-        Fertilizer fertilizer = fertilizerManager.getAllFertilizers(0).getContent().get(1);
+        CropParameters cropParameters = cropParametersManager.getAllCropParameters(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(FertilizerController.LIST_PARAM_PATH)
-                                .param("name", fertilizer.getName().substring(0, 3))
+                        get(CropParametersController.LIST_PARAM_PATH)
+                                .param("name", cropParameters.getName().substring(0, 3))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -132,34 +109,49 @@ public class FertilizerControllerTest {
 
 
     @Test
-    void getNaturalFertilizer() throws Exception {
+    void getByResourceType() throws Exception {
+        CropParameters cropParameters = cropParametersManager.getAllCropParameters(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(FertilizerController.LIST_PARAM_PATH)
-                                .param("isNatural", String.valueOf(true))
+                        get(CropParametersController.LIST_PARAM_PATH)
+                                .param("resourceType", String.valueOf(cropParameters.getResourceType()))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size", is(Matchers.greaterThan(0))))
                 .andReturn();
         displayResponse(result);
+    }
 
+    @Test
+    void getByNameAndResourceType() throws Exception {
+        CropParameters cropParameters = cropParametersManager.getAllCropParameters(0).getContent().get(1);
+        MvcResult result = mockMvc.perform(
+                        get(CropParametersController.LIST_PARAM_PATH)
+                                .param("name", cropParameters.getName().substring(0, 3))
+                                .param("resourceType", String.valueOf(cropParameters.getResourceType()))
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.size", is(Matchers.greaterThan(0))))
+                .andReturn();
+        displayResponse(result);
     }
 
 
     @Test
     @Transactional
     void addNew() throws Exception {
-        FertilizerDTO fertilizerDTO = FertilizerDTO.builder()
-                .producer("TEST32")
-                .name("TEST32")
-                .isNaturalFertilizer(true)
-                .totalCaPercent(30)
-                .totalMgPercent(10)
+        CropParametersDTO cropParametersDTO = GrainParametersDTO.builder()
+                .name("TEST")
+                .resourceType(ResourceType.GRAIN)
+                .pollution(0.95f)
+                .density(800)
+                .fallingNumber(333)
                 .build();
 
-        MvcResult result = mockMvc.perform(post(FertilizerController.BASE_PATH)
+        MvcResult result = mockMvc.perform(post(CropParametersController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(fertilizerDTO))
+                        .content(objectMapper.writeValueAsString(cropParametersDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated())
@@ -168,10 +160,14 @@ public class FertilizerControllerTest {
         assertThat(result.getResponse().getHeaders("Location")).isNotNull();
 
         String[] locationUUID = result.getResponse().getHeaders("Location")
-                .get(0).split("/");
+                .getFirst().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[4]);
 
-        assertThat(fertilizerManager.getFertilizerById(savedUUID).equals(Fertilizer.NONE)).isFalse();
+        CropParameters cropParameters=cropParametersManager.getCropParametersById(savedUUID);
+        assertThat(cropParameters).isNotEqualTo(CropParameters.NONE);
+        assertThat(cropParameters.getName()).isEqualTo(cropParametersDTO.getName());
+        assertThat(cropParameters.getResourceType()).isEqualTo(cropParametersDTO.getResourceType());
+        assertThat(((GrainParameters)cropParameters).getDensity().floatValue()).isEqualTo(800);
         displayResponse(result);
     }
 
@@ -179,12 +175,11 @@ public class FertilizerControllerTest {
     @Transactional
     void addNewErrorAlreadyExists() throws Exception {
 
-
-        FertilizerDTO FertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(
-                fertilizerManager.getAllFertilizers(0).getContent().get(2));
+        CropParametersDTO cropParametersDTO = DefaultMappers.cropParametersMapper.entityToDto(
+                cropParametersManager.getAllCropParameters(0).getContent().get(2));
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(FertilizerDTO))
+                        .content(objectMapper.writeValueAsString(cropParametersDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -193,16 +188,17 @@ public class FertilizerControllerTest {
     @Test
     @Transactional
     void addNewMissingName() throws Exception {
-        FertilizerDTO fertilizerDTO = FertilizerDTO.builder()
-                .producer("TEST")
-                .name("TEST")
-                .totalNPercent(10)
-                .totalPPercent(30)
+        CropParametersDTO cropParametersDTO = GrainParametersDTO.builder()
+                .resourceType(ResourceType.GRAIN)
+                .pollution(0.95f)
+                .density(800)
+                .fallingNumber(333)
                 .build();
+
 
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(fertilizerDTO))
+                        .content(objectMapper.writeValueAsString(cropParametersDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -212,42 +208,46 @@ public class FertilizerControllerTest {
     @Test
     @Transactional
     void update() throws Exception {
-        Fertilizer fertilizer = addNewFertilizer();
-
-        FertilizerDTO fertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
-        fertilizerDTO.setName("TEST_UPDATED");
-        fertilizerDTO.setTotalCaPercent(10);
-        mockMvc.perform(patch(FertilizerController.BASE_PATH)
+        CropParameters cropParameters = saveNewCropParameters();
+        CropParametersDTO cropParametersDTO = DefaultMappers.cropParametersMapper.entityToDto(cropParameters);
+        cropParametersDTO.setName("TEST_UPDATED");
+        cropParametersDTO.setComment("DESCRIPTION_UPDATED");
+        ((GrainParametersDTO) cropParametersDTO).setDensity(132.11f);
+        mockMvc.perform(patch(CropParametersController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(fertilizerDTO))
+                        .content(objectMapper.writeValueAsString(cropParametersDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(fertilizerManager.getFertilizerById(fertilizer.getId())).isNotNull();
-        assertThat(fertilizerManager.getFertilizerById(fertilizer.getId()).getName())
-                .isEqualTo("TEST_UPDATED");
-        assertThat(fertilizerManager.getFertilizerById(fertilizer.getId()).getTotalCaPercent().floatValue()).isEqualTo(10);
+
+        CropParameters cropParametersUpdated = cropParametersManager.getCropParametersById(cropParameters.getId());
+        assertThat(cropParametersUpdated).isNotNull();
+        assertThat(cropParametersUpdated.getName()).isEqualTo("TEST_UPDATED");
+        assertThat(cropParametersUpdated.getComment()).isEqualTo("DESCRIPTION_UPDATED");
+        assertThat(((GrainParameters) cropParametersUpdated).getDensity().floatValue()).isEqualTo(
+                ((GrainParametersDTO) cropParametersDTO).getDensity());
     }
 
-    private Fertilizer addNewFertilizer() {
-        return fertilizerManager.addFertilizer(FertilizerDTO.builder()
-                .producer("TEST")
-                .name("Test")
-                .isNaturalFertilizer(false)
-                .totalNPercent(10)
-                .totalKPercent(30)
+    private CropParameters saveNewCropParameters() {
+        return cropParametersManager.addCropParameters(GrainParametersDTO.builder()
+                .name("TEST")
+                .resourceType(ResourceType.GRAIN)
+                .pollution(0.95f)
+                .density(800)
+                .fallingNumber(333)
                 .build());
+
     }
 
     @Test
     @Transactional
     void updateAccessDenied() throws Exception {
-        FertilizerDTO fertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(
-                fertilizerManager.getDefaultFertilizers(0).getContent().get(2));
-        fertilizerDTO.setName("TEST_UPDATED");
-        mockMvc.perform(patch(FertilizerController.BASE_PATH)
+        CropParametersDTO cropParametersDTO = DefaultMappers.cropParametersMapper.entityToDto(
+                cropParametersManager.getUndefinedCropParameters());
+        cropParametersDTO.setName("TEST_UPDATED");
+        mockMvc.perform(patch(CropParametersController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(fertilizerDTO))
+                        .content(objectMapper.writeValueAsString(cropParametersDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
@@ -256,12 +256,12 @@ public class FertilizerControllerTest {
     @Test
     @Transactional
     void updateModelBlank() throws Exception {
-        Fertilizer fertilizer = addNewFertilizer();
-        FertilizerDTO FertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
-        FertilizerDTO.setName("");
-        mockMvc.perform(patch(FertilizerController.BASE_PATH)
+        CropParameters cropParameters = saveNewCropParameters();
+        CropParametersDTO cropParametersDTO = DefaultMappers.cropParametersMapper.entityToDto(cropParameters);
+        cropParametersDTO.setName("");
+        mockMvc.perform(patch(CropParametersController.BASE_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(FertilizerDTO))
+                        .content(objectMapper.writeValueAsString(cropParametersDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -269,30 +269,29 @@ public class FertilizerControllerTest {
 
     @Test
     @Transactional
-    void deleteFertilizer() throws Exception {
-        Fertilizer fertilizer = addNewFertilizer();
+    void deleteCropParameters() throws Exception {
+        CropParameters cropParameters = saveNewCropParameters();
 
-        mockMvc.perform(delete(FertilizerController.BASE_PATH)
-                        .param("id", fertilizer.getId().toString())
+        mockMvc.perform(delete(CropParametersController.BASE_PATH)
+                        .param("id", cropParameters.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(fertilizerManager.getFertilizerById(fertilizer.getId())).isEqualTo(Fertilizer.NONE);
+        assertThat(cropParametersManager.getCropParametersById(cropParameters.getId())).isEqualTo(CropParameters.NONE);
     }
 
     @Test
     void deleteFailed() throws Exception {
-        Fertilizer fertilizer = fertilizerManager
-                .getAllFertilizers(0).getContent().get(0);
+        CropParameters cropParameters = cropParametersManager.getAllCropParameters(0).getContent().getFirst();
 
-        mockMvc.perform(delete(FertilizerController.BASE_PATH)
-                        .param("id", fertilizer.getId().toString())
+        mockMvc.perform(delete(CropParametersController.BASE_PATH)
+                        .param("id", cropParameters.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
-        assertThat(fertilizerManager.getFertilizerById(fertilizer.getId()).equals(Fertilizer.NONE)).isFalse();
+        assertThat(cropParametersManager.getCropParametersById(cropParameters.getId()).equals(CropParameters.NONE)).isFalse();
 
     }
 

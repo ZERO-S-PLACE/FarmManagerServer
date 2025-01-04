@@ -204,7 +204,7 @@ public class CropOperationsManagerTest {
         seedingSaved = (Seeding) cropOperationsManager.updateOperationParameters(seedingDTO);
         assertThat(seedingSaved.getIsPlannedOperation()).isFalse();
         assertThat(seedingSaved.getGerminationRate()).isEqualTo(BigDecimal.valueOf(0.95));
-        assertThat(seedingSaved.getRowSpacing()).isEqualTo(BigDecimal.valueOf(30));
+        assertThat(seedingSaved.getRowSpacing().floatValue()).isEqualTo(30);
 
     }
 
@@ -330,7 +330,7 @@ public class CropOperationsManagerTest {
                                 .minusDays(111))
                         .soldTo("CEFETRA")
                         .cropParameters(cropParametersManager
-                                .createCropParameters(GrainParametersDTO.builder()
+                                .addCropParameters(GrainParametersDTO.builder()
                                         .density(800)
                                         .humidity(10)
                                         .name("cefetra 11.01.2024")

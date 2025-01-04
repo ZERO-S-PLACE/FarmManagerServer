@@ -3,6 +3,8 @@ package org.zeros.farm_manager_server.Services.Default;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.CropSummary;
 import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.ResourcesSummary;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
@@ -36,40 +38,9 @@ import java.util.UUID;
 public class CropDataReaderDefault implements CropDataReader {
     private final CropOperationsManager cropOperationsManager;
 
-    private  Map<ResourceType, BigDecimal> getMeanYieldByCropSales(Set<CropSale> cropSales, BigDecimal area) {
-        Map<ResourceType, BigDecimal> amountSold = new HashMap<>();
-        Map<ResourceType, BigDecimal> meanYield = new HashMap<>();
-        for (CropSale cropSale : cropSales) {
-            if (amountSold.containsKey(cropSale.getResourceType())) {
-                BigDecimal amount = amountSold.get(cropSale.getResourceType());
-                amountSold.remove(cropSale.getResourceType());
-                amountSold.put(cropSale.getResourceType(), amount.add(cropSale.getAmountSold()));
-            } else {
-                amountSold.put(cropSale.getResourceType(), cropSale.getAmountSold());
-            }
-        }
-        amountSold.forEach((resourceType, amount) -> meanYield.put(resourceType, amount.divide(area, RoundingMode.HALF_DOWN)));
-        return meanYield;
-    }
-
-    private  Map<ResourceType, BigDecimal> getMeanYieldByHarvests(Set<Harvest> harvests) {
-        Map<ResourceType, BigDecimal> meanYield = new HashMap<>();
-        for (Harvest harvest : harvests) {
-            if (meanYield.containsKey(harvest.getResourceType())) {
-                throw new IllegalArgumentException("Many harvests of the same resource");
-            } else {
-                meanYield.put(harvest.getResourceType(), harvest.getQuantityPerAreaUnit());
-            }
-        }
-        return meanYield;
-    }
-
     @Override
     public CropSummary getCropSummary(UUID cropId) {
-        Crop crop = cropOperationsManager.getCropById(cropId);
-        if (crop == MainCrop.NONE) {
-            return CropSummary.NONE;
-        }
+        Crop crop = getCropIfExist(cropId);
         return CropSummary.builder()
                 .cropId(crop.getId())
                 .area(crop.getFieldPart().getArea())
@@ -82,6 +53,14 @@ public class CropDataReaderDefault implements CropDataReader {
                 .totalSubsidesValuePerAreaUnit(getSubsidesPerAreaUnit(crop))
                 .estimatedValue(getIsValueDetermined(crop))
                 .build();
+    }
+
+    private Crop getCropIfExist(UUID cropId) {
+        Crop crop = cropOperationsManager.getCropById(cropId);
+        if (crop == MainCrop.NONE) {
+            throw new IllegalArgumentExceptionCustom(Crop.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+        return crop;
     }
 
     private boolean getIsValueDetermined(Crop crop) {
@@ -168,7 +147,7 @@ public class CropDataReaderDefault implements CropDataReader {
                 estimatedAmount.remove(cropSale.getResourceType());
                 estimatedAmount.put(cropSale.getResourceType(), amount.subtract(cropSale.getAmountSold().divide(crop.getFieldPart().getArea(), RoundingMode.HALF_DOWN)));
             } else {
-                throw new IllegalArgumentException("Non harvested crop was sold");
+                throw new IllegalArgumentExceptionCustom(CropSale.class, IllegalArgumentExceptionCause.INVALID_OBJECT_PRESENT);
             }
         }
         return estimatedAmount;
@@ -211,12 +190,37 @@ public class CropDataReaderDefault implements CropDataReader {
 
     }
 
+    private Map<ResourceType, BigDecimal> getMeanYieldByHarvests(Set<Harvest> harvests) {
+        Map<ResourceType, BigDecimal> meanYield = new HashMap<>();
+        for (Harvest harvest : harvests) {
+            if (meanYield.containsKey(harvest.getResourceType())) {
+                throw new IllegalArgumentExceptionCustom(Harvest.class, IllegalArgumentExceptionCause.INVALID_OBJECT_PRESENT);
+            } else {
+                meanYield.put(harvest.getResourceType(), harvest.getQuantityPerAreaUnit());
+            }
+        }
+        return meanYield;
+    }
+
+    private Map<ResourceType, BigDecimal> getMeanYieldByCropSales(Set<CropSale> cropSales, BigDecimal area) {
+        Map<ResourceType, BigDecimal> amountSold = new HashMap<>();
+        Map<ResourceType, BigDecimal> meanYield = new HashMap<>();
+        for (CropSale cropSale : cropSales) {
+            if (amountSold.containsKey(cropSale.getResourceType())) {
+                BigDecimal amount = amountSold.get(cropSale.getResourceType());
+                amountSold.remove(cropSale.getResourceType());
+                amountSold.put(cropSale.getResourceType(), amount.add(cropSale.getAmountSold()));
+            } else {
+                amountSold.put(cropSale.getResourceType(), cropSale.getAmountSold());
+            }
+        }
+        amountSold.forEach((resourceType, amount) -> meanYield.put(resourceType, amount.divide(area, RoundingMode.HALF_DOWN)));
+        return meanYield;
+    }
+
     @Override
     public ResourcesSummary getCropResourcesSummary(UUID cropId) {
-        Crop crop = cropOperationsManager.getCropById(cropId);
-        if (crop == MainCrop.NONE) {
-            return ResourcesSummary.NONE;
-        }
+        Crop crop = getCropIfExist(cropId);
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
                 .area(crop.getFieldPart().getArea())
@@ -228,10 +232,7 @@ public class CropDataReaderDefault implements CropDataReader {
 
     @Override
     public ResourcesSummary getPlannedResourcesSummary(UUID cropId) {
-        Crop crop = cropOperationsManager.getCropById(cropId);
-        if (crop == MainCrop.NONE) {
-            return ResourcesSummary.NONE;
-        }
+        Crop crop = getCropIfExist(cropId);
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
                 .area(crop.getFieldPart().getArea())
@@ -309,7 +310,7 @@ public class CropDataReaderDefault implements CropDataReader {
 
     @Override
     public Map<ResourceType, CropParameters> getMeanCropParameters(UUID cropId) {
-        Crop crop = cropOperationsManager.getCropById(cropId);
+        Crop crop = getCropIfExist(cropId);
         if (crop instanceof InterCrop) {
             return new HashMap<>();
         }
@@ -323,7 +324,7 @@ public class CropDataReaderDefault implements CropDataReader {
         Map<ResourceType, CropParameters> meanParameters = new HashMap<>();
         for (Harvest harvest : harvests) {
             if (meanParameters.containsKey(harvest.getResourceType())) {
-                throw new IllegalArgumentException("Many harvests of the same resource");
+                throw new IllegalArgumentExceptionCustom(Harvest.class, IllegalArgumentExceptionCause.INVALID_OBJECT_PRESENT);
             } else {
                 if (!harvest.getCropParameters().equals(CropParameters.UNDEFINED)) {
                     meanParameters.put(harvest.getResourceType(), harvest.getCropParameters());

@@ -1,5 +1,6 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.SubsideDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
@@ -15,17 +16,21 @@ public interface SubsideManager {
 
     Page<Subside> getUserSubsides(int pageNumber);
 
-    Page<Subside> getSubsidesByNameAs(String name, int pageNumber);
+    Page<Subside> getSubsidesByNameAs(@NotNull String name, int pageNumber);
 
-    Page<Subside> getSubsidesBySpeciesAllowed(Species species, int pageNumber);
+    Page<Subside> getSubsidesBySpeciesAllowed(@NotNull UUID speciesId, int pageNumber);
 
-    Subside getSubsideById(UUID id);
+    Page<Subside> getSubsidesByNameAsAndSpeciesAllowed(@NotNull String name,@NotNull UUID speciesId, int pageNumber);
 
-    Subside addSubside(SubsideDTO subsideDTO);
+    Page<Subside> getSubsidesCriteria(String name, UUID speciesId, int pageNumber);
 
-    Subside updateSubside(SubsideDTO subsideDAO) throws NoSuchObjectException;
+    Subside getSubsideById(@NotNull UUID id);
 
-    void deleteSubsideSafe(UUID subsideId);
+    Subside addSubside(@NotNull SubsideDTO subsideDTO);
+
+    Subside updateSubside(@NotNull SubsideDTO subsideDTO) ;
+
+    void deleteSubsideSafe(@NotNull UUID subsideId);
 
 
 }

@@ -7,10 +7,7 @@ import org.zeros.farm_manager_server.Domain.Mappers.AgriculturalOperations.Data.
 import org.zeros.farm_manager_server.Domain.Mappers.AgriculturalOperations.Operations.*;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.Crop.InterCropMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.Crop.MainCropMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropParameters.CropParametersMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropParameters.GrainParametersMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropParameters.RapeSeedParametersMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropParameters.SugarBeetParametersMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropParameters.*;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropSaleMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.Plant.PlantMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.Plant.SpeciesMapper;
@@ -31,10 +28,7 @@ public class DefaultMappers {
     public static final SprayApplicationMapper sprayApplicationMapper = Mappers.getMapper(SprayApplicationMapper.class);
     public static final InterCropMapper interCropMapper = Mappers.getMapper(InterCropMapper.class);
     public static final MainCropMapper mainCropMapper = Mappers.getMapper(MainCropMapper.class);
-    public static final CropParametersMapper cropParametersMapper = Mappers.getMapper(CropParametersMapper.class);
-    public static final GrainParametersMapper grainParametersMapper = Mappers.getMapper(GrainParametersMapper.class);
-    public static final RapeSeedParametersMapper rapeSeedParametersMapper = Mappers.getMapper(RapeSeedParametersMapper.class);
-    public static final SugarBeetParametersMapper sugarBeetParametersMapper = Mappers.getMapper(SugarBeetParametersMapper.class);
+    public static final CropParametersSubclassesMapper cropParametersMapper = new CropParametersSubclassesMapper();
     public static final PlantMapper plantMapper = Mappers.getMapper(PlantMapper.class);
     public static final SpeciesMapper speciesMapper = Mappers.getMapper(SpeciesMapper.class);
     public static final CropSaleMapper cropSaleMapper = Mappers.getMapper(CropSaleMapper.class);

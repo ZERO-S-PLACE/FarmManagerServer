@@ -1,6 +1,5 @@
 package org.zeros.farm_manager_server.Bootstrap;
 
-import com.fasterxml.jackson.databind.deser.UnresolvedId;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -375,14 +374,14 @@ public class DemoUserSetup {
 
     private CropParameters getRandomCropParameters(MainCrop mainCrop) {
         if (mainCrop.getCultivatedPlants().stream().findFirst().orElse(Plant.NONE).getSpecies().getName().equals("Rape seed")) {
-            return cropParametersManager.createCropParameters(RapeSeedParametersDTO.builder()
+            return cropParametersManager.addCropParameters(RapeSeedParametersDTO.builder()
                     .name("Parameters" + String.valueOf(Math.round(random.nextFloat()*10000)))
                     .density(600 + random.nextInt(100))
                     .humidity(5 + random.nextFloat() * 5)
                     .resourceType(ResourceType.GRAIN)
                     .build());
         }
-        return cropParametersManager.createCropParameters(GrainParametersDTO.builder()
+        return cropParametersManager.addCropParameters(GrainParametersDTO.builder()
                 .name("Parameters" +  String.valueOf(Math.round(random.nextFloat()*10000)))
                 .density(700 + random.nextInt(100))
                 .humidity(14 + random.nextFloat() * 5)

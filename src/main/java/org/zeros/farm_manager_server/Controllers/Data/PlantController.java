@@ -8,6 +8,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.PlantDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
@@ -31,7 +33,7 @@ public class PlantController {
     public PlantDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
         Plant plant = plantManager.getPlantById(id);
         if (plant == Plant.NONE) {
-            throw new NoSuchObjectException("Machine do not exist");
+            throw new IllegalArgumentExceptionCustom(Plant.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         return DefaultMappers.plantMapper.entityToDto(plant);
 

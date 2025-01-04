@@ -14,7 +14,6 @@ import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Data.*;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.UserRepository;
-import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
 
 import java.util.UUID;
@@ -153,7 +152,9 @@ public class UserManagerDefault implements UserManager {
     @Override
     public void deleteAllUserData(UUID userId) {
         User user = getUserById(userId);
-        if (user == User.NONE) {return;}
+        if (user == User.NONE) {
+            return;
+        }
         fieldGroupRepository.deleteAll(user.getFieldGroups());
         farmingMachineRepository.deleteAllByCreatedBy(user.getUsername());
         subsideRepository.deleteAllByCreatedBy(user.getUsername());

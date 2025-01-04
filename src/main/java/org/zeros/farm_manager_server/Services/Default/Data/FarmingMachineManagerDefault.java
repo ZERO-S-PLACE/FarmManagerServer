@@ -1,6 +1,5 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -57,35 +56,35 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
     }
 
     @Override
-    public Page<FarmingMachine> getFarmingMachineByNameAs(@NotNull String model, int pageNumber) {
+    public Page<FarmingMachine> getFarmingMachineByNameAs(String model, int pageNumber) {
         return farmingMachineRepository.findAllByModelContainingIgnoreCaseAndCreatedByIn(model,
                 config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<FarmingMachine> getFarmingMachineByProducerAs(@NotNull String producer, int pageNumber) {
+    public Page<FarmingMachine> getFarmingMachineByProducerAs(String producer, int pageNumber) {
         return farmingMachineRepository.findAllByProducerContainingIgnoreCaseAndCreatedByIn(producer,
                 config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<FarmingMachine> getFarmingMachineByProducerAndNameAs(@NotNull String producer,
-                                                                     @NotNull String model, int pageNumber) {
+    public Page<FarmingMachine> getFarmingMachineByProducerAndNameAs(String producer,
+                                                                     String model, int pageNumber) {
         return farmingMachineRepository
                 .findAllByProducerContainingIgnoreCaseAndModelContainingIgnoreCaseAndCreatedByIn(
                         producer, model, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<FarmingMachine> getFarmingMachineBySupportedOperation(@NotNull OperationType operationType,
+    public Page<FarmingMachine> getFarmingMachineBySupportedOperation(OperationType operationType,
                                                                       int pageNumber) {
         return farmingMachineRepository.findAllBySupportedOperationTypesContainsAndCreatedByIn(
                 operationType, config.allRows(), getPageRequest(pageNumber));
     }
 
     @Override
-    public Page<FarmingMachine> getFarmingMachineCriteria(@NotNull String model, @NotNull String producer,
-                                                          @NotNull OperationType operationType, int pageNumber) {
+    public Page<FarmingMachine> getFarmingMachineCriteria(String model, String producer,
+                                                          OperationType operationType, int pageNumber) {
         boolean modelPresent = !(model == null || model.isBlank());
         boolean producerPresent = !(producer == null || producer.isBlank());
         boolean operationTypePresent = !(operationType == null || operationType == OperationType.ANY);
@@ -106,12 +105,12 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
     }
 
     @Override
-    public FarmingMachine getFarmingMachineById(@NotNull UUID id) {
+    public FarmingMachine getFarmingMachineById(UUID id) {
         return farmingMachineRepository.findById(id).orElse(FarmingMachine.NONE);
     }
 
     @Override
-    public FarmingMachine addFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO) {
+    public FarmingMachine addFarmingMachine(FarmingMachineDTO farmingMachineDTO) {
         checkIfRequiredFieldsPresent(farmingMachineDTO);
         checkIfUniqueObject(farmingMachineDTO);
         return farmingMachineRepository.saveAndFlush(
@@ -129,7 +128,7 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
     }
 
     private void checkIfUniqueObject(FarmingMachineDTO farmingMachineDTO) {
-        if (farmingMachineDTO.getId()==null&&farmingMachineRepository.findByProducerAndModelAndCreatedByIn(
+        if (farmingMachineDTO.getId() == null && farmingMachineRepository.findByProducerAndModelAndCreatedByIn(
                 farmingMachineDTO.getProducer(),
                 farmingMachineDTO.getModel(),
                 config.allRows()).isEmpty()) {
@@ -141,7 +140,7 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
     }
 
     private FarmingMachine rewriteToEntity(FarmingMachineDTO dto, FarmingMachine entity) {
-        FarmingMachine entityParsed= DefaultMappers.farmingMachineMapper.dtoToEntitySimpleProperties(dto);
+        FarmingMachine entityParsed = DefaultMappers.farmingMachineMapper.dtoToEntitySimpleProperties(dto);
         entityParsed.setCreatedBy(config.username());
         entityParsed.setVersion(entity.getVersion());
         entityParsed.setCreatedDate(entity.getCreatedDate());
@@ -150,7 +149,7 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
     }
 
     @Override
-    public FarmingMachine updateFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO) {
+    public FarmingMachine updateFarmingMachine(FarmingMachineDTO farmingMachineDTO) {
 
         FarmingMachine originalMachine = getMachineIfExists(farmingMachineDTO);
         checkAccess(originalMachine);
@@ -162,7 +161,7 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
 
     }
 
-    private FarmingMachine getMachineIfExists( FarmingMachineDTO farmingMachineDTO) {
+    private FarmingMachine getMachineIfExists(FarmingMachineDTO farmingMachineDTO) {
         if (farmingMachineDTO.getId() == null) {
             throw new IllegalArgumentExceptionCustom(
                     FarmingMachine.class,
@@ -187,7 +186,7 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
     }
 
     @Override
-    public void deleteFarmingMachineSafe(@NotNull UUID farmingMachineId) {
+    public void deleteFarmingMachineSafe(UUID farmingMachineId) {
         FarmingMachine originalMachine = farmingMachineRepository.findById(farmingMachineId)
                 .orElse(FarmingMachine.NONE);
         if (originalMachine.equals(FarmingMachine.NONE)) {
