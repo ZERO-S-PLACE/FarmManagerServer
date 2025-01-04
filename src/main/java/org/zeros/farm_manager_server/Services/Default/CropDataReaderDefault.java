@@ -5,12 +5,14 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
-import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.CropSummary;
-import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.ResourcesSummary;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
+import org.zeros.farm_manager_server.Domain.DataTransfer.CropSummary;
+import org.zeros.farm_manager_server.Domain.DataTransfer.ResourcesSummary;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.*;
+import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.InterCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
@@ -19,8 +21,8 @@ import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.GrainPa
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.RapeSeedParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.SugarBeetParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Subside;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Services.Interface.CropDataReader;
 import org.zeros.farm_manager_server.Services.Interface.CropOperationsManager;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -43,7 +46,7 @@ public class CropDataReaderDefault implements CropDataReader {
         Crop crop = getCropIfExist(cropId);
         return CropSummary.builder()
                 .cropId(crop.getId())
-                .area(crop.getFieldPart().getArea())
+                .area(crop.getFieldPart().getArea().floatValue())
                 .yieldPerAreaUnit(getYieldPerAreaUnit(crop))
                 .meanSellPrice(getMeanSellPrice(crop))
                 .estimatedAmountNotSoldPerAreaUnit(getEstimatedAmountNotSoldPerAreaUnit(crop))
@@ -70,16 +73,16 @@ public class CropDataReaderDefault implements CropDataReader {
         return (!((InterCrop) crop).getDateDestroyed().equals(ApplicationDefaults.UNDEFINED_DATE_MAX)) && crop.getWorkFinished();
     }
 
-    private BigDecimal getSubsidesPerAreaUnit(Crop crop) {
+    private float getSubsidesPerAreaUnit(Crop crop) {
         BigDecimal subsideSum = BigDecimal.ZERO;
         for (Subside subside : crop.getSubsides()) {
             subsideSum = subsideSum.add(subside.getSubsideValuePerAreaUnit());
         }
-        return subsideSum;
+        return subsideSum.setScale(2, RoundingMode.HALF_UP).floatValue();
 
     }
 
-    private BigDecimal getFertilizerCostPerAreaUnit(Crop crop) {
+    private float getFertilizerCostPerAreaUnit(Crop crop) {
         BigDecimal fertilizerCostSum = BigDecimal.ZERO;
         for (FertilizerApplication fertilizerApplication : crop.getFertilizerApplications()) {
             fertilizerCostSum = fertilizerCostSum.add(fertilizerApplication.getQuantityPerAreaUnit().multiply(fertilizerApplication.getPricePerUnit()));
@@ -87,20 +90,20 @@ public class CropDataReaderDefault implements CropDataReader {
         for (SprayApplication sprayApplication : crop.getSprayApplications()) {
             fertilizerCostSum = fertilizerCostSum.add(sprayApplication.getFertilizerQuantityPerAreaUnit().multiply(sprayApplication.getFertilizerPricePerUnit()));
         }
-        return fertilizerCostSum;
+        return fertilizerCostSum.setScale(2, RoundingMode.HALF_UP).floatValue();
     }
 
-    private BigDecimal getSprayCostPerAreaUnit(Crop crop) {
+    private float getSprayCostPerAreaUnit(Crop crop) {
 
         BigDecimal sprayCostSum = BigDecimal.ZERO;
 
         for (SprayApplication sprayApplication : crop.getSprayApplications()) {
             sprayCostSum = sprayCostSum.add(sprayApplication.getQuantityPerAreaUnit().multiply(sprayApplication.getPricePerUnit()));
         }
-        return sprayCostSum;
+        return sprayCostSum.setScale(2, RoundingMode.HALF_UP).floatValue();
     }
 
-    private BigDecimal getFuelCostPerAreaUnit(Crop crop) {
+    private float getFuelCostPerAreaUnit(Crop crop) {
         BigDecimal fuelCostSum = BigDecimal.ZERO;
         Set<AgriculturalOperation> operations = new java.util.HashSet<>();
         operations.addAll(crop.getSeeding());
@@ -119,7 +122,7 @@ public class CropDataReaderDefault implements CropDataReader {
                 }
             }
         }
-        return fuelCostSum;
+        return fuelCostSum.setScale(2, RoundingMode.HALF_UP).floatValue();
     }
 
     private Map<ResourceType, BigDecimal> getEstimatedAmountNotSoldPerAreaUnit(Crop crop) {
@@ -136,7 +139,8 @@ public class CropDataReaderDefault implements CropDataReader {
             if (estimatedAmount.containsKey(harvest.getResourceType())) {
                 BigDecimal amount = estimatedAmount.get(harvest.getResourceType());
                 estimatedAmount.remove(harvest.getResourceType());
-                estimatedAmount.put(harvest.getResourceType(), amount.add(harvest.getQuantityPerAreaUnit()));
+                estimatedAmount.put(harvest.getResourceType(), harvest.getQuantityPerAreaUnit()
+                        .add(amount));
             } else {
                 estimatedAmount.put(harvest.getResourceType(), harvest.getQuantityPerAreaUnit());
             }
@@ -174,7 +178,7 @@ public class CropDataReaderDefault implements CropDataReader {
             }
         }
         Map<ResourceType, BigDecimal> meanPrice = new HashMap<>();
-        totalIncome.forEach((resourceType, income) -> meanPrice.put(resourceType, income.divide(amountSold.get(resourceType), RoundingMode.HALF_DOWN)));
+        totalIncome.forEach((resourceType, income) -> meanPrice.put(resourceType, income.divide(amountSold.get(resourceType), RoundingMode.HALF_UP).setScale(2, RoundingMode.HALF_UP)));
         return meanPrice;
 
     }
@@ -214,7 +218,8 @@ public class CropDataReaderDefault implements CropDataReader {
                 amountSold.put(cropSale.getResourceType(), cropSale.getAmountSold());
             }
         }
-        amountSold.forEach((resourceType, amount) -> meanYield.put(resourceType, amount.divide(area, RoundingMode.HALF_DOWN)));
+        amountSold.forEach((resourceType, amount) -> meanYield.put(resourceType,
+                amount.divide(area, RoundingMode.HALF_UP).setScale(2, RoundingMode.HALF_UP)));
         return meanYield;
     }
 
@@ -223,7 +228,7 @@ public class CropDataReaderDefault implements CropDataReader {
         Crop crop = getCropIfExist(cropId);
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
-                .area(crop.getFieldPart().getArea())
+                .area(crop.getFieldPart().getArea().floatValue())
                 .seedingMaterialPerAreaUnit(getSeedingMaterialPerAreaUnit(crop, true))
                 .sprayPerAreaUnit(getSprayQuantityPerAreaUnit(crop, true))
                 .fertilizerPerAreaUnit(getFertilizerQuantityPerAreaUnit(crop, true))
@@ -235,23 +240,23 @@ public class CropDataReaderDefault implements CropDataReader {
         Crop crop = getCropIfExist(cropId);
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
-                .area(crop.getFieldPart().getArea())
+                .area(crop.getFieldPart().getArea().floatValue())
                 .seedingMaterialPerAreaUnit(getSeedingMaterialPerAreaUnit(crop, false))
                 .sprayPerAreaUnit(getSprayQuantityPerAreaUnit(crop, false))
                 .fertilizerPerAreaUnit(getFertilizerQuantityPerAreaUnit(crop, false))
                 .build();
     }
 
-    private Map<Set<Plant>, BigDecimal> getSeedingMaterialPerAreaUnit(Crop crop, boolean includeNotPlanned) {
-        Map<Set<Plant>, BigDecimal> seedingMaterialQuantity = new HashMap<>();
+    private Map<Set<UUID>, BigDecimal> getSeedingMaterialPerAreaUnit(Crop crop, boolean includeNotPlanned) {
+        Map<Set<UUID>, BigDecimal> seedingMaterialQuantity = new HashMap<>();
         for (Seeding seeding : crop.getSeeding()) {
             if (seeding.getIsPlannedOperation() || includeNotPlanned) {
-                if (seedingMaterialQuantity.containsKey(seeding.getSownPlants())) {
-                    BigDecimal quantity = seedingMaterialQuantity.get(seeding.getSownPlants());
-                    seedingMaterialQuantity.remove(seeding.getSownPlants());
-                    seedingMaterialQuantity.put(seeding.getSownPlants(), seeding.getQuantityPerAreaUnit().add(quantity));
+                if (seedingMaterialQuantity.containsKey(getSownPlantsIds(seeding))) {
+                    BigDecimal quantity = seedingMaterialQuantity.get(getSownPlantsIds(seeding));
+                    seedingMaterialQuantity.remove(getSownPlantsIds(seeding));
+                    seedingMaterialQuantity.put(getSownPlantsIds(seeding), seeding.getQuantityPerAreaUnit().add(quantity));
                 } else {
-                    seedingMaterialQuantity.put(seeding.getSownPlants(), seeding.getQuantityPerAreaUnit());
+                    seedingMaterialQuantity.put(getSownPlantsIds(seeding), seeding.getQuantityPerAreaUnit());
                 }
             }
         }
@@ -259,30 +264,37 @@ public class CropDataReaderDefault implements CropDataReader {
 
     }
 
-    private Map<Fertilizer, BigDecimal> getFertilizerQuantityPerAreaUnit(Crop crop, boolean includeNotPlanned) {
-        Map<Fertilizer, BigDecimal> fertilizerQuantity = new HashMap<>();
+    private  Set<UUID> getSownPlantsIds(Seeding seeding) {
+        return seeding.getSownPlants().stream().map(BaseEntity::getId).collect(Collectors.toSet());
+    }
+
+    private Map<UUID, BigDecimal> getFertilizerQuantityPerAreaUnit(Crop crop, boolean includeNotPlanned) {
+        Map<UUID, BigDecimal> fertilizerQuantity = new HashMap<>();
         for (SprayApplication sprayApplication : crop.getSprayApplications()) {
             if (!sprayApplication.getSpray().equals(Spray.UNDEFINED)) {
                 if (sprayApplication.getIsPlannedOperation() || includeNotPlanned) {
-                    if (fertilizerQuantity.containsKey(sprayApplication.getFertilizer())) {
-                        BigDecimal quantity = fertilizerQuantity.get(sprayApplication.getFertilizer());
-                        fertilizerQuantity.remove(sprayApplication.getFertilizer());
-                        fertilizerQuantity.put(sprayApplication.getFertilizer(), sprayApplication.getFertilizerQuantityPerAreaUnit().add(quantity));
+                    if (fertilizerQuantity.containsKey(getFertilizerId(sprayApplication))) {
+                        BigDecimal quantity = fertilizerQuantity.get(getFertilizerId(sprayApplication));
+                        fertilizerQuantity.remove(getFertilizerId(sprayApplication));
+                        fertilizerQuantity.put(getFertilizerId(sprayApplication), sprayApplication.getFertilizerQuantityPerAreaUnit()
+                                .add(quantity));
                     } else {
-                        fertilizerQuantity.put(sprayApplication.getFertilizer(), sprayApplication.getFertilizerQuantityPerAreaUnit());
+                        fertilizerQuantity.put(getFertilizerId(sprayApplication), sprayApplication.getFertilizerQuantityPerAreaUnit());
                     }
                 }
             }
         }
         for (FertilizerApplication fertilizerApplication : crop.getFertilizerApplications()) {
-            if (!fertilizerApplication.getFertilizer().equals(Fertilizer.UNDEFINED)) {
+            if (fertilizerApplication.getFertilizer().equals(Fertilizer.UNDEFINED)) {
                 if (fertilizerApplication.getIsPlannedOperation() || includeNotPlanned) {
-                    if (fertilizerQuantity.containsKey(fertilizerApplication.getFertilizer())) {
-                        BigDecimal quantity = fertilizerQuantity.get(fertilizerApplication.getFertilizer());
-                        fertilizerQuantity.remove(fertilizerApplication.getFertilizer());
-                        fertilizerQuantity.put(fertilizerApplication.getFertilizer(), fertilizerApplication.getQuantityPerAreaUnit().add(quantity));
+                    if (fertilizerQuantity.containsKey(getFertilizerId(fertilizerApplication))) {
+                        BigDecimal quantity = fertilizerQuantity.get(getFertilizerId(fertilizerApplication));
+                        fertilizerQuantity.remove(getFertilizerId(fertilizerApplication));
+                        fertilizerQuantity.put(getFertilizerId(fertilizerApplication), fertilizerApplication.getQuantityPerAreaUnit()
+                                .add(quantity));
                     } else {
-                        fertilizerQuantity.put(fertilizerApplication.getFertilizer(), fertilizerApplication.getQuantityPerAreaUnit());
+                        fertilizerQuantity.put(getFertilizerId(fertilizerApplication),
+                                fertilizerApplication.getQuantityPerAreaUnit());
                     }
                 }
             }
@@ -290,17 +302,27 @@ public class CropDataReaderDefault implements CropDataReader {
         return fertilizerQuantity;
     }
 
-    private Map<Spray, BigDecimal> getSprayQuantityPerAreaUnit(Crop crop, boolean includeNotPlanned) {
-        Map<Spray, BigDecimal> sprayQuantity = new HashMap<>();
+
+
+    private  UUID getFertilizerId(SprayApplication sprayApplication) {
+        return sprayApplication.getFertilizer().getId();
+    }
+    private  UUID getFertilizerId(FertilizerApplication fertilizerApplication) {
+         return fertilizerApplication.getFertilizer().getId();
+    }
+
+    private Map<UUID, BigDecimal> getSprayQuantityPerAreaUnit(Crop crop, boolean includeNotPlanned) {
+        Map<UUID, BigDecimal> sprayQuantity = new HashMap<>();
         for (SprayApplication sprayApplication : crop.getSprayApplications()) {
             if (!sprayApplication.getSpray().equals(Spray.UNDEFINED)) {
                 if (sprayApplication.getIsPlannedOperation() || includeNotPlanned) {
-                    if (sprayQuantity.containsKey(sprayApplication.getSpray())) {
-                        BigDecimal quantity = sprayQuantity.get(sprayApplication.getSpray());
-                        sprayQuantity.remove(sprayApplication.getSpray());
-                        sprayQuantity.put(sprayApplication.getSpray(), sprayApplication.getQuantityPerAreaUnit().add(quantity));
+                    if (sprayQuantity.containsKey(getSprayId(sprayApplication))) {
+                        BigDecimal quantity = sprayQuantity.get(getSprayId(sprayApplication));
+                        sprayQuantity.remove(getSprayId(sprayApplication));
+                        sprayQuantity.put(getSprayId(sprayApplication), sprayApplication.getQuantityPerAreaUnit()
+                                .add(quantity));
                     } else {
-                        sprayQuantity.put(sprayApplication.getSpray(), sprayApplication.getQuantityPerAreaUnit());
+                        sprayQuantity.put(getSprayId(sprayApplication), sprayApplication.getQuantityPerAreaUnit());
                     }
                 }
             }
@@ -308,8 +330,12 @@ public class CropDataReaderDefault implements CropDataReader {
         return sprayQuantity;
     }
 
+    private static UUID getSprayId(SprayApplication sprayApplication) {
+        return sprayApplication.getSpray().getId();
+    }
+
     @Override
-    public Map<ResourceType, CropParameters> getMeanCropParameters(UUID cropId) {
+    public Map<ResourceType, CropParametersDTO> getMeanCropParameters(UUID cropId) {
         Crop crop = getCropIfExist(cropId);
         if (crop instanceof InterCrop) {
             return new HashMap<>();
@@ -320,14 +346,15 @@ public class CropDataReaderDefault implements CropDataReader {
         return getMeanCropParametersByHarvests(((MainCrop) crop).getHarvest());
     }
 
-    private Map<ResourceType, CropParameters> getMeanCropParametersByHarvests(Set<Harvest> harvests) {
-        Map<ResourceType, CropParameters> meanParameters = new HashMap<>();
+    private Map<ResourceType, CropParametersDTO> getMeanCropParametersByHarvests(Set<Harvest> harvests) {
+        Map<ResourceType, CropParametersDTO> meanParameters = new HashMap<>();
         for (Harvest harvest : harvests) {
             if (meanParameters.containsKey(harvest.getResourceType())) {
                 throw new IllegalArgumentExceptionCustom(Harvest.class, IllegalArgumentExceptionCause.INVALID_OBJECT_PRESENT);
             } else {
                 if (!harvest.getCropParameters().equals(CropParameters.UNDEFINED)) {
-                    meanParameters.put(harvest.getResourceType(), harvest.getCropParameters());
+                    meanParameters.put(harvest.getResourceType(),
+                            DefaultMappers.cropParametersMapper.entityToDto(harvest.getCropParameters()));
                 }
             }
         }
@@ -335,7 +362,7 @@ public class CropDataReaderDefault implements CropDataReader {
 
     }
 
-    private Map<ResourceType, CropParameters> getMeanCropParametersByCropSales(Set<CropSale> cropSales) {
+    private Map<ResourceType, CropParametersDTO> getMeanCropParametersByCropSales(Set<CropSale> cropSales) {
         Map<ResourceType, BigDecimal> amountSold = new HashMap<>();
         Map<ResourceType, CropParameters> sumParameters = new HashMap<>();
         for (CropSale cropSale : cropSales) {
@@ -353,8 +380,10 @@ public class CropDataReaderDefault implements CropDataReader {
                 }
             }
         }
-        Map<ResourceType, CropParameters> meanParameters = new HashMap<>();
-        amountSold.forEach((resourceType, amount) -> meanParameters.put(resourceType, multiplyParameters(sumParameters.get(resourceType), BigDecimal.valueOf(1 / amount.doubleValue()))));
+        Map<ResourceType, CropParametersDTO> meanParameters = new HashMap<>();
+        amountSold.forEach((resourceType, amount) -> meanParameters.put(resourceType,
+                DefaultMappers.cropParametersMapper.entityToDto(
+                        multiplyParameters(sumParameters.get(resourceType), BigDecimal.valueOf(1 / amount.doubleValue())))));
         return meanParameters;
     }
 

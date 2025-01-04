@@ -1,4 +1,4 @@
-package org.zeros.farm_manager_server.Domain.DTO.DataTransfer;
+package org.zeros.farm_manager_server.Domain.DataTransfer;
 
 import jakarta.persistence.Transient;
 import lombok.*;
@@ -21,9 +21,8 @@ public class CropSummary {
     @Builder.Default
     private UUID cropId = ApplicationDefaults.UUID_UNDEFINED;
 
-    @NonNull
-    @Builder.Default
-    private BigDecimal area=BigDecimal.ZERO;
+
+    private float area;
 
     @NonNull
     @Builder.Default
@@ -37,21 +36,13 @@ public class CropSummary {
     @Builder.Default
     private Map<ResourceType, BigDecimal> estimatedAmountNotSoldPerAreaUnit = new HashMap<>();
 
-    @NonNull
-    @Builder.Default
-    private BigDecimal totalFuelCostPerAreaUnit = BigDecimal.ZERO;
+    private float totalFuelCostPerAreaUnit;
 
-    @NonNull
-    @Builder.Default
-    private BigDecimal totalFertilizerCostPerAreaUnit = BigDecimal.ZERO;
+    private float totalFertilizerCostPerAreaUnit;
 
-    @NonNull
-    @Builder.Default
-    private BigDecimal totalSprayCostPerAreaUnit = BigDecimal.ZERO;
+    private float totalSprayCostPerAreaUnit;
 
-    @NonNull
-    @Builder.Default
-    private BigDecimal totalSubsidesValuePerAreaUnit = BigDecimal.ZERO;
+    private float totalSubsidesValuePerAreaUnit;
 
     @NonNull
     @Builder.Default

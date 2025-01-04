@@ -15,14 +15,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
 import org.zeros.farm_manager_server.Controllers.Data.FertilizerController;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FertilizerDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.FertilizerManager;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;

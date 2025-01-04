@@ -6,8 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.CropSummary;
-import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.ResourcesSummary;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
+import org.zeros.farm_manager_server.Domain.DataTransfer.CropSummary;
+import org.zeros.farm_manager_server.Domain.DataTransfer.ResourcesSummary;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Services.Interface.CropDataReader;
@@ -42,7 +43,7 @@ public class CropDataReaderController {
     }
 
     @GetMapping(CROP_MEAN_PARAMETERS)
-    Map<ResourceType, CropParameters> getMeanCropParameters(@RequestParam UUID cropId) {
+    Map<ResourceType, CropParametersDTO> getMeanCropParameters(@RequestParam UUID cropId) {
         return cropDataReader.getMeanCropParameters(cropId);
     }
 

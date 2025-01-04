@@ -1,4 +1,4 @@
-package org.zeros.farm_manager_server.Domain.DTO.DataTransfer;
+package org.zeros.farm_manager_server.Domain.DataTransfer;
 
 import jakarta.persistence.Transient;
 import lombok.*;
@@ -23,21 +23,20 @@ public class ResourcesSummary {
     @Builder.Default
     private UUID cropId =ApplicationDefaults.UUID_UNDEFINED;
 
-    @NonNull
-    @Builder.Default
-    private BigDecimal area=BigDecimal.ZERO;
+
+    private float area;
 
     @NonNull
     @Builder.Default
-    private Map<Spray,BigDecimal> sprayPerAreaUnit=new HashMap<>();
+    private Map<UUID,BigDecimal> sprayPerAreaUnit=new HashMap<>();
 
     @NonNull
     @Builder.Default
-    private Map<Fertilizer,BigDecimal> fertilizerPerAreaUnit=new HashMap<>();
+    private Map<UUID,BigDecimal> fertilizerPerAreaUnit=new HashMap<>();
 
     @NonNull
     @Builder.Default
-    private Map<Set<Plant>,BigDecimal> seedingMaterialPerAreaUnit=new HashMap<>();
+    private Map<Set<UUID>,BigDecimal> seedingMaterialPerAreaUnit=new HashMap<>();
 
     @Transient
     public static final ResourcesSummary NONE = ResourcesSummary.builder().build();

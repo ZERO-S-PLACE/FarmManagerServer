@@ -10,14 +10,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.Bootstrap.DemoUserSetup;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Operations.SeedingDTO;
-import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.CropSummary;
-import org.zeros.farm_manager_server.Domain.DTO.DataTransfer.ResourcesSummary;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.SeedingDTO;
+import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
+import org.zeros.farm_manager_server.Domain.DataTransfer.CropSummary;
+import org.zeros.farm_manager_server.Domain.DataTransfer.ResourcesSummary;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
@@ -74,12 +74,11 @@ public class CropDataReaderTest {
     @BeforeEach
     public void setUp() {
         User user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
-
         Field field = user.getFields().stream().findAny().orElse(Field.NONE);
         FieldPart fieldPart = field.getFieldParts().stream().findAny().orElse(FieldPart.NONE);
         unsoldCrop = userDataReaderDefault.getAllUnsoldCrops().stream().findAny().orElse(null);
         activeCrop = fieldPart.getActiveCrop();
-        archivedCrop = fieldPart.getArchivedCrops().stream().findFirst().orElse(MainCrop.NONE);
+        archivedCrop = fieldPart.getArchivedCrops().stream().findAny().orElse(null);
 
     }
 
@@ -88,31 +87,33 @@ public class CropDataReaderTest {
         CropSummary summaryActive = cropDataReader.getCropSummary(activeCrop.getId());
         assertThat(summaryActive).isNotNull();
         assertThat(summaryActive.getCropId()).isNotNull();
-        assertThat(summaryActive.getArea().doubleValue()).isGreaterThan(0);
-        assertThat(summaryActive.getTotalFertilizerCostPerAreaUnit().doubleValue()).isGreaterThan(0);
-        assertThat(summaryActive.getTotalSprayCostPerAreaUnit().doubleValue()).isGreaterThan(0);
-        assertThat(summaryActive.getTotalFuelCostPerAreaUnit().doubleValue()).isGreaterThan(0);
+        assertThat(summaryActive.getArea()).isGreaterThan(0);
+        assertThat(summaryActive.getTotalFertilizerCostPerAreaUnit()).isGreaterThan(0);
+        assertThat(summaryActive.getTotalSprayCostPerAreaUnit()).isGreaterThan(0);
+        assertThat(summaryActive.getTotalFuelCostPerAreaUnit()).isGreaterThan(0);
         assertThat(summaryActive.getMeanSellPrice().size()).isEqualTo(0);
 
         CropSummary summaryUnsold = cropDataReader.getCropSummary(unsoldCrop.getId());
         assertThat(summaryUnsold).isNotNull();
         assertThat(summaryUnsold.getCropId()).isNotNull();
-        assertThat(summaryUnsold.getArea().doubleValue()).isGreaterThan(0);
-        assertThat(summaryUnsold.getTotalFertilizerCostPerAreaUnit().doubleValue()).isGreaterThan(0);
-        assertThat(summaryUnsold.getTotalFuelCostPerAreaUnit().doubleValue()).isGreaterThan(0);
+        assertThat(summaryUnsold.getArea()).isGreaterThan(0);
+        assertThat(summaryUnsold.getTotalFertilizerCostPerAreaUnit()).isGreaterThan(0);
+        assertThat(summaryUnsold.getTotalFuelCostPerAreaUnit()).isGreaterThan(0);
         if (unsoldCrop instanceof MainCrop) {
             if (!((MainCrop) unsoldCrop).getHarvest().isEmpty()) {
                 assertThat(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit().size()).isEqualTo(1);
-                assertThat(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit().get(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit().keySet().stream().findFirst().orElse(null)).doubleValue()).isGreaterThan(0);
+                assertThat(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit()
+                        .get(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit().keySet().stream().findFirst()
+                                .get()).floatValue()).isGreaterThan(0);
             }
         }
         CropSummary summaryArchived = cropDataReader.getCropSummary(archivedCrop.getId());
         assertThat(summaryArchived).isNotNull();
         assertThat(summaryArchived.getCropId()).isNotNull();
-        assertThat(summaryArchived.getArea().doubleValue()).isGreaterThan(0);
-        assertThat(summaryArchived.getTotalFertilizerCostPerAreaUnit().doubleValue()).isGreaterThan(0);
-        assertThat(summaryArchived.getTotalSprayCostPerAreaUnit().doubleValue()).isGreaterThan(0);
-        assertThat(summaryArchived.getTotalFuelCostPerAreaUnit().doubleValue()).isGreaterThan(0);
+        assertThat(summaryArchived.getArea()).isGreaterThan(0);
+        assertThat(summaryArchived.getTotalFertilizerCostPerAreaUnit()).isGreaterThan(0);
+        assertThat(summaryArchived.getTotalSprayCostPerAreaUnit()).isGreaterThan(0);
+        assertThat(summaryArchived.getTotalFuelCostPerAreaUnit()).isGreaterThan(0);
         assertThat(summaryArchived.getMeanSellPrice().size()).isEqualTo(1);
         assertThat(summaryArchived.getYieldPerAreaUnit().size()).isEqualTo(1);
         assertThat(summaryArchived.getEstimatedAmountNotSoldPerAreaUnit().size()).isEqualTo(0);
@@ -121,15 +122,24 @@ public class CropDataReaderTest {
     }
 
     @Test
-    void testGetCropResourcesSummary() {
+    void testGetCropResourcesSummaryArchived() {
         ResourcesSummary summary = cropDataReader.getCropResourcesSummary(archivedCrop.getId());
         assertThat(summary).isNotNull();
         assertThat(summary.getCropId()).isNotNull();
-        assertThat(summary.getArea().doubleValue()).isGreaterThan(0);
+        assertThat(summary.getArea()).isGreaterThan(0);
         assertThat(summary.getFertilizerPerAreaUnit().size()).isGreaterThan(0);
         assertThat(summary.getSprayPerAreaUnit().size()).isGreaterThan(0);
         assertThat(summary.getSeedingMaterialPerAreaUnit().size()).isGreaterThan(0);
-
+    }
+    @Test
+    void testGetCropResourcesSummaryUnsold() {
+        ResourcesSummary summary = cropDataReader.getCropResourcesSummary(unsoldCrop.getId());
+        assertThat(summary).isNotNull();
+        assertThat(summary.getCropId()).isNotNull();
+        assertThat(summary.getArea()).isGreaterThan(0);
+        assertThat(summary.getFertilizerPerAreaUnit().size()).isGreaterThan(0);
+        assertThat(summary.getSprayPerAreaUnit().size()).isGreaterThan(0);
+        assertThat(summary.getSeedingMaterialPerAreaUnit().size()).isGreaterThan(0);
     }
 
     @Test
@@ -149,13 +159,13 @@ public class CropDataReaderTest {
         ResourcesSummary summary = cropDataReader.getPlannedResourcesSummary(activeCrop.getId());
         assertThat(summary).isNotNull();
         assertThat(summary.getCropId()).isNotNull();
-        assertThat(summary.getArea().doubleValue()).isGreaterThan(0);
+        assertThat(summary.getArea()).isGreaterThan(0);
         assertThat(summary.getSeedingMaterialPerAreaUnit().size()).isGreaterThan(0);
     }
 
     @Test
     void getMeanCropParameters() {
-        Map<ResourceType, CropParameters> parameters = cropDataReader.getMeanCropParameters(archivedCrop.getId());
+        Map<ResourceType, CropParametersDTO> parameters = cropDataReader.getMeanCropParameters(archivedCrop.getId());
         assertThat(parameters.get(ResourceType.GRAIN)).isNotNull();
     }
 

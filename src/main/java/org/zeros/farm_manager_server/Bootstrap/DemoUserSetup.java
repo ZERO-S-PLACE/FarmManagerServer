@@ -2,6 +2,7 @@ package org.zeros.farm_manager_server.Bootstrap;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Operations.*;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.GrainParametersDTO;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DemoUserSetup {
     private final UserManager userManager;
     private final UserFieldsManager userFieldsManager;
@@ -67,12 +69,15 @@ public class DemoUserSetup {
     @Transactional
     public void createDemoUser() {
         if (userManager.getUserByUsername("DEMO_USER").equals(User.NONE)) {
+            log.atInfo().log("Creating Demo User");
             createNewDemoUser();
             userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
             addDemoUserFields();
+            log.atInfo().log("Created Demo User fields");
             loadDefaultData();
             addDemoUserCrops();
             userManager.logOutUser();
+            log.atInfo().log("Created Demo User operations");
         }
     }
 
@@ -227,15 +232,19 @@ public class DemoUserSetup {
 
     private MainCrop createRandomCropWithOperations(FieldPart fieldPart, boolean withHarvest, int yearsOffset) {
         MainCrop mainCrop = cropOperationsManager.createNewMainCrop(fieldPart.getId(), Set.of(plants.get(random.nextInt(0, plants.size() - 1)).getId()));
-        LocalDate seedingDate = LocalDate.now().minusDays(random.nextInt(260, 270)).minusYears(yearsOffset);
+        for (int i = 0; i < random.nextInt(7)+1; i++) {
+            LocalDate subsideYear = LocalDate.now().minusYears(yearsOffset);
+            cropOperationsManager.addSubside(mainCrop.getId(),createRandomSubside(mainCrop.getCultivatedPlants(),subsideYear).getId());
+        }
 
+        LocalDate seedingDate = LocalDate.now().minusDays(random.nextInt(260, 270)).minusYears(yearsOffset);
         if (yearsOffset == 0 && random.nextBoolean()) {
             cropOperationsManager.planSeeding(mainCrop.getId(), getRandomSeeding(seedingDate, mainCrop));
         } else {
             cropOperationsManager.addSeeding(mainCrop.getId(), getRandomSeeding(seedingDate, mainCrop));
         }
 
-        for (int i = 0; i < random.nextInt(7); i++) {
+        for (int i = 0; i < random.nextInt(7)+1; i++) {
             LocalDate cultivationDate = LocalDate.now().minusDays(random.nextInt(270, 300)).minusYears(yearsOffset);
             float depth = random.nextFloat() * 40;
             if (yearsOffset == 0 && random.nextBoolean()) {
@@ -244,7 +253,7 @@ public class DemoUserSetup {
                 cropOperationsManager.addCultivation(mainCrop.getId(), getRandomCultivation(depth, cultivationDate));
             }
         }
-        for (int i = 0; i < random.nextInt(7); i++) {
+        for (int i = 0; i < random.nextInt(10)+2; i++) {
             LocalDate fertilizerApplicationDate = LocalDate.now().minusDays(random.nextInt(100, 300)).minusYears(yearsOffset);
 
             if (yearsOffset == 0 && random.nextBoolean()) {
@@ -253,7 +262,7 @@ public class DemoUserSetup {
                 cropOperationsManager.addFertilizerApplication(mainCrop.getId(), getRandomFertilizerApplication(fertilizerApplicationDate));
             }
         }
-        for (int i = 0; i < random.nextInt(7); i++) {
+        for (int i = 0; i < random.nextInt(10)+2; i++) {
             LocalDate sprayApplicationDate = LocalDate.now().minusDays(random.nextInt(100, 250)).minusYears(yearsOffset);
             if (yearsOffset == 0 && random.nextBoolean()) {
                 cropOperationsManager.planSprayApplication(mainCrop.getId(), getRandomSprayApplication(sprayApplicationDate));
@@ -269,10 +278,7 @@ public class DemoUserSetup {
                 cropOperationsManager.addHarvest(mainCrop.getId(), getRandomHarvest(mainCrop, harvestDate));
             }
         }
-        for (int i = 0; i < random.nextInt(7); i++) {
-            LocalDate subsideYear = LocalDate.now().minusYears(yearsOffset);
-            cropOperationsManager.addSubside(mainCrop.getId(),createRandomSubside(mainCrop.getCultivatedPlants(),subsideYear).getId());
-        }
+
         return (MainCrop) cropOperationsManager.getCropById(mainCrop.getId());
     }
 

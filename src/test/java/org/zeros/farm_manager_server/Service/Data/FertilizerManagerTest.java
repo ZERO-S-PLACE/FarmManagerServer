@@ -22,8 +22,6 @@ import org.zeros.farm_manager_server.Services.Default.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Data.FertilizerManager;
 import org.zeros.farm_manager_server.Services.Interface.UserManager;
 
-import java.math.BigDecimal;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

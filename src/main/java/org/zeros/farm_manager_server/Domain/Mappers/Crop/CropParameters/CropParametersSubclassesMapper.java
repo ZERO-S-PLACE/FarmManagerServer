@@ -29,7 +29,6 @@ public class CropParametersSubclassesMapper implements DtoFromEntityMapper<CropP
             case SugarBeetParameters sugarBeetParameters -> sugarBeetParametersMapper.entityToDto(sugarBeetParameters);
             default -> cropParametersMapper.entityToDto(entity);
         };
-
     }
 
     @Override

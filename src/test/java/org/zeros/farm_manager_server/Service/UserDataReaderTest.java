@@ -8,18 +8,19 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.zeros.farm_manager_server.Services.Default.*;
-import org.zeros.farm_manager_server.Services.Default.Data.*;
-import org.zeros.farm_manager_server.Services.Interface.*;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.AgriculturalOperation;
 import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Operations.AgriculturalOperation;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
+import org.zeros.farm_manager_server.Services.Default.*;
+import org.zeros.farm_manager_server.Services.Default.Data.*;
+import org.zeros.farm_manager_server.Services.Interface.UserFieldsManager;
+import org.zeros.farm_manager_server.Services.Interface.UserManager;
 
 import java.util.HashSet;
 import java.util.Set;
