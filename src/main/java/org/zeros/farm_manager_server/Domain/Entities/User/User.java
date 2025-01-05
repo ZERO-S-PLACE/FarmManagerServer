@@ -35,12 +35,12 @@ public class User extends BaseEntity {
     @NotBlank
     @Size(min = 2, max = 20)
     @Builder.Default
-    private String firstName ="";
+    private String firstName = "";
 
     @NonNull
     @Builder.Default
     @Size(max = 20)
-    private String secondName="";
+    private String secondName = "";
 
     @NonNull
     @NotBlank
@@ -85,12 +85,12 @@ public class User extends BaseEntity {
 
     @NonNull
     @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private Set<Field> fields = new HashSet<>();
 
     @NonNull
     @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private Set<FieldGroup> fieldGroups = new HashSet<>();
 
     @Transient

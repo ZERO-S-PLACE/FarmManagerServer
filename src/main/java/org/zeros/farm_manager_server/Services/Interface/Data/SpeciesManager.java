@@ -2,11 +2,9 @@ package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.SpeciesDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
-import org.zeros.farm_manager_server.Domain.Mappers.DtoFromEntityMapper;
+import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 
-import java.rmi.NoSuchObjectException;
 import java.util.UUID;
 
 public interface SpeciesManager {

@@ -4,21 +4,21 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FarmingMachineDTO;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FertilizerDTO;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.SprayDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.PlantDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.SpeciesDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.SubsideDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
+import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
 import org.zeros.farm_manager_server.Repositories.UserRepository;
-import org.zeros.farm_manager_server.Services.Interface.CropParametersManager;
+import org.zeros.farm_manager_server.Services.Interface.CropParameters.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.*;
 
 import java.time.LocalDate;
@@ -53,16 +53,16 @@ public class DefaultSetup {
         loggedUserConfiguration.replaceUserBean(User.NONE);
     }
 
-
-    private void createAdminUser() {
+    @Transactional
+    protected void createAdminUser() {
         if (userRepository.findUserByUsername("ADMIN").isEmpty()) {
             User user = User.builder().email("admin@zeros.org").password("AdminPassword").username("ADMIN").firstName("Admin").lastName("Admin").build();
             userRepository.saveAndFlush(user);
         }
 
     }
-
-    private void createTestPlants() {
+    @Transactional
+    protected void createTestPlants() {
 
         if (plantManager.getDefaultPlants(0).isEmpty()) {
             plantManager.addPlant(PlantDTO.builder()
@@ -124,8 +124,8 @@ public class DefaultSetup {
         }
 
     }
-
-    private void createTestSubsides() {
+    @Transactional
+    protected void createTestSubsides() {
         if (subsideManager.getDefaultSubsides(0).isEmpty()) {
             subsideManager.addSubside(SubsideDTO.builder()
                     .name("Field payment")
@@ -149,8 +149,8 @@ public class DefaultSetup {
                     .build());
         }
     }
-
-    private void createTestFarmingMachines() {
+    @Transactional
+    protected void createTestFarmingMachines() {
         if (farmingMachineManager.getDefaultFarmingMachines(0).isEmpty()) {
             farmingMachineManager.addFarmingMachine(FarmingMachineDTO.UNDEFINED);
             farmingMachineManager.addFarmingMachine(FarmingMachineDTO.builder()
@@ -190,8 +190,8 @@ public class DefaultSetup {
                     .build());
         }
     }
-
-    private void createTestSprays() {
+    @Transactional
+    protected void createTestSprays() {
         if (sprayManager.getDefaultSprays(0).isEmpty()) {
             sprayManager.addSpray(SprayDTO.UNDEFINED);
             sprayManager.addSpray(SprayDTO.builder()
@@ -228,8 +228,8 @@ public class DefaultSetup {
                     .build());
         }
     }
-
-    private void createTestFertilizers() {
+    @Transactional
+    protected void createTestFertilizers() {
         if (fertilizerManager.getDefaultFertilizers(0).isEmpty()) {
             fertilizerManager.addFertilizer(FertilizerDTO.UNDEFINED);
             fertilizerManager.addFertilizer(FertilizerDTO.builder()
@@ -258,8 +258,8 @@ public class DefaultSetup {
                     .build());
         }
     }
-
-    private void createTestCropParameters() {
+    @Transactional
+    protected void createTestCropParameters() {
         if (cropParametersManager.getUndefinedCropParameters().equals(CropParameters.NONE)) {
             cropParametersManager.addCropParameters(CropParametersDTO.UNDEFINED);
         }

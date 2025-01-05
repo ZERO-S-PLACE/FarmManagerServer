@@ -2,9 +2,9 @@ package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.PlantDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 
 import java.util.UUID;
 
@@ -20,9 +20,9 @@ public interface PlantManager {
 
     Page<Plant> getPlantsBySpecies(@NotNull Species species, int pageNumber);
 
-    Page<Plant> getPlantsByVarietyAndSpecies(@NotNull String variety,@NotNull Species species, int pageNumber);
+    Page<Plant> getPlantsByVarietyAndSpecies(@NotNull String variety, @NotNull Species species, int pageNumber);
 
-    Page<Plant> getPlantsCriteria( String variety,  UUID speciesId, int pageNumber);
+    Page<Plant> getPlantsCriteria(String variety, UUID speciesId, int pageNumber);
 
     Plant getPlantById(@NotNull UUID uuid);
 
