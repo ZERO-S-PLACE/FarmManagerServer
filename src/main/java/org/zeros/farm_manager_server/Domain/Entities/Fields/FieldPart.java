@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.Crop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -22,39 +22,33 @@ import java.util.Set;
 @SuperBuilder
 public class FieldPart extends BaseEntity {
 
-    @NotBlank
-    @NonNull
-    @Builder.Default
-    private String fieldPartName = "";
-
-    @NonNull
-    @Builder.Default
-    private String description = "";
-
-    @NonNull
-    @Builder.Default
-    @DecimalMin("0.0")
-    private BigDecimal area = BigDecimal.ZERO;
-
-    @NonNull
-    @Builder.Default
-    private Boolean isArchived = false;
-
-    @NonNull
-    @Builder.Default
-    @OneToMany(mappedBy = "fieldPart", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    private Set<Crop> crops = new HashSet<>();
-
-    @NonNull
-    @ManyToOne
-    @Builder.Default
-    private Field field = Field.NONE;
-
     @Transient
     public final static FieldPart NONE = FieldPart.builder()
             .fieldPartName("NONE")
             .field(Field.NONE)
             .build();
+    @NotBlank
+    @NonNull
+    @Builder.Default
+    private String fieldPartName = "";
+    @NonNull
+    @Builder.Default
+    private String description = "";
+    @NonNull
+    @Builder.Default
+    @DecimalMin("0.0")
+    private BigDecimal area = BigDecimal.ZERO;
+    @NonNull
+    @Builder.Default
+    private Boolean isArchived = false;
+    @NonNull
+    @Builder.Default
+    @OneToMany(mappedBy = "fieldPart", cascade = CascadeType.REMOVE)
+    private Set<Crop> crops = new HashSet<>();
+    @NonNull
+    @ManyToOne
+    @Builder.Default
+    private Field field = Field.NONE;
 
     public static FieldPart getDefaultFieldPart(Field field) {
         return FieldPart.builder().fieldPartName("WHOLE").field(field).area(field.getArea()).build();

@@ -1,17 +1,18 @@
 package org.zeros.farm_manager_server.Domain.Mappers;
 
 import org.mapstruct.factory.Mappers;
-import org.zeros.farm_manager_server.Domain.Mappers.AgriculturalOperations.Data.FarmingMachineMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.AgriculturalOperations.Data.FertilizerMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.AgriculturalOperations.Data.SprayMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.AgriculturalOperations.Operations.*;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.Crop.InterCropMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.Crop.MainCropMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropParameters.*;
+import org.zeros.farm_manager_server.Domain.Mappers.AgriculturalOperations.*;
+import org.zeros.farm_manager_server.Domain.Mappers.Data.FarmingMachineMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Data.FertilizerMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Data.SprayMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropSubclassesMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Crop.InterCropMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Crop.MainCropMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.CropParameters.CropParametersSubclassesMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropSaleMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.Plant.PlantMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.Plant.SpeciesMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.Crop.SubsideMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Data.PlantMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Data.SpeciesMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Data.SubsideMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Fields.FieldGroupMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Fields.FieldMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Fields.FieldPartMapper;
@@ -21,6 +22,7 @@ public class DefaultMappers {
     public static final FarmingMachineMapper farmingMachineMapper = Mappers.getMapper(FarmingMachineMapper.class);
     public static final FertilizerMapper fertilizerMapper = Mappers.getMapper(FertilizerMapper.class);
     public static final SprayMapper sprayMapper = Mappers.getMapper(SprayMapper.class);
+    public static final AgriculturalOperationSubclassesMapper agriculturalOperationMapper = new AgriculturalOperationSubclassesMapper();
     public static final CultivationMapper cultivationMapper = Mappers.getMapper(CultivationMapper.class);
     public static final FertilizerApplicationMapper fertilizerApplicationMapper = Mappers.getMapper(FertilizerApplicationMapper.class);
     public static final HarvestMapper harvestMapper = Mappers.getMapper(HarvestMapper.class);
@@ -28,6 +30,7 @@ public class DefaultMappers {
     public static final SprayApplicationMapper sprayApplicationMapper = Mappers.getMapper(SprayApplicationMapper.class);
     public static final InterCropMapper interCropMapper = Mappers.getMapper(InterCropMapper.class);
     public static final MainCropMapper mainCropMapper = Mappers.getMapper(MainCropMapper.class);
+    public static final CropSubclassesMapper cropMapper = new CropSubclassesMapper();
     public static final CropParametersSubclassesMapper cropParametersMapper = new CropParametersSubclassesMapper();
     public static final PlantMapper plantMapper = Mappers.getMapper(PlantMapper.class);
     public static final SpeciesMapper speciesMapper = Mappers.getMapper(SpeciesMapper.class);

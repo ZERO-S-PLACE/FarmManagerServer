@@ -8,11 +8,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FertilizerDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
+import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.FertilizerManager;
 
@@ -65,11 +65,10 @@ public class FertilizerController {
 
     @GetMapping(LIST_PARAM_PATH)
     public Page<FertilizerDTO> getCriteria(@RequestParam(required = false, defaultValue = "0") Integer pageNumber,
-                                      @RequestParam(required = false) String name,
-                                           @RequestParam (required = false) Boolean isNatural
-    )
-                                      {
-        return fertilizerManager.getFertilizersCriteria(name,isNatural, pageNumber)
+                                           @RequestParam(required = false) String name,
+                                           @RequestParam(required = false) Boolean isNatural
+    ) {
+        return fertilizerManager.getFertilizersCriteria(name, isNatural, pageNumber)
                 .map(DefaultMappers.fertilizerMapper::entityToDto);
 
     }

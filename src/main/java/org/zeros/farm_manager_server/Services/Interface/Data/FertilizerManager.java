@@ -2,9 +2,8 @@ package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Range;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FertilizerDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
 
 import java.util.UUID;
 

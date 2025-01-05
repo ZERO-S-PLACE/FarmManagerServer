@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 
 import java.rmi.NoSuchObjectException;
 
@@ -26,12 +26,12 @@ public class ErrorController {
 
     @ExceptionHandler
     ResponseEntity<String> handleIllegalArgument(IllegalArgumentExceptionCustom exception) {
-        if(exception.getExceptionCause().equals(IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST))
-        {
+        if (exception.getExceptionCause().equals(IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
     }
+
     @ExceptionHandler
     ResponseEntity<String> handleNullArguments(NullPointerException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());

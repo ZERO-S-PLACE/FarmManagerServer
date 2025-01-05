@@ -2,9 +2,9 @@ package org.zeros.farm_manager_server.Services.Interface.Data;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.SprayDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
+import org.zeros.farm_manager_server.Domain.Entities.Enum.SprayType;
 
 import java.util.UUID;
 
