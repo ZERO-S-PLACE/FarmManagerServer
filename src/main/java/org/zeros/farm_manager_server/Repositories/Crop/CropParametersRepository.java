@@ -3,7 +3,7 @@ package org.zeros.farm_manager_server.Repositories.Crop;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
 
 import java.util.Optional;

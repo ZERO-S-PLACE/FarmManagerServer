@@ -11,8 +11,8 @@ import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO
 import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.OperationType;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;

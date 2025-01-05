@@ -13,7 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Data.FarmingMachineRepository;

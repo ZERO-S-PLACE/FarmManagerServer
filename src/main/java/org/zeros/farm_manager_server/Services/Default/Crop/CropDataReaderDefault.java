@@ -3,7 +3,7 @@ package org.zeros.farm_manager_server.Services.Default.Crop;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.CropSummary.CropSummary;
@@ -11,7 +11,7 @@ import org.zeros.farm_manager_server.Domain.DTO.CropSummary.ResourcesSummary;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.*;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.InterCrop;
@@ -41,9 +41,7 @@ import java.util.stream.Collectors;
 public class CropDataReaderDefault implements CropDataReader {
     private final CropManager cropManager;
 
-    private static UUID getSprayId(SprayApplication sprayApplication) {
-        return sprayApplication.getSpray().getId();
-    }
+
 
     @Override
     public CropSummary getCropSummary(UUID cropId) {
@@ -331,6 +329,9 @@ public class CropDataReaderDefault implements CropDataReader {
             }
         }
         return sprayQuantity;
+    }
+    private  UUID getSprayId(SprayApplication sprayApplication) {
+        return sprayApplication.getSpray().getId();
     }
 
     @Override

@@ -3,7 +3,7 @@ package org.zeros.farm_manager_server.Services.Interface.CropParameters;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
 
 import java.util.UUID;
@@ -24,6 +24,8 @@ public interface CropParametersManager {
     Page<CropParameters> getAllCropParameters(int pageNumber);
 
     Page<CropParameters> getParametersByResourceType(@NotNull ResourceType resourceType, int pageNumber);
+
+    CropParameters getCropParametersIfExist(UUID cropParametersId);
 
     void deleteCropParametersSafe(@NotNull UUID cropParametersId);
 

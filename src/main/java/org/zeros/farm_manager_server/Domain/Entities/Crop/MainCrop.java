@@ -24,7 +24,7 @@ public class MainCrop extends Crop {
     public static final MainCrop NONE = MainCrop.builder()
             .fieldPart(FieldPart.NONE)
             .build();
-    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE,orphanRemoval = true)
     @NonNull
     @Builder.Default
     private Set<Harvest> harvest = new HashSet<>();

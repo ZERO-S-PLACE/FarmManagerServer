@@ -17,7 +17,7 @@ import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
 import org.zeros.farm_manager_server.Controllers.Data.SprayController;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.SprayManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;

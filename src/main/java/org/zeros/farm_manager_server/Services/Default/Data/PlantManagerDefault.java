@@ -7,9 +7,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
 import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
@@ -139,7 +139,7 @@ public class PlantManagerDefault implements PlantManager {
 
     @Override
     public Plant updatePlant(PlantDTO plantDTO) {
-        Plant originalPlant = getPlantIfExists(plantDTO);
+        Plant originalPlant = getPlantIfExists(plantDTO.getId());
         checkAccess(originalPlant);
         checkIfRequiredFieldsPresent(plantDTO);
         return plantRepository.saveAndFlush(rewriteValuesToEntity(plantDTO, originalPlant));
@@ -153,21 +153,6 @@ public class PlantManagerDefault implements PlantManager {
                 IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
     }
 
-    private Plant getPlantIfExists(PlantDTO plantDTO) {
-        if (plantDTO.getId() == null) {
-            throw new IllegalArgumentExceptionCustom(
-                    Plant.class,
-                    Set.of("Id"),
-                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
-        }
-        Plant originalPlant = plantRepository.findById(plantDTO.getId()).orElse(Plant.NONE);
-        if (originalPlant.equals(Plant.NONE)) {
-            throw new IllegalArgumentExceptionCustom(
-                    Plant.class,
-                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return originalPlant;
-    }
 
     @Override
     public void deletePlantSafe(UUID plantId) {
@@ -189,6 +174,16 @@ public class PlantManagerDefault implements PlantManager {
         throw new IllegalAccessErrorCustom(Plant.class,
                 IllegalAccessErrorCause.USAGE_IN_OTHER_PLACES);
     }
-
+    @Override
+    public Plant getPlantIfExists(UUID plantId) {
+        if (plantId == null) {
+            throw new IllegalArgumentExceptionCustom(Plant.class, Set.of("Id"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        }
+        Plant originalPlant = plantRepository.findById(plantId).orElse(Plant.NONE);
+        if (originalPlant.equals(Plant.NONE)) {
+            throw new IllegalArgumentExceptionCustom(Plant.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+        return originalPlant;
+    }
 
 }

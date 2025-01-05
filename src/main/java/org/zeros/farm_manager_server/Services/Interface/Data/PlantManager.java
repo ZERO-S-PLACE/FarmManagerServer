@@ -32,5 +32,8 @@ public interface PlantManager {
 
     void deletePlantSafe(@NotNull UUID plantId);
 
+    Plant getPlantIfExists(UUID uuid);
+
+
 
 }

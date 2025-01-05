@@ -2,6 +2,7 @@ package org.zeros.farm_manager_server.Domain.Mappers;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
+import org.zeros.farm_manager_server.Domain.DTO.BaseEntityDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.*;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 
 @Component
 
-public interface DtoFromEntityMapper<D, E> {
+public interface DtoFromEntityMapper<D extends BaseEntityDTO, E extends BaseEntity> {
 
     D entityToDto(@NotNull E entity);
 

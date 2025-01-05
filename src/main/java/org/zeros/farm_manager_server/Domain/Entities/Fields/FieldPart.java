@@ -89,10 +89,9 @@ public class FieldPart extends BaseEntity {
         for (Crop crop : crops) {
             if (crop instanceof MainCrop) {
                 if (crop.getWorkFinished()) {
-                    archivedCrops.add(crop);
-                }
-                if (((MainCrop) crop).getIsFullySold()) {
-                    archivedCrops.add(crop);
+                    if (((MainCrop) crop).getIsFullySold()) {
+                        archivedCrops.add(crop);
+                    }
                 }
             } else {
                 if (crop.getWorkFinished()) {

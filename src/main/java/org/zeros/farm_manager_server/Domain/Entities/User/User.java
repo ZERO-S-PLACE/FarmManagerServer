@@ -10,6 +10,8 @@ import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
+import org.zeros.farm_manager_server.Domain.Enum.LoginError;
+import org.zeros.farm_manager_server.Domain.Enum.UserCreationError;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -3,7 +3,7 @@ package org.zeros.farm_manager_server.Domain.DTO.Crop;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.DTO.BaseEntityDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 
 import java.time.LocalDate;
 import java.util.UUID;

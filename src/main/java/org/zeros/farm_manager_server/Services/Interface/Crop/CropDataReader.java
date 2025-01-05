@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.CropSummary.CropSummary;
 import org.zeros.farm_manager_server.Domain.DTO.CropSummary.ResourcesSummary;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 
 import java.util.Map;
 import java.util.UUID;

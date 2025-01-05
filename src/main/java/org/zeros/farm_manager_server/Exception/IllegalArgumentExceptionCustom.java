@@ -1,6 +1,7 @@
 package org.zeros.farm_manager_server.Exception;
 
 import lombok.Getter;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 
 import java.util.Set;
 

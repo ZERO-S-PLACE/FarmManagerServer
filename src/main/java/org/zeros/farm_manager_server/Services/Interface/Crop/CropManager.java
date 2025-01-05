@@ -1,90 +1,35 @@
 package org.zeros.farm_manager_server.Services.Interface.Crop;
 
 import jakarta.validation.constraints.NotNull;
-import org.zeros.farm_manager_server.Domain.DTO.Operations.*;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Operations.*;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.InterCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
 
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
 public interface CropManager {
+    Crop getCropById(@NotNull UUID cropId);
 
     MainCrop createNewMainCrop(@NotNull UUID fieldPartId, @NotNull Set<UUID> cultivatedPlantsIds);
 
     InterCrop createNewInterCrop(@NotNull UUID fieldPartId, @NotNull Set<UUID> cultivatedPlantsIds);
 
-    void deleteCropAndItsData(@NotNull UUID cropId);
-
-    Crop updateCultivatedPlants(@NotNull UUID cropId, @NotNull Set<UUID> cultivatedPlantsIds);
-
-    Crop setDateDestroyed(@NotNull UUID interCropId, @NotNull LocalDate dateDestroyed);
-
-    void setWorkFinished(@NotNull UUID cropId);
-
-    void setFullySold(@NotNull UUID mainCropId);
-
-    Crop getCropById(@NotNull UUID cropId);
-
-    AgriculturalOperation commitPlannedOperation(@NotNull UUID operationId, @NotNull OperationType operationType);
-
-    AgriculturalOperation updateOperationMachine(@NotNull UUID operationId, @NotNull OperationType operationType, @NotNull UUID machineId);
-
-    AgriculturalOperation updateOperationParameters(@NotNull AgriculturalOperationDTO agriculturalOperationDTO);
-
-    void deleteOperation(@NotNull UUID operationId, @NotNull OperationType operationType);
-
-    Seeding planSeeding(@NotNull UUID cropId, @NotNull SeedingDTO seedingDTO);
-
-    Seeding addSeeding(@NotNull UUID cropId, @NotNull SeedingDTO seedingDTO);
-
-    Seeding getSeedingById(@NotNull UUID id);
-
-    Cultivation planCultivation(@NotNull UUID cropId, @NotNull CultivationDTO cultivationDTO);
-
-    Cultivation addCultivation(@NotNull UUID cropId, @NotNull CultivationDTO cultivationDTO);
-
-    Cultivation getCultivationById(@NotNull UUID id);
-
-
-    FertilizerApplication planFertilizerApplication(@NotNull UUID cropId, @NotNull FertilizerApplicationDTO fertilizerApplicationDTO);
-
-    FertilizerApplication addFertilizerApplication(@NotNull UUID cropId, @NotNull FertilizerApplicationDTO fertilizerApplicationDTO);
-
-    FertilizerApplication getFertilizerApplicationById(@NotNull UUID id);
-
-
-    SprayApplication planSprayApplication(@NotNull UUID cropId, @NotNull SprayApplicationDTO sprayApplicationDTO);
-
-    SprayApplication addSprayApplication(@NotNull UUID cropId, @NotNull SprayApplicationDTO sprayApplicationDTO);
-
-    SprayApplication getSprayApplicationById(@NotNull UUID id);
-
-
-    Harvest planHarvest(@NotNull UUID cropId, @NotNull HarvestDTO harvestDTO);
-
-    Harvest addHarvest(@NotNull UUID cropId, @NotNull HarvestDTO harvestDTO);
-
-    Harvest getHarvestById(@NotNull UUID id);
-
+    void updateCultivatedPlants(@NotNull UUID cropId, @NotNull Set<UUID> cultivatedPlantsIds);
 
     void addSubside(@NotNull UUID cropId, @NotNull UUID subsideId);
 
     void removeSubside(@NotNull UUID cropId, @NotNull UUID subsideId);
 
-    CropSale addCropSale(@NotNull UUID cropId, @NotNull CropSaleDTO cropSaleDTO);
+    Crop getCropIfExists(UUID cropId);
 
-    CropSale updateCropSale(@NotNull CropSaleDTO cropSaleDTO);
+    void setDateDestroyed(@NotNull UUID interCropId, @NotNull LocalDate dateDestroyed);
 
-    void removeCropSale(@NotNull UUID cropSaleId);
+    void setWorkFinished(@NotNull UUID cropId);
 
-    CropSale getCropSaleById(@NotNull UUID id);
+    void setFullySold(@NotNull UUID mainCropId);
 
+    void deleteCropAndItsData(@NotNull UUID cropId);
 
 }

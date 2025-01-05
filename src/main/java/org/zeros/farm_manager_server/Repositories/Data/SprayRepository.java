@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 
 import java.util.Optional;
 import java.util.Set;

@@ -1,5 +1,7 @@
 package org.zeros.farm_manager_server.Exception;
 
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
+
 import java.util.Set;
 
 public class IllegalAccessErrorCustom extends IllegalAccessError {

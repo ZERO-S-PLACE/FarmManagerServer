@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.CropSummary.CropSummary;
 import org.zeros.farm_manager_server.Domain.DTO.CropSummary.ResourcesSummary;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropDataReader;
 
 import java.util.Map;

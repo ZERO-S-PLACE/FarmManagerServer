@@ -17,7 +17,7 @@ import org.zeros.farm_manager_server.Controllers.CropParameters.CropParametersCo
 import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.GrainParametersDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Entities.CropParameters.GrainParameters;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;

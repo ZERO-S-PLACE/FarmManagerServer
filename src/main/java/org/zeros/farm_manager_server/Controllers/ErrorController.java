@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 
 import java.rmi.NoSuchObjectException;

@@ -1,4 +1,4 @@
-package org.zeros.farm_manager_server.Domain.Entities.User;
+package org.zeros.farm_manager_server.Domain.Enum;
 
 public enum UserCreationError {
     FIRST_NAME_MISSING, LAST_NAME_MISSING, USERNAME_MISSING, PASSWORD_MISSING,

@@ -7,13 +7,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Domain.Entities.Operations.AgriculturalOperation;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
 import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.*;
@@ -151,29 +152,17 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
     @Override
     public FarmingMachine updateFarmingMachine(FarmingMachineDTO farmingMachineDTO) {
 
-        FarmingMachine originalMachine = getMachineIfExists(farmingMachineDTO);
+        FarmingMachine originalMachine = getMachineIfExists(farmingMachineDTO.getId());
+        if(originalMachine.equals(getUndefinedFarmingMachine()))
+        {
+            throw new IllegalArgumentExceptionCustom(FarmingMachine.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
         checkAccess(originalMachine);
         checkIfRequiredFieldsPresent(farmingMachineDTO);
 
         return farmingMachineRepository.saveAndFlush(
                 rewriteToEntity(farmingMachineDTO, originalMachine));
 
-
-    }
-
-    private FarmingMachine getMachineIfExists(FarmingMachineDTO farmingMachineDTO) {
-        if (farmingMachineDTO.getId() == null) {
-            throw new IllegalArgumentExceptionCustom(
-                    FarmingMachine.class,
-                    Set.of("Id"),
-                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
-        }
-        FarmingMachine originalMachine = getFarmingMachineById(farmingMachineDTO.getId());
-        if (originalMachine.equals(FarmingMachine.NONE)) {
-            throw new IllegalArgumentExceptionCustom(FarmingMachine.class,
-                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return originalMachine;
 
     }
 
@@ -214,5 +203,33 @@ public class FarmingMachineManagerDefault implements FarmingMachineManager {
         return farmingMachineRepository.findByProducerAndModelAndCreatedByIn(
                         "UNDEFINED", "UNDEFINED", config.defaultRows())
                 .orElse(FarmingMachine.UNDEFINED);
+    }
+
+    @Override
+    public FarmingMachine getFarmingMachineIfCompatible(UUID farmingMachineId, OperationType operationType) {
+        FarmingMachine farmingMachine=getMachineIfExists(farmingMachineId);
+        checkCompatibility(operationType,farmingMachine);
+        return farmingMachine;
+    }
+
+    private void checkCompatibility(OperationType operationType, FarmingMachine farmingMachine) {
+        if (farmingMachine.getSupportedOperationTypes().contains(operationType)
+                || farmingMachine.getSupportedOperationTypes().contains(OperationType.ANY)) {
+            return;
+        }
+        throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class,
+                IllegalArgumentExceptionCause.NOT_COMPATIBLE);
+    }
+
+    private FarmingMachine getMachineIfExists(UUID farmingMachineId) {
+        if (farmingMachineId == null) {
+            return getUndefinedFarmingMachine();
+        }
+        FarmingMachine farmingMachine = getFarmingMachineById(farmingMachineId);
+        if (farmingMachine == FarmingMachine.NONE) {
+            throw new IllegalArgumentExceptionCustom(FarmingMachine.class,
+                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+        return farmingMachine;
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.AgriculturalOperationDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.User.UserDataReader;
 

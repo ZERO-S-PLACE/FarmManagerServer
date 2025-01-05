@@ -4,31 +4,29 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.zeros.farm_manager_server.Domain.DTO.Operations.*;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.GrainParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.RapeSeedParametersDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldPartDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Operations.*;
 import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.CultivationType;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.OperationType;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
-import org.zeros.farm_manager_server.Domain.Entities.Operations.Harvest;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Subside;
+import org.zeros.farm_manager_server.Domain.Entities.Data.*;
+import org.zeros.farm_manager_server.Domain.Enum.CultivationType;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Domain.Entities.Operations.Harvest;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Services.Default.Crop.CropSaleManagerDefault;
+import org.zeros.farm_manager_server.Services.Default.Operations.AgriculturalOperationsManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
 import org.zeros.farm_manager_server.Services.Interface.CropParameters.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.*;
@@ -59,6 +57,8 @@ public class DemoUserSetup {
     private final CropParametersManager cropParametersManager;
     private final CropManager cropManager;
     private final Random random = new Random();
+    private final CropSaleManagerDefault cropSaleManagerDefault;
+    private final AgriculturalOperationsManagerDefault agriculturalOperationsManagerDefault;
     private Field field1;
     private Field field2;
     private Field field3;
@@ -155,6 +155,7 @@ public class DemoUserSetup {
 
         divideFields();
     }
+
     @Transactional
     protected void divideFields() {
         fieldPartManager.divideFieldPart(fieldManager.getFieldById(field3.getId()).getFieldParts().stream().findFirst().orElse(FieldPart.NONE).getId(),
@@ -187,6 +188,7 @@ public class DemoUserSetup {
         createActiveCrops(fields);
         createNotActiveCrops(fields);
     }
+
     @Transactional
     protected void createActiveCrops(Set<Field> fields) {
         for (Field f : fields) {
@@ -197,6 +199,7 @@ public class DemoUserSetup {
             }
         }
     }
+
     @Transactional
     protected void createNotActiveCrops(Set<Field> fields) {
         for (int i = 1; i < 5; i++) {
@@ -214,6 +217,7 @@ public class DemoUserSetup {
             }
         }
     }
+
     @Transactional
     protected MainCrop addCropSales(MainCrop crop) {
         Harvest harvest = crop.getHarvest().stream().findFirst().orElse(Harvest.NONE);
@@ -222,7 +226,7 @@ public class DemoUserSetup {
         float amountSoldSum = 0;
         while (amountSoldSum < 0.85 * estimatedGrainQuantity) {
             float amountSold = estimatedGrainQuantity * random.nextFloat();
-            cropManager.addCropSale(crop.getId(), CropSaleDTO.builder()
+            cropSaleManagerDefault.addCropSale(crop.getId(), CropSaleDTO.builder()
                     .amountSold(amountSold)
                     .soldTo("CEFETRA")
                     .dateSold(harvest.getDateFinished().plusDays(random.nextInt(3, 100)))
@@ -246,43 +250,43 @@ public class DemoUserSetup {
 
         LocalDate seedingDate = LocalDate.now().minusDays(random.nextInt(260, 270)).minusYears(yearsOffset);
         if (yearsOffset == 0 && random.nextBoolean()) {
-            cropManager.planSeeding(mainCrop.getId(), getRandomSeeding(seedingDate, mainCrop));
+            agriculturalOperationsManagerDefault.planOperation(mainCrop.getId(), getRandomSeeding(seedingDate, mainCrop));
         } else {
-            cropManager.addSeeding(mainCrop.getId(), getRandomSeeding(seedingDate, mainCrop));
+            agriculturalOperationsManagerDefault.addOperation(mainCrop.getId(), getRandomSeeding(seedingDate, mainCrop));
         }
 
         for (int i = 0; i < random.nextInt(7) + 1; i++) {
             LocalDate cultivationDate = LocalDate.now().minusDays(random.nextInt(270, 300)).minusYears(yearsOffset);
             float depth = random.nextFloat() * 40;
             if (yearsOffset == 0 && random.nextBoolean()) {
-                cropManager.planCultivation(mainCrop.getId(), getRandomCultivation(depth, cultivationDate));
+                agriculturalOperationsManagerDefault.planOperation(mainCrop.getId(), getRandomCultivation(depth, cultivationDate));
             } else {
-                cropManager.addCultivation(mainCrop.getId(), getRandomCultivation(depth, cultivationDate));
+                agriculturalOperationsManagerDefault.addOperation(mainCrop.getId(), getRandomCultivation(depth, cultivationDate));
             }
         }
         for (int i = 0; i < random.nextInt(10) + 2; i++) {
             LocalDate fertilizerApplicationDate = LocalDate.now().minusDays(random.nextInt(100, 300)).minusYears(yearsOffset);
 
             if (yearsOffset == 0 && random.nextBoolean()) {
-                cropManager.planFertilizerApplication(mainCrop.getId(), getRandomFertilizerApplication(fertilizerApplicationDate));
+                agriculturalOperationsManagerDefault.planOperation(mainCrop.getId(), getRandomFertilizerApplication(fertilizerApplicationDate));
             } else {
-                cropManager.addFertilizerApplication(mainCrop.getId(), getRandomFertilizerApplication(fertilizerApplicationDate));
+                agriculturalOperationsManagerDefault.addOperation(mainCrop.getId(), getRandomFertilizerApplication(fertilizerApplicationDate));
             }
         }
         for (int i = 0; i < random.nextInt(10) + 2; i++) {
             LocalDate sprayApplicationDate = LocalDate.now().minusDays(random.nextInt(100, 250)).minusYears(yearsOffset);
             if (yearsOffset == 0 && random.nextBoolean()) {
-                cropManager.planSprayApplication(mainCrop.getId(), getRandomSprayApplication(sprayApplicationDate));
+                agriculturalOperationsManagerDefault.planOperation(mainCrop.getId(), getRandomSprayApplication(sprayApplicationDate));
             } else {
-                cropManager.addSprayApplication(mainCrop.getId(), getRandomSprayApplication(sprayApplicationDate));
+                agriculturalOperationsManagerDefault.addOperation(mainCrop.getId(), getRandomSprayApplication(sprayApplicationDate));
             }
         }
         if (withHarvest) {
             LocalDate harvestDate = LocalDate.now().minusDays(random.nextInt(5, 50)).minusYears(yearsOffset);
             if (yearsOffset == 0 && random.nextBoolean()) {
-                cropManager.planHarvest(mainCrop.getId(), getRandomHarvest(mainCrop, harvestDate));
+                agriculturalOperationsManagerDefault.planOperation(mainCrop.getId(), getRandomHarvest(mainCrop, harvestDate));
             } else {
-                cropManager.addHarvest(mainCrop.getId(), getRandomHarvest(mainCrop, harvestDate));
+                agriculturalOperationsManagerDefault.addOperation(mainCrop.getId(), getRandomHarvest(mainCrop, harvestDate));
             }
         }
 
@@ -384,7 +388,7 @@ public class DemoUserSetup {
         if (depth < 30) return CultivationType.DEEP_NO_TILL;
         return CultivationType.DEEP_LOOSENING;
     }
-@Transactional
+
     protected CropParameters getRandomCropParameters(MainCrop mainCrop) {
         if (cropManager.getCropById(mainCrop.getId()).getCultivatedPlants().stream().findFirst().orElse(Plant.NONE).getSpecies().getName().equals("Rape seed")) {
             return cropParametersManager.addCropParameters(RapeSeedParametersDTO.builder()
@@ -393,9 +397,10 @@ public class DemoUserSetup {
                     .humidity(5 + random.nextFloat() * 5)
                     .resourceType(ResourceType.GRAIN)
                     .build());
+
         }
         return cropParametersManager.addCropParameters(GrainParametersDTO.builder()
-                .name("Parameters" + Math.round(random.nextFloat() * 10000))
+                .name("Parameters" + Math.round(random.nextFloat() * 1000000))
                 .density(700 + random.nextInt(100))
                 .humidity(14 + random.nextFloat() * 5)
                 .glutenContent(20 + random.nextFloat() * 20)

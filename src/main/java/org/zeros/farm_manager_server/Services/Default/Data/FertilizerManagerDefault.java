@@ -7,9 +7,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
 import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
@@ -135,7 +135,7 @@ public class FertilizerManagerDefault implements FertilizerManager {
     @Override
     public Fertilizer updateFertilizer(FertilizerDTO fertilizerDTO) {
 
-        Fertilizer originalFertilizer = getFertilizerIfExists(fertilizerDTO);
+        Fertilizer originalFertilizer = getFertilizerIfExists(fertilizerDTO.getId());
         checkAccess(originalFertilizer);
         checkIfRequiredFieldsPresent(fertilizerDTO);
         return fertilizerRepository.saveAndFlush(
@@ -150,15 +150,15 @@ public class FertilizerManagerDefault implements FertilizerManager {
         throw new IllegalAccessErrorCustom(Fertilizer.class,
                 IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
     }
-
-    private Fertilizer getFertilizerIfExists(FertilizerDTO fertilizerDTO) {
-        if (fertilizerDTO.getId() == null) {
+    @Override
+    public Fertilizer getFertilizerIfExists(UUID fertilizerId) {
+        if (fertilizerId == null) {
             throw new IllegalArgumentExceptionCustom(
                     Fertilizer.class,
                     Set.of("Id"),
                     IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        Fertilizer originalFertilizer = getFertilizerById(fertilizerDTO.getId());
+        Fertilizer originalFertilizer = getFertilizerById(fertilizerId);
         if (originalFertilizer.equals(Fertilizer.NONE)) {
             throw new IllegalArgumentExceptionCustom(
                     Fertilizer.class,

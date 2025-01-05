@@ -7,12 +7,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
 import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
@@ -127,7 +127,7 @@ public class CropParametersManagerDefault implements CropParametersManager {
 
     @Override
     public CropParameters updateCropParameters(CropParametersDTO cropParametersDTO) {
-        CropParameters originalParameters = getCropParametersIfExists(cropParametersDTO);
+        CropParameters originalParameters = getCropParametersIfExist(cropParametersDTO.getId());
         checkAccess(originalParameters);
         checkIfRequiredFieldsPresent(cropParametersDTO);
         return cropParametersRepository.saveAndFlush(rewriteToEntity(cropParametersDTO, originalParameters));
@@ -140,15 +140,15 @@ public class CropParametersManagerDefault implements CropParametersManager {
         throw new IllegalAccessErrorCustom(CropParameters.class,
                 IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
     }
-
-    private CropParameters getCropParametersIfExists(CropParametersDTO cropParametersDTO) {
-        if (cropParametersDTO.getId() == null) {
+@Override
+    public CropParameters getCropParametersIfExist(UUID cropParametersId) {
+        if (cropParametersId == null) {
             throw new IllegalArgumentExceptionCustom(
                     CropParameters.class,
                     Set.of("Id"),
                     IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        CropParameters originalParameters = getCropParametersById(cropParametersDTO.getId());
+        CropParameters originalParameters = getCropParametersById(cropParametersId);
         if (originalParameters.equals(CropParameters.NONE)) {
             throw new IllegalArgumentExceptionCustom(CropParameters.class,
                     IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
@@ -184,4 +184,5 @@ public class CropParametersManagerDefault implements CropParametersManager {
         return cropParametersRepository.findAllByNameAndCreatedBy("UNDEFINED", "ADMIN")
                 .orElse(CropParameters.NONE);
     }
+
 }

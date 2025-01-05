@@ -6,36 +6,29 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.zeros.farm_manager_server.Bootstrap.DemoUserSetup;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Domain.DTO.Operations.SeedingDTO;
 import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.CropSummary.CropSummary;
 import org.zeros.farm_manager_server.Domain.DTO.CropSummary.ResourcesSummary;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.DTO.Operations.SeedingDTO;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
-import org.zeros.farm_manager_server.Services.Default.Crop.CropDataReaderDefault;
-import org.zeros.farm_manager_server.Services.Default.Crop.CropManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.CropParameters.CropParametersManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.Data.*;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldPartManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.User.UserDataReaderDefault;
-import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropDataReader;
-import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
+import org.zeros.farm_manager_server.Services.Interface.Operations.AgriculturalOperationsManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.util.Map;
@@ -48,7 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("local")
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({DemoUserSetup.class, UserDataReaderDefault.class, CropDataReaderDefault.class, FieldManagerDefault.class,FieldPartManagerDefault.class, FieldGroupManagerDefault.class, PlantManagerDefault.class, SpeciesManagerDefault.class, SprayManagerDefault.class, FertilizerManagerDefault.class, FarmingMachineManagerDefault.class, UserManagerDefault.class, LoggedUserConfiguration.class, CropManagerDefault.class, CropParametersManagerDefault.class, SubsideManagerDefault.class})
+@ComponentScan("org.zeros.farm_manager_server.Services")
+@Import(LoggedUserConfiguration.class)
 public class CropDataReaderTest {
 
     @Autowired
@@ -68,14 +62,15 @@ public class CropDataReaderTest {
     Crop unsoldCrop;
     Crop activeCrop;
     Crop archivedCrop;
-    @Autowired
-    private CropManager cropManager;
+
     @Autowired
     private CropDataReader cropDataReader;
     @Autowired
     private UserDataReaderDefault userDataReaderDefault;
     @Autowired
     private FarmingMachineManagerDefault farmingMachineManager;
+    @Autowired
+    private AgriculturalOperationsManager agriculturalOperationsManager;
 
 
     @BeforeEach
@@ -138,6 +133,7 @@ public class CropDataReaderTest {
         assertThat(summary.getSprayPerAreaUnit().size()).isGreaterThan(0);
         assertThat(summary.getSeedingMaterialPerAreaUnit().size()).isGreaterThan(0);
     }
+
     @Test
     void testGetCropResourcesSummaryUnsold() {
         ResourcesSummary summary = cropDataReader.getCropResourcesSummary(unsoldCrop.getId());
@@ -152,7 +148,7 @@ public class CropDataReaderTest {
     @Test
     void testGetPlannedResourcesSummary() {
         Random random = new Random();
-        cropManager.planSeeding(activeCrop.getId(),
+        agriculturalOperationsManager.planOperation(activeCrop.getId(),
                 SeedingDTO.builder()
                         .sownPlants(Set.copyOf(activeCrop.getCultivatedPlants()).stream().map(BaseEntity::getId).collect(Collectors.toSet()))
                         .farmingMachine(farmingMachineManager.getUndefinedFarmingMachine().getId())

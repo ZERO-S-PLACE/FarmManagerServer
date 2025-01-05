@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 
 import java.util.UUID;
 
@@ -35,4 +35,5 @@ public interface SprayManager {
 
     Spray getUndefinedSpray();
 
+    Spray getSprayIfExists(UUID sprayId);
 }

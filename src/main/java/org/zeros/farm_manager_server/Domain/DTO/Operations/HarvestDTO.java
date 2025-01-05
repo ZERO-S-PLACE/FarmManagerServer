@@ -2,7 +2,7 @@ package org.zeros.farm_manager_server.Domain.DTO.Operations;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 
 import java.util.UUID;
 

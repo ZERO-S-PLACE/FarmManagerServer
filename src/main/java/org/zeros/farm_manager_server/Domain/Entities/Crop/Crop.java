@@ -42,22 +42,22 @@ public abstract class Crop extends BaseEntity {
 
     @NonNull
     @Builder.Default
-    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE,orphanRemoval = true)
     private Set<Seeding> seeding = new HashSet<>();
 
     @NonNull
     @Builder.Default
-    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE,orphanRemoval = true)
     private Set<Cultivation> cultivations = new HashSet<>();
 
     @NonNull
     @Builder.Default
-    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE,orphanRemoval = true)
     private Set<SprayApplication> sprayApplications = new HashSet<>();
 
     @NonNull
     @Builder.Default
-    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE,orphanRemoval = true)
     private Set<FertilizerApplication> fertilizerApplications = new HashSet<>();
 
     @NonNull

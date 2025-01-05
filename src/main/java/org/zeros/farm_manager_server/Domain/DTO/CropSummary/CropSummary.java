@@ -2,7 +2,7 @@ package org.zeros.farm_manager_server.Domain.DTO.CropSummary;
 
 import jakarta.persistence.Transient;
 import lombok.*;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 
 import java.math.BigDecimal;

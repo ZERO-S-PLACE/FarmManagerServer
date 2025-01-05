@@ -16,7 +16,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
 import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.FarmingMachineManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;

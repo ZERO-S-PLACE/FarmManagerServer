@@ -7,13 +7,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
 import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
@@ -139,26 +139,10 @@ public class SprayManagerDefault implements SprayManager {
 
     @Override
     public Spray updateSpray(SprayDTO sprayDTO) {
-        Spray originalSpray = getSprayIfExists(sprayDTO);
+        Spray originalSpray = getSprayIfExists(sprayDTO.getId());
         checkAccess(originalSpray);
         checkIfRequiredFieldsPresent(sprayDTO);
         return sprayRepository.saveAndFlush(rewriteValuesToEntity(sprayDTO, originalSpray));
-    }
-
-    private Spray getSprayIfExists(SprayDTO sprayDTO) {
-        if (sprayDTO.getId() == null) {
-            throw new IllegalArgumentExceptionCustom(
-                    Spray.class,
-                    Set.of("Id"),
-                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
-        }
-        Spray originalSpray = getSprayById(sprayDTO.getId());
-        if (originalSpray.equals(Spray.NONE)) {
-            throw new IllegalArgumentExceptionCustom(
-                    Spray.class,
-                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return originalSpray;
     }
 
     private void checkAccess(Spray spray) {
@@ -192,5 +176,22 @@ public class SprayManagerDefault implements SprayManager {
     public Spray getUndefinedSpray() {
         return sprayRepository.findByNameAndSprayTypeAndCreatedByIn(
                 "UNDEFINED", SprayType.OTHER, config.defaultRows()).orElse(Spray.NONE);
+    }
+
+    @Override
+    public Spray getSprayIfExists(UUID sprayId) {
+        if (sprayId == null) {
+            throw new IllegalArgumentExceptionCustom(
+                    Spray.class,
+                    Set.of("Id"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        }
+        Spray originalSpray = getSprayById(sprayId);
+        if (originalSpray.equals(Spray.NONE)) {
+            throw new IllegalArgumentExceptionCustom(
+                    Spray.class,
+                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        }
+        return originalSpray;
     }
 }
