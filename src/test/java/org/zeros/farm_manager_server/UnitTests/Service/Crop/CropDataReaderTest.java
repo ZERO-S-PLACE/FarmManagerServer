@@ -10,9 +10,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
-import org.zeros.farm_manager_server.Domain.DTO.CropSummary.CropSummary;
-import org.zeros.farm_manager_server.Domain.DTO.CropSummary.ResourcesSummary;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.CropSummary;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.ResourcesSummary;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.SeedingDTO;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
@@ -119,8 +119,6 @@ public class CropDataReaderTest {
         assertThat(summaryArchived.getMeanSellPrice().size()).isEqualTo(1);
         assertThat(summaryArchived.getYieldPerAreaUnit().size()).isEqualTo(1);
         assertThat(summaryArchived.getEstimatedAmountNotSoldPerAreaUnit().size()).isEqualTo(0);
-
-
     }
 
     @Test

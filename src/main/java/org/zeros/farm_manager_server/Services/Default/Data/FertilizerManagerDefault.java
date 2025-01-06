@@ -193,5 +193,4 @@ public class FertilizerManagerDefault implements FertilizerManager {
                 config.defaultRows()).orElse(Fertilizer.NONE);
     }
 
-
 }

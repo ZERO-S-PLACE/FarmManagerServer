@@ -24,14 +24,15 @@ import java.util.UUID;
 @RestController
 public class SprayController {
     public static final String BASE_PATH = "/api/user/spray";
+    public static final String ID_PATH = BASE_PATH + "{id}";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String LIST_USER_PATH = BASE_PATH + "/USER";
     public static final String LIST_DEFAULT_PATH = BASE_PATH + "/DEFAULT";
     public static final String LIST_PARAM_PATH = BASE_PATH + "/PARAM";
     private final SprayManager sprayManager;
 
-    @GetMapping(BASE_PATH)
-    public SprayDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
+    @GetMapping(ID_PATH)
+    public SprayDTO getById(@PathVariable("id") UUID id)  {
         Spray spray = sprayManager.getSprayById(id);
         if (spray == Spray.NONE) {
             throw new IllegalArgumentExceptionCustom(Spray.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);

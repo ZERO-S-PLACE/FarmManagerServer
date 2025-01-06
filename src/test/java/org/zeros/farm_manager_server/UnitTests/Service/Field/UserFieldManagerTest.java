@@ -18,7 +18,7 @@ import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
-import org.zeros.farm_manager_server.Repositories.UserRepository;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.Fields.FieldPartManagerDefault;

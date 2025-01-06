@@ -10,7 +10,7 @@ import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
-import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Species;

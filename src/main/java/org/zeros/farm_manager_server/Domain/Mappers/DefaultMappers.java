@@ -8,7 +8,7 @@ import org.zeros.farm_manager_server.Domain.Mappers.Data.SprayMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropSubclassesMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.InterCropMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.MainCropMapper;
-import org.zeros.farm_manager_server.Domain.Mappers.CropParameters.CropParametersSubclassesMapper;
+import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropParameters.CropParametersSubclassesMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Crop.CropSaleMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Data.PlantMapper;
 import org.zeros.farm_manager_server.Domain.Mappers.Data.SpeciesMapper;

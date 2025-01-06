@@ -61,8 +61,7 @@ public class SubsideControllerTest {
     void getById() throws Exception {
         Subside subside = subsideManager.getAllSubsides(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SubsideController.BASE_PATH)
-                                .queryParam("id", subside.getId().toString())
+                        get(SubsideController.ID_PATH,subside.getId())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -76,8 +75,7 @@ public class SubsideControllerTest {
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(SubsideController.BASE_PATH)
-                                .queryParam("id", UUID.randomUUID().toString())
+                        get(SubsideController.ID_PATH,UUID.randomUUID())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 

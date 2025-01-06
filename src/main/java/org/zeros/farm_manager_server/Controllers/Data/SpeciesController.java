@@ -23,14 +23,15 @@ import java.util.UUID;
 @RestController
 public class SpeciesController {
     public static final String BASE_PATH = "/api/user/species";
+    public static final String ID_PATH = BASE_PATH + "{id}";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String LIST_USER_PATH = BASE_PATH + "/USER";
     public static final String LIST_DEFAULT_PATH = BASE_PATH + "/DEFAULT";
     public static final String LIST_PARAM_PATH = BASE_PATH + "/PARAM";
     private final SpeciesManager speciesManager;
 
-    @GetMapping(BASE_PATH)
-    public SpeciesDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
+    @GetMapping(ID_PATH)
+    public SpeciesDTO getById(@PathVariable("id") UUID id){
         Species species = speciesManager.getSpeciesById(id);
         if (species == Species.NONE) {
             throw new IllegalArgumentExceptionCustom(Species.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);

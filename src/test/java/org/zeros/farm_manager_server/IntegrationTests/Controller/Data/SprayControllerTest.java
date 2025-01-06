@@ -59,8 +59,7 @@ public class SprayControllerTest {
     void getById() throws Exception {
         Spray spray = sprayManager.getAllSprays(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SprayController.BASE_PATH)
-                                .queryParam("id", spray.getId().toString())
+                        get(SprayController.ID_PATH,spray.getId())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -74,8 +73,7 @@ public class SprayControllerTest {
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(SprayController.BASE_PATH)
-                                .queryParam("id", UUID.randomUUID().toString())
+                        get(SprayController.ID_PATH,UUID.randomUUID())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 

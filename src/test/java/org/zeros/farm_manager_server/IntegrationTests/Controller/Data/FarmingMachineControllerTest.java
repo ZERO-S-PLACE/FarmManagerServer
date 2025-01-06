@@ -55,7 +55,7 @@ public class FarmingMachineControllerTest {
     void getMachineById() throws Exception {
         FarmingMachine testMachine = farmingMachineManager.getAllFarmingMachines(0).getContent().get(3);
         MvcResult result = mockMvc.perform(
-                        get(FarmingMachineController.BASE_PATH)
+                        get(FarmingMachineController.ID_PATH,testMachine.getId())
                                 .queryParam("id", testMachine.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -70,8 +70,7 @@ public class FarmingMachineControllerTest {
     @Test
     void getMachineByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(FarmingMachineController.BASE_PATH)
-                                .queryParam("id", UUID.randomUUID().toString())
+                        get(FarmingMachineController.ID_PATH,UUID.randomUUID())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 

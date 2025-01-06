@@ -12,7 +12,7 @@ public interface CropSaleManager {
 
     CropSale updateCropSale(@NotNull CropSaleDTO cropSaleDTO);
 
-    void removeCropSale(@NotNull UUID cropSaleId);
+    void deleteCropSale(@NotNull UUID cropSaleId);
 
     CropSale getCropSaleById(@NotNull UUID id);
 }

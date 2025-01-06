@@ -22,7 +22,7 @@ import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
-import org.zeros.farm_manager_server.Services.Interface.CropParameters.CropParametersManager;
+import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.*;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;

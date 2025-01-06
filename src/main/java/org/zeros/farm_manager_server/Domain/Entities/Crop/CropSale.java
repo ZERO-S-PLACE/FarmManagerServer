@@ -6,7 +6,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
-import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 
 import java.math.BigDecimal;

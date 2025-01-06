@@ -18,7 +18,7 @@ import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.Services.Default.Crop.CropManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.CropParameters.CropParametersManagerDefault;
+import org.zeros.farm_manager_server.Services.Default.Crop.CropParametersManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.Data.*;
 import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;

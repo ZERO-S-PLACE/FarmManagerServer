@@ -15,7 +15,7 @@ import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCaus
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.HarvestRepository;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
-import org.zeros.farm_manager_server.Services.Interface.CropParameters.CropParametersManager;
+import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.FarmingMachineManager;
 import org.zeros.farm_manager_server.Services.Interface.Operations.OperationManager;
 

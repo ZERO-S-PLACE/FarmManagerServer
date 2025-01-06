@@ -15,7 +15,7 @@ import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCaus
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
-import org.zeros.farm_manager_server.Repositories.UserRepository;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 

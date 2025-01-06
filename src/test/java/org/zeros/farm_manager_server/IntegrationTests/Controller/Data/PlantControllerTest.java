@@ -55,8 +55,7 @@ public class PlantControllerTest {
     void getById() throws Exception {
         Plant plant = plantManager.getAllPlants(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(PlantController.BASE_PATH)
-                                .queryParam("id", plant.getId().toString())
+                        get(PlantController.ID_PATH,plant.getId())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -71,8 +70,7 @@ public class PlantControllerTest {
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(PlantController.BASE_PATH)
-                                .queryParam("id", UUID.randomUUID().toString())
+                        get(PlantController.ID_PATH,UUID.randomUUID())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 

@@ -8,15 +8,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Services.Interface.Data.FarmingMachineManager;
 
-import java.rmi.NoSuchObjectException;
 import java.util.UUID;
 
 @Slf4j
@@ -24,14 +23,15 @@ import java.util.UUID;
 @RestController
 public class FarmingMachineController {
     public static final String BASE_PATH = "/api/user/farming_machine";
+    public static final String ID_PATH = BASE_PATH + "{id}";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String LIST_USER_PATH = BASE_PATH + "/USER";
     public static final String LIST_DEFAULT_PATH = BASE_PATH + "/DEFAULT";
     public static final String LIST_PARAM_PATH = BASE_PATH + "/PARAM";
     private final FarmingMachineManager farmingMachineManager;
 
-    @GetMapping(BASE_PATH)
-    public FarmingMachineDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
+    @GetMapping(ID_PATH)
+    public FarmingMachineDTO getById(@PathVariable("id") UUID id) {
         FarmingMachine farmingMachine = farmingMachineManager.getFarmingMachineById(id);
         if (farmingMachine == FarmingMachine.NONE) {
             throw new IllegalArgumentExceptionCustom(FarmingMachine.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);

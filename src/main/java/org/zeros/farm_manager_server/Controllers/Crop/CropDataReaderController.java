@@ -6,9 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.zeros.farm_manager_server.Domain.DTO.CropParameters.CropParametersDTO;
-import org.zeros.farm_manager_server.Domain.DTO.CropSummary.CropSummary;
-import org.zeros.farm_manager_server.Domain.DTO.CropSummary.ResourcesSummary;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.CropSummary;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.ResourcesSummary;
 import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropDataReader;
 

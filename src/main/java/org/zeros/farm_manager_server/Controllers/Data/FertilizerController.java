@@ -24,14 +24,15 @@ import java.util.UUID;
 @RestController
 public class FertilizerController {
     public static final String BASE_PATH = "/api/user/fertilizer";
+    public static final String ID_PATH = BASE_PATH + "{id}";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String LIST_USER_PATH = BASE_PATH + "/USER";
     public static final String LIST_DEFAULT_PATH = BASE_PATH + "/DEFAULT";
     public static final String LIST_PARAM_PATH = BASE_PATH + "/PARAM";
     private final FertilizerManager fertilizerManager;
 
-    @GetMapping(BASE_PATH)
-    public FertilizerDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
+    @GetMapping(ID_PATH)
+    public FertilizerDTO getById(@PathVariable("id") UUID id) throws NoSuchObjectException {
         Fertilizer fertilizer = fertilizerManager.getFertilizerById(id);
         if (fertilizer == Fertilizer.NONE) {
             throw new IllegalArgumentExceptionCustom(Plant.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);

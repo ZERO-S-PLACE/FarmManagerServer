@@ -23,14 +23,15 @@ import java.util.UUID;
 @RestController
 public class PlantController {
     public static final String BASE_PATH = "/api/user/plant";
+    public static final String ID_PATH = BASE_PATH + "{id}";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String LIST_USER_PATH = BASE_PATH + "/USER";
     public static final String LIST_DEFAULT_PATH = BASE_PATH + "/DEFAULT";
     public static final String LIST_PARAM_PATH = BASE_PATH + "/PARAM";
     private final PlantManager plantManager;
 
-    @GetMapping(BASE_PATH)
-    public PlantDTO getById(@RequestParam UUID id) throws NoSuchObjectException {
+    @GetMapping(ID_PATH)
+    public PlantDTO getById(@PathVariable("id") UUID id) throws NoSuchObjectException {
         Plant plant = plantManager.getPlantById(id);
         if (plant == Plant.NONE) {
             throw new IllegalArgumentExceptionCustom(Plant.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);

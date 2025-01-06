@@ -8,7 +8,7 @@ import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
-import org.zeros.farm_manager_server.Domain.Entities.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
 import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
@@ -17,7 +17,7 @@ import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Repositories.Crop.CropSaleRepository;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropSaleManager;
-import org.zeros.farm_manager_server.Services.Interface.CropParameters.CropParametersManager;
+import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
 
 import java.util.UUID;
 
@@ -109,7 +109,7 @@ public class CropSaleManagerDefault implements CropSaleManager {
     }
 
     @Override
-    public void removeCropSale(UUID cropSaleId) {
+    public void deleteCropSale(UUID cropSaleId) {
         CropSale cropSale = getCropSaleById(cropSaleId);
         if (cropSale == CropSale.NONE) {
             return;

@@ -55,8 +55,7 @@ public class SpeciesControllerTest {
     void getById() throws Exception {
         Species species = speciesManager.getAllSpecies(0).getContent().get(1);
         MvcResult result = mockMvc.perform(
-                        get(SpeciesController.BASE_PATH)
-                                .queryParam("id", species.getId().toString())
+                        get(SpeciesController.ID_PATH,species.getId())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -70,8 +69,7 @@ public class SpeciesControllerTest {
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(SpeciesController.BASE_PATH)
-                                .queryParam("id", UUID.randomUUID().toString())
+                        get(SpeciesController.ID_PATH,UUID.randomUUID())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 

@@ -13,7 +13,7 @@ import org.zeros.farm_manager_server.Domain.Enum.UserCreationError;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Data.*;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
-import org.zeros.farm_manager_server.Repositories.UserRepository;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.util.UUID;

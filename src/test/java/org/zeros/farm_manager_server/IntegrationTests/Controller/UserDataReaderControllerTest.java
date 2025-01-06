@@ -13,14 +13,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Controllers.CropParameters.CropParametersController;
+import org.zeros.farm_manager_server.Controllers.Crop.CropParametersController;
 import org.zeros.farm_manager_server.Controllers.User.UserDataReaderController;
 
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
-import org.zeros.farm_manager_server.Services.Interface.CropParameters.CropParametersManager;
+import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
