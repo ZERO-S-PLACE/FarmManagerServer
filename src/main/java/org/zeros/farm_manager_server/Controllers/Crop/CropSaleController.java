@@ -20,7 +20,7 @@ import java.util.UUID;
 @RestController
 public class CropSaleController {
     public static final String BASE_PATH = "/api/user/crop/sale";
-    public static final String ID_PATH = BASE_PATH + "{id}";
+    public static final String ID_PATH = BASE_PATH + "/{id}";
 
     private final CropSaleManager cropSaleManager;
 

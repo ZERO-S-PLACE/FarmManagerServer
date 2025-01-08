@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RestController
 public class FieldPartController {
     public static final String BASE_PATH = "/api/user/field/part";
-    public static final String ID_PATH = BASE_PATH + "{id}";
+    public static final String ID_PATH = BASE_PATH + "/{id}";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String LIST_NON_ARCHIVED_PATH = BASE_PATH + "/NON_ARCHIVED";
     public static final String RESIZE_PATH = BASE_PATH + "/RESIZE";

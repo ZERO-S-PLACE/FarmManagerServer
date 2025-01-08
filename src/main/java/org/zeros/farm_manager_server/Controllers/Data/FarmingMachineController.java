@@ -23,7 +23,7 @@ import java.util.UUID;
 @RestController
 public class FarmingMachineController {
     public static final String BASE_PATH = "/api/user/farming_machine";
-    public static final String ID_PATH = BASE_PATH + "{id}";
+    public static final String ID_PATH = BASE_PATH + "/{id}";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String LIST_USER_PATH = BASE_PATH + "/USER";
     public static final String LIST_DEFAULT_PATH = BASE_PATH + "/DEFAULT";

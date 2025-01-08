@@ -101,7 +101,7 @@ public class UserManagerDefault implements UserManager {
         if (!newUser.getPassword().equals(password)) {
             return User.getBlankUserWithError(LoginError.WRONG_PASSWORD);
         }
-        loggedUserConfiguration.replaceUserBean(newUser);
+        loggedUserConfiguration.replaceUser(newUser);
 
         return newUser;
     }
@@ -115,13 +115,13 @@ public class UserManagerDefault implements UserManager {
         if (!newUser.getPassword().equals(password)) {
             return User.getBlankUserWithError(LoginError.WRONG_PASSWORD);
         }
-        loggedUserConfiguration.replaceUserBean(newUser);
+        loggedUserConfiguration.replaceUser(newUser);
         return newUser;
     }
 
     @Override
     public void logOutUser() {
-        loggedUserConfiguration.replaceUserBean(User.NONE);
+        loggedUserConfiguration.replaceUser(User.NONE);
     }
 
     @Override

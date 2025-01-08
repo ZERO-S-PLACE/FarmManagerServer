@@ -15,7 +15,7 @@ import java.util.UUID;
 @SuperBuilder
 public class CropDTO extends BaseEntityDTO {
     private Boolean workFinished;
-    private UUID fieldPartID;
+    private UUID fieldPart;
     private Set<UUID> cultivatedPlants;
     private Set<UUID> seeding;
     private Set<UUID> cultivations;

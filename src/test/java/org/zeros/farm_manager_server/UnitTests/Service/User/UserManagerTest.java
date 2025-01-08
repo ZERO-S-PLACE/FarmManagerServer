@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationService;
 import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Enum.LoginError;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
@@ -22,7 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("local")
 @DataJpaTest
-@Import({FieldManagerDefault.class,FieldPartManagerDefault.class, FieldGroupManagerDefault.class, UserManagerDefault.class, LoggedUserConfiguration.class})
+@ComponentScan("org.zeros.farm_manager_server.Services")
+@Import(LoggedUserConfigurationService.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class UserManagerTest {
     @Autowired
@@ -81,7 +84,7 @@ public class UserManagerTest {
         User user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
         assertThat(user).isNotNull();
         assertThat(user.equals(User.NONE)).isFalse();
-        assertThat(loggedUserConfiguration.getLoggedUserProperty().get()).isEqualTo(user);
+        assertThat(loggedUserConfiguration.getLoggedUser()).isEqualTo(user);
         userManager.logOutUser();
     }
 
@@ -90,7 +93,7 @@ public class UserManagerTest {
         User user = userManager.logInNewUserByEmailAndPassword("demo@zeros.org", "DEMO_PASSWORD");
         assertThat(user).isNotNull();
         assertThat(user.equals(User.NONE)).isFalse();
-        assertThat(loggedUserConfiguration.getLoggedUserProperty().get()).isEqualTo(user);
+        assertThat(loggedUserConfiguration.getLoggedUser()).isEqualTo(user);
         userManager.logOutUser();
     }
 
@@ -98,7 +101,7 @@ public class UserManagerTest {
     void testLoginUserByEmailInvalidEmail() {
         User user = userManager.logInNewUserByEmailAndPassword("invaild@gmail.com", "password");
         assertThat(user).isNotNull();
-        assertThat(loggedUserConfiguration.getLoggedUserProperty().get()).isEqualTo(User.NONE);
+        assertThat(loggedUserConfiguration.getLoggedUser()).isEqualTo(User.NONE);
         assertThat(user).isEqualTo(User.NONE);
         assertThat(user.getLoginError()).isEqualTo(LoginError.WRONG_EMAIL);
     }
@@ -107,7 +110,7 @@ public class UserManagerTest {
     void testLoginUserByEmailInvalidPassword() {
         User user = userManager.logInNewUserByEmailAndPassword("demo@zeros.org", "DEMO_PASSWORD_Invalid");
         assertThat(user).isNotNull();
-        assertThat(loggedUserConfiguration.getLoggedUserProperty().get()).isEqualTo(User.NONE);
+        assertThat(loggedUserConfiguration.getLoggedUser()).isEqualTo(User.NONE);
         assertThat(user).isEqualTo(User.NONE);
         assertThat(user.getLoginError()).isEqualTo(LoginError.WRONG_PASSWORD);
     }
@@ -116,7 +119,7 @@ public class UserManagerTest {
     void testLoginUserByUsernameInvalidUsername() {
         User user = userManager.logInNewUserByUsernameAndPassword("NONE", "password");
         assertThat(user).isNotNull();
-        assertThat(loggedUserConfiguration.getLoggedUserProperty().get()).isEqualTo(User.NONE);
+        assertThat(loggedUserConfiguration.getLoggedUser()).isEqualTo(User.NONE);
         assertThat(user).isEqualTo(User.NONE);
         assertThat(user.getLoginError()).isEqualTo(LoginError.WRONG_USERNAME);
     }
@@ -125,9 +128,9 @@ public class UserManagerTest {
     void testLogOutUser() {
         User user = userManager.logInNewUserByEmailAndPassword("demo@zeros.org", "DEMO_PASSWORD");
         assertThat(user).isNotNull();
-        assertThat(loggedUserConfiguration.getLoggedUserProperty().get()).isEqualTo(user);
+        assertThat(loggedUserConfiguration.getLoggedUser()).isEqualTo(user);
         userManager.logOutUser();
-        assertThat(loggedUserConfiguration.getLoggedUserProperty().get()).isEqualTo(User.NONE);
+        assertThat(loggedUserConfiguration.getLoggedUser()).isEqualTo(User.NONE);
     }
 
     @Test

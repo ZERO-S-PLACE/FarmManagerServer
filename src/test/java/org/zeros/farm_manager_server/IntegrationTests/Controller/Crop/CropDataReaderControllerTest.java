@@ -7,8 +7,10 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -21,6 +23,7 @@ import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
@@ -30,9 +33,11 @@ import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.io.UnsupportedEncodingException;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.hamcrest.core.Is.is;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -51,7 +56,6 @@ public class CropDataReaderControllerTest {
     @Autowired
     WebApplicationContext wac;
     MockMvc mockMvc;
-
 
     @Autowired
     FieldPartManager fieldPartManager;
@@ -72,13 +76,18 @@ public class CropDataReaderControllerTest {
     private UserDataReaderDefault userDataReaderDefault;
 
 
+
+
     @BeforeEach
     public void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-        User user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        User user = userManager.getUserByUsername("DEMO_USER");
         Field field = user.getFields().stream().findAny().orElse(Field.NONE);
         FieldPart fieldPart = field.getFieldParts().stream().filter(fieldPart1 -> !fieldPart1.getIsArchived()).findAny().orElse(FieldPart.NONE);
-        unsoldCrop = userDataReaderDefault.getAllUnsoldCrops().stream().findAny().orElse(null);
+        unsoldCrop = fieldPart.getCrops().stream().filter(crop ->
+            (crop instanceof MainCrop && !((MainCrop) crop).getIsFullySold() && crop
+                    .getWorkFinished())
+        ).findAny().orElse(null);
         activeCrop = fieldPart.getActiveCrop();
         archivedCrop = fieldPart.getArchivedCrops().stream().findFirst().orElse(MainCrop.NONE);
 
@@ -89,6 +98,7 @@ public class CropDataReaderControllerTest {
     void getCropSummaryActive() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", activeCrop.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -103,6 +113,7 @@ public class CropDataReaderControllerTest {
     void getCropSummaryUnsold() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", unsoldCrop.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -117,8 +128,10 @@ public class CropDataReaderControllerTest {
     void getCropSummaryArchived() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", archivedCrop.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.cropId", is(archivedCrop.getId().toString())))
@@ -131,6 +144,7 @@ public class CropDataReaderControllerTest {
     void getCropSummaryDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", UUID.randomUUID().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -142,6 +156,7 @@ public class CropDataReaderControllerTest {
     void testGetCropResourcesSummary() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", archivedCrop.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -156,6 +171,7 @@ public class CropDataReaderControllerTest {
     void getCropResourcesDoesNotExist() throws Exception {
          mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", UUID.randomUUID().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -167,6 +183,7 @@ public class CropDataReaderControllerTest {
     void testGetCropPlannedResourcesSummary() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_PLANNED_RESOURCES_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", activeCrop.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -181,6 +198,7 @@ public class CropDataReaderControllerTest {
     void getCropResourcesPlannedDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_PLANNED_RESOURCES_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", UUID.randomUUID().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -193,6 +211,7 @@ public class CropDataReaderControllerTest {
     void getMeanCropParameters() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_MEAN_PARAMETERS)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", archivedCrop.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -206,6 +225,7 @@ public class CropDataReaderControllerTest {
     void getCropMeanParametersDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_MEAN_PARAMETERS)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", UUID.randomUUID().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())

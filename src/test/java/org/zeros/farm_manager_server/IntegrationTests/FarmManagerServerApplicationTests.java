@@ -60,6 +60,9 @@ class FarmManagerServerApplicationTests {
     @Autowired
     private CropSaleManagerDefault cropSaleManagerDefault;
 
+
+
+   /*
     @BeforeEach
     public void setUp() {
 
@@ -70,7 +73,18 @@ class FarmManagerServerApplicationTests {
         plant1 = plants.getFirst();
         plant2 = plants.getLast();
     }
-
+*/
+  /*  @Test
+    void shouldExtractUserIdFromJwt() throws Exception {
+        mockMvc.perform(get("/secure-endpoint")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt(jwt -> {
+                            jwt.claims(claims -> claims.put("sub", "cb6f085a-452a-40ac-a69e-f23494592ddb"))
+                                    .subject("cb6f085a-452a-40ac-a69e-f23494592ddb")
+                                    .notBefore(Instant.now().minusSeconds(5L));
+                        })))
+                .andExpect(status().isOk());
+    }
+*/
     @Test
     @Transactional
     void testCreationOfCropWithProperties() {

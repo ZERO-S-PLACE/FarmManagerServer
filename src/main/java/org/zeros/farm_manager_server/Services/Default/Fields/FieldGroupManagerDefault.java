@@ -34,7 +34,7 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
 
     @Override
     public FieldGroup createEmptyFieldGroup(String fieldGroupName, String description) {
-        User user = loggedUserConfiguration.getLoggedUserProperty().get();
+        User user = loggedUserConfiguration.getLoggedUser();
         fieldGroupName = validateFieldGroupName(fieldGroupName);
         FieldGroup fieldGroup = FieldGroup.builder().
                 fieldGroupName(fieldGroupName)
@@ -51,7 +51,7 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
         if (fieldGroupName.isBlank()) {
             fieldGroupName = "NewGroup" + fieldGroupRepository.findAll().size();
         }
-        if (fieldGroupRepository.findByUserAndFieldGroupName(loggedUserConfiguration.getLoggedUserProperty().get(), fieldGroupName).isPresent()) {
+        if (fieldGroupRepository.findByUserAndFieldGroupName(loggedUserConfiguration.getLoggedUser(), fieldGroupName).isPresent()) {
             fieldGroupName = fieldGroupName + "_1";
         }
         return fieldGroupName;
@@ -59,7 +59,7 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
 
     @Override
     public FieldGroup getFieldGroupByName(String groupName) {
-        return fieldGroupRepository.findByUserAndFieldGroupName(loggedUserConfiguration.getLoggedUserProperty().get(), groupName).orElse(FieldGroup.NONE);
+        return fieldGroupRepository.findByUserAndFieldGroupName(loggedUserConfiguration.getLoggedUser(), groupName).orElse(FieldGroup.NONE);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
 
     @Override
     public Set<FieldGroup> getAllFieldGroups() {
-        return fieldGroupRepository.findAllByUser(loggedUserConfiguration.getLoggedUserProperty().get());
+        return fieldGroupRepository.findAllByUser(loggedUserConfiguration.getLoggedUser());
     }
 
     @Override
@@ -117,7 +117,7 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
     }
 
     public FieldGroup getOrCreateDefaultFieldGroup() {
-        User user = loggedUserConfiguration.getLoggedUserProperty().get();
+        User user = loggedUserConfiguration.getLoggedUser();
         FieldGroup defaultGroup;
         Optional<FieldGroup> optionalDefaultGroup =
                 fieldGroupRepository.findByUserAndFieldGroupName(user, "DEFAULT");

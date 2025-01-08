@@ -6,6 +6,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationDefault;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
@@ -22,11 +24,12 @@ import java.util.stream.Collectors;
 @RestController
 public class FieldController {
     public static final String BASE_PATH = "/api/user/field";
-    public static final String ID_PATH = BASE_PATH + "{id}";
+    public static final String ID_PATH = BASE_PATH + "/{id}";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String ARCHIVE_PATH = BASE_PATH + "/ARCHIVE";
     public static final String DE_ARCHIVE_PATH = BASE_PATH + "/DE_ARCHIVE";
     private final FieldManager fieldManager;
+    private final LoggedUserConfiguration loggedUserConfiguration;
 
 
     @GetMapping(ID_PATH)
@@ -40,6 +43,7 @@ public class FieldController {
 
     @GetMapping(LIST_ALL_PATH)
     public Set<FieldDTO> getAllFields() {
+        log.atInfo().log("user logged" + loggedUserConfiguration.username());
         return fieldManager.getAllFields().stream()
                 .map(DefaultMappers.fieldMapper::entityToDto).collect(Collectors.toSet());
     }

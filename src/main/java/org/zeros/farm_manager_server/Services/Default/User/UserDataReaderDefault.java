@@ -75,7 +75,7 @@ public class UserDataReaderDefault implements UserDataReader {
 
     @Override
     public Set<Crop> getAllActiveCrops() {
-        User user = userManager.getUserById(loggedUserConfiguration.getLoggedUserProperty().get().getId());
+        User user = userManager.getUserById(loggedUserConfiguration.getLoggedUser().getId());
         Set<Crop> activeCrops = new HashSet<>();
         for (Field field : user.getFields()) {
             for (FieldPart fieldPart : field.getFieldParts()) {
@@ -91,7 +91,7 @@ public class UserDataReaderDefault implements UserDataReader {
 
     @Override
     public Set<Crop> getAllUnsoldCrops() {
-        User user = userManager.getUserById(loggedUserConfiguration.getLoggedUserProperty().get().getId());
+        User user = userManager.getUserById(loggedUserConfiguration.getLoggedUser().getId());
         Set<Crop> unsoldCrops = new HashSet<>();
         for (Field field : user.getFields()) {
             for (FieldPart fieldPart : field.getFieldParts()) {

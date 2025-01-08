@@ -17,7 +17,7 @@ public class FieldDTO extends BaseEntityDTO {
     private String fieldName;
     private String description;
     private float area;
-    private UUID userID;
+    private UUID user;
     private UUID fieldGroup;
     private Set<UUID> fieldParts;
     private Set<String> surveyingPlots;

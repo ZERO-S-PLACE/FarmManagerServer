@@ -24,7 +24,7 @@ import java.util.UUID;
 @RestController
 public class CropController {
     public static final String BASE_PATH = "/api/user/crop";
-    public static final String ID_PATH = BASE_PATH+"{cropId}";
+    public static final String ID_PATH = BASE_PATH+"/{cropId}";
     public static final String MAIN_CROP_PATH = BASE_PATH + "/main";
     public static final String INTER_CROP_PATH = BASE_PATH + "/inter";
     public static final String WORK_FINISHED_PATH = BASE_PATH + "/SET_FINISHED";

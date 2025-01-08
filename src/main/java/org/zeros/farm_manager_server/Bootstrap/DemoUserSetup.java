@@ -35,6 +35,7 @@ import org.zeros.farm_manager_server.Services.Interface.Fields.FieldManager;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Random;
@@ -401,10 +402,10 @@ public class DemoUserSetup {
         }
         return cropParametersManager.addCropParameters(GrainParametersDTO.builder()
                 .name("Parameters" + Math.round(random.nextFloat() * 1000000))
-                .density(700 + random.nextInt(100))
-                .humidity(14 + random.nextFloat() * 5)
-                .glutenContent(20 + random.nextFloat() * 20)
-                .proteinContent(20 + random.nextFloat() * 15)
+                .density(BigDecimal.valueOf(700 + random.nextInt(100)))
+                .humidity(BigDecimal.valueOf(14 + random.nextFloat() * 5))
+                .glutenContent(BigDecimal.valueOf(20 + random.nextFloat() * 20))
+                .proteinContent(BigDecimal.valueOf(20 + random.nextFloat() * 15))
                 .resourceType(ResourceType.GRAIN)
                 .build());
     }

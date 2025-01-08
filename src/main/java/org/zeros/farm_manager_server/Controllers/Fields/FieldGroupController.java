@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RestController
 public class FieldGroupController {
     public static final String BASE_PATH = "/api/user/field/group";
-    public static final String ID_PATH = BASE_PATH + "{id}";
+    public static final String ID_PATH = BASE_PATH + "/{id}";
     public static final String LIST_ALL_PATH = BASE_PATH + "/ALL";
     public static final String LIST_PARAM_PATH = BASE_PATH + "/PARAM";
     public static final String MOVE_FIELDS_PATH = BASE_PATH + "/MOVE";

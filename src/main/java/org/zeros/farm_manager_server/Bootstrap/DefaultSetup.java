@@ -42,7 +42,7 @@ public class DefaultSetup {
     @Transactional
     public void createDefaultDataSet() {
         createAdminUser();
-        loggedUserConfiguration.replaceUserBean(userRepository.findUserByUsername("ADMIN").orElse(User.NONE));
+        loggedUserConfiguration.replaceUser(userRepository.findUserByUsername("ADMIN").orElse(User.NONE));
         createTestFertilizers();
         createTestSprays();
         createTestFarmingMachines();
@@ -50,7 +50,7 @@ public class DefaultSetup {
         createTestPlants();
         createTestSubsides();
         createTestCropParameters();
-        loggedUserConfiguration.replaceUserBean(User.NONE);
+        loggedUserConfiguration.replaceUser(User.NONE);
     }
 
     @Transactional

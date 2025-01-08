@@ -10,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationService;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.CropSummary;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.ResourcesSummary;
@@ -42,7 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ComponentScan("org.zeros.farm_manager_server.Services")
-@Import(LoggedUserConfiguration.class)
+@Import(LoggedUserConfigurationService.class)
 public class CropDataReaderTest {
 
     @Autowired

@@ -8,6 +8,8 @@ import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.DTO.BaseEntityDTO;
 import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 
+import java.math.BigDecimal;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -15,12 +17,15 @@ import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type"
+)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = CropParametersDTO.class, name = "CropParameters"),
-        @JsonSubTypes.Type(value = GrainParametersDTO.class, name = "GrainParameters"),
-        @JsonSubTypes.Type(value = RapeSeedParametersDTO.class, name = "RapeSeedParameters"),
-        @JsonSubTypes.Type(value = SugarBeetParametersDTO.class, name = "SugarBeetParameters")
+        @JsonSubTypes.Type(value = CropParametersDTO.class, name = "COMMENT"),
+        @JsonSubTypes.Type(value = GrainParametersDTO.class, name = "GRAIN"),
+        @JsonSubTypes.Type(value = RapeSeedParametersDTO.class, name = "RAPE_SEED"),
+        @JsonSubTypes.Type(value = SugarBeetParametersDTO.class, name = "SUGAR_BEET")
 })
 public class CropParametersDTO extends BaseEntityDTO {
     @Transient
@@ -31,6 +36,6 @@ public class CropParametersDTO extends BaseEntityDTO {
             .build();
     private String name;
     private String comment;
-    private float pollution;
+    private BigDecimal pollution;
     private ResourceType resourceType;
 }

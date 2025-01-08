@@ -21,7 +21,7 @@ import java.util.UUID;
 @RestController
 public class AgriculturalOperationsController {
     public static final String BASE_PATH = "/api/user/crop/operation";
-    public static final String ID_PATH = BASE_PATH + "{id}";
+    public static final String ID_PATH = BASE_PATH + "/{id}";
     public static final String PLAN_OPERATION_PATH = BASE_PATH + "/PLAN";
     public static final String ADD_OPERATION_PATH = BASE_PATH + "/ADD";
     public static final String OPERATION_MACHINE_PATH = BASE_PATH + "/UPDATE_MACHINE";

@@ -47,7 +47,7 @@ public class FieldManagerDefault implements FieldManager {
         Field field = rewriteToEntity(fieldDTO, Field.NONE);
         field.setFieldName(validateNewFieldName(fieldDTO.getFieldName()));
         field.setFieldGroup(fieldGroup);
-        field.setUser(loggedUserConfiguration.getLoggedUserProperty().get());
+        field.setUser(loggedUserConfiguration.getLoggedUser());
         Field fieldSaved = fieldRepository.saveAndFlush(field);
         FieldPart defaultPart = FieldPart.getDefaultFieldPart(fieldSaved);
         fieldSaved.setFieldParts(Set.of(defaultPart));
@@ -75,7 +75,7 @@ public class FieldManagerDefault implements FieldManager {
 
     @Override
     public Set<Field> getAllFields() {
-        return userRepository.findUserById(loggedUserConfiguration.getLoggedUserProperty().get().getId())
+        return userRepository.findUserById(loggedUserConfiguration.getLoggedUser().getId())
                 .orElse(User.NONE).getFields();
     }
 
@@ -125,7 +125,7 @@ public class FieldManagerDefault implements FieldManager {
         flushChanges();
     }
     private String validateNewFieldName(String name) {
-        User user = userManager.getUserById(loggedUserConfiguration.getLoggedUserProperty().get().getId());
+        User user = userManager.getUserById(loggedUserConfiguration.getLoggedUser().getId());
         if (name.isBlank()) {
             name = "NewField" + fieldRepository.findAllByUser(user).size();
         }
