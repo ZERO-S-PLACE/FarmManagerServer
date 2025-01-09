@@ -1,4 +1,4 @@
-package org.zeros.farm_manager_server.IntegrationTests.Controller;
+package org.zeros.farm_manager_server.IntegrationTests.Controller.User;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -17,6 +18,7 @@ import org.zeros.farm_manager_server.Controllers.Crop.CropParametersController;
 import org.zeros.farm_manager_server.Controllers.User.UserDataReaderController;
 
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
+import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
@@ -60,14 +62,15 @@ public class UserDataReaderControllerTest {
 
     @BeforeEach
     public void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-        userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(SecurityMockMvcConfigurers.springSecurity()).build();
     }
 
     @Test
     void getActiveCrops() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(UserDataReaderController.ACTIVE_CROPS_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -80,6 +83,7 @@ public class UserDataReaderControllerTest {
     void getUnsoldCrops() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(UserDataReaderController.UNSOLD_CROPS_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -92,6 +96,7 @@ public class UserDataReaderControllerTest {
     void getPlannedOperations() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(UserDataReaderController.PLANNED_OPERATIONS_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -104,6 +109,7 @@ public class UserDataReaderControllerTest {
     void getPlannedFertilizerApplication() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(UserDataReaderController.PLANNED_OPERATIONS_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("operationType", String.valueOf(OperationType.FERTILIZER_APPLICATION))
                                 .accept(MediaType.APPLICATION_JSON))
 

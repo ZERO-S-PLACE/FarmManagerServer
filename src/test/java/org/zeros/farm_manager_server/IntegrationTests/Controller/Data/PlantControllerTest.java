@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -18,6 +19,7 @@ import org.zeros.farm_manager_server.Controllers.Data.PlantController;
 import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
 import org.zeros.farm_manager_server.Services.Interface.Data.PlantManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
@@ -47,15 +49,16 @@ public class PlantControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-        userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(SecurityMockMvcConfigurers.springSecurity()).build();
     }
 
     @Test
     void getById() throws Exception {
-        Plant plant = plantManager.getAllPlants(0).getContent().get(1);
+        Plant plant = findDefaultPlant();
         MvcResult result = mockMvc.perform(
                         get(PlantController.ID_PATH,plant.getId())
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -71,6 +74,7 @@ public class PlantControllerTest {
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
                         get(PlantController.ID_PATH,UUID.randomUUID())
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
@@ -81,6 +85,7 @@ public class PlantControllerTest {
     void getAll() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(PlantController.LIST_ALL_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -93,6 +98,7 @@ public class PlantControllerTest {
     void getDefault() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(PlantController.LIST_DEFAULT_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -105,6 +111,7 @@ public class PlantControllerTest {
     void getUserCreated() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(PlantController.LIST_USER_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -116,9 +123,10 @@ public class PlantControllerTest {
 
     @Test
     void getByVariety() throws Exception {
-        Plant plant = plantManager.getAllPlants(0).getContent().get(1);
+        Plant plant =findDefaultPlant();
         MvcResult result = mockMvc.perform(
                         get(PlantController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("variety", plant.getVariety().substring(0, 3))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -132,10 +140,11 @@ public class PlantControllerTest {
 
     @Test
     void getBySpecies() throws Exception {
-        Plant plant = plantManager.getAllPlants(0).getContent().get(1);
+        Plant plant = findDefaultPlant();
 
         MvcResult result = mockMvc.perform(
                         get(PlantController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("speciesId", plant.getSpecies().getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -148,9 +157,10 @@ public class PlantControllerTest {
 
     @Test
     void getByVarietyAndSpecies() throws Exception {
-        Plant plant = plantManager.getAllPlants(0).getContent().get(1);
+        Plant plant = findDefaultPlant();
         MvcResult result = mockMvc.perform(
                         get(PlantController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("speciesId", plant.getSpecies().getId().toString())
                                 .param("variety", plant.getVariety().substring(1, 4))
                                 .accept(MediaType.APPLICATION_JSON))
@@ -165,8 +175,7 @@ public class PlantControllerTest {
     @Test
     @Transactional
     void addNew() throws Exception {
-        Plant plantWithSameSpecies = plantManager.getAllPlants(0).getContent().get(1);
-
+        Plant plantWithSameSpecies = findDefaultPlant();
         PlantDTO plantDTO = PlantDTO.builder()
                 .variety("Test")
                 .species(plantWithSameSpecies.getSpecies().getId())
@@ -174,6 +183,7 @@ public class PlantControllerTest {
                 .build();
 
         MvcResult result = mockMvc.perform(post(PlantController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(plantDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -184,7 +194,7 @@ public class PlantControllerTest {
         assertThat(result.getResponse().getHeaders("Location")).isNotNull();
 
         String[] locationUUID = result.getResponse().getHeaders("Location")
-                .get(0).split("/");
+                .getFirst().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[4]);
 
         assertThat(plantManager.getPlantById(savedUUID).equals(Plant.NONE)).isFalse();
@@ -196,8 +206,9 @@ public class PlantControllerTest {
     void addNewErrorAlreadyExists() throws Exception {
 
         PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(
-                plantManager.getAllPlants(0).getContent().get(2));
+               findDefaultPlant());
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(plantDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -208,13 +219,14 @@ public class PlantControllerTest {
     @Test
     @Transactional
     void addNewMissingVariety() throws Exception {
-        Plant plantWithSameSpecies = plantManager.getAllPlants(0).getContent().get(1);
+        Plant plantWithSameSpecies = findDefaultPlant();
         PlantDTO plantDTO = PlantDTO.builder()
                 .species(plantWithSameSpecies.getSpecies().getId())
                 .countryOfOrigin("Poland")
                 .build();
 
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(plantDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -232,6 +244,7 @@ public class PlantControllerTest {
         plantDTO.setDescription("TEST_UPDATED");
         plantDTO.setCountryOfOrigin("TEST_UPDATED");
         mockMvc.perform(patch(PlantController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(plantDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -244,23 +257,39 @@ public class PlantControllerTest {
                 .isEqualTo("TEST_UPDATED");
     }
 
-    private Plant createNewPlant() {
-        Plant plantWithSameSpecies = plantManager.getAllPlants(0).getContent().get(1);
-
-        return  plantManager.addPlant(PlantDTO.builder()
+    private Plant createNewPlant() throws Exception {
+        Plant plantWithSameSpecies = findDefaultPlant();
+        PlantDTO plantDTO = PlantDTO.builder()
                 .variety("Test")
                 .species(plantWithSameSpecies.getSpecies().getId())
-                .productionCompany("RAGT")
-                .build());
+                .countryOfOrigin("Poland")
+                .build();
+
+        MvcResult result = mockMvc.perform(post(PlantController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(plantDTO))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        assertThat(result.getResponse().getHeaders("Location")).isNotNull();
+
+        String[] locationUUID = result.getResponse().getHeaders("Location")
+                .getFirst().split("/");
+        UUID savedUUID = UUID.fromString(locationUUID[4]);
+        return plantManager.getPlantById(savedUUID);
     }
 
     @Test
     @Transactional
     void updateAccessDenied() throws Exception {
         PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(
-                plantManager.getDefaultPlants(0).getContent().get(2));
+              findDefaultPlant());
         plantDTO.setProductionCompany("TEST_UPDATED");
         mockMvc.perform(patch(PlantController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(plantDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -276,6 +305,7 @@ public class PlantControllerTest {
         PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(plant);
         plantDTO.setVariety("");
         mockMvc.perform(patch(PlantController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(plantDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -289,6 +319,7 @@ public class PlantControllerTest {
         Plant plant = createNewPlant();
 
         mockMvc.perform(delete(PlantController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", plant.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -299,10 +330,10 @@ public class PlantControllerTest {
 
     @Test
     void deleteFailed() throws Exception {
-        Plant plant = plantManager
-                .getAllPlants(0).getContent().get(0);
+        Plant plant = findDefaultPlant();
 
         mockMvc.perform(delete(PlantController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", plant.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -310,6 +341,10 @@ public class PlantControllerTest {
                 .andExpect(status().isMethodNotAllowed());
         assertThat(plantManager.getPlantById(plant.getId()).equals(Plant.NONE)).isFalse();
 
+    }
+
+    private Plant findDefaultPlant() {
+        return plantManager.getDefaultPlants(0).getContent().getFirst();
     }
 
 

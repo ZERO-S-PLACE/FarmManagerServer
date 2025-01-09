@@ -20,12 +20,6 @@ import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Data.PlantRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
-import org.zeros.farm_manager_server.Services.Default.Data.PlantManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Data.SpeciesManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldPartManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Data.PlantManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
@@ -58,7 +52,8 @@ public class PlantManagerTest {
 
     @BeforeEach
     public void setUp() {
-        user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        user = userManager.getUserByUsername("DEMO_USER");
+        loggedUserConfiguration.replaceUser(user);
     }
 
     @Test

@@ -81,8 +81,8 @@ public class OperationsManagerTest {
 
     @BeforeEach
     public void setUp() {
-
-        User user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        User user = userManager.getUserByUsername("DEMO_USER");
+        loggedUserConfiguration.replaceUser(user);
         Field field = user.getFields().stream().findFirst().orElse(Field.NONE);
         fieldPart = field.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
         ArrayList<Plant> plants = plantManager.getDefaultPlants(0).stream().collect(Collectors.toCollection(ArrayList::new));
@@ -111,8 +111,8 @@ public class OperationsManagerTest {
     private Seeding saveNewSeeding(Crop crop, boolean planned) {
         SeedingDTO seedingDTO = SeedingDTO.builder()
                 .sownPlants(crop.getCultivatedPlants().stream().map(BaseEntity::getId).collect(Collectors.toSet()))
-                .depth(10)
-                .quantityPerAreaUnit(120)
+                .depth(BigDecimal.valueOf(10))
+                .quantityPerAreaUnit(BigDecimal.valueOf(120))
                 .build();
         if (planned) {
             return (Seeding)agriculturalOperationsManager.planOperation(crop.getId(), seedingDTO);
@@ -164,8 +164,8 @@ public class OperationsManagerTest {
         Seeding seedingSaved = saveNewSeeding(crop, false);
 
         SeedingDTO seedingDTO = DefaultMappers.seedingMapper.entityToDto(seedingSaved);
-        seedingDTO.setGerminationRate(0.95f);
-        seedingDTO.setRowSpacing(30);
+        seedingDTO.setGerminationRate(BigDecimal.valueOf(0.95f));
+        seedingDTO.setRowSpacing(BigDecimal.valueOf(30));
 
         agriculturalOperationsManager.updateOperationParameters(seedingDTO);
         seedingSaved = (Seeding) agriculturalOperationsManager.getOperationById(seedingSaved.getId(), OperationType.SEEDING);

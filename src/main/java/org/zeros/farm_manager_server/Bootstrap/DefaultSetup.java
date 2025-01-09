@@ -2,6 +2,7 @@ package org.zeros.farm_manager_server.Bootstrap;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
@@ -21,11 +22,13 @@ import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
+@Profile("local")
 public class DefaultSetup {
     private final FertilizerManager fertilizerManager;
     private final SprayManager sprayManager;
@@ -132,20 +135,20 @@ public class DefaultSetup {
                     .speciesAllowed(Set.of(speciesRepository.getSpeciesByName("Wheat")
                             .orElse(Species.NONE).getId()))
                     .yearOfSubside(LocalDate.ofYearDay(2024, 22))
-                    .subsideValuePerAreaUnit(300).build());
+                    .subsideValuePerAreaUnit(BigDecimal.valueOf(300)).build());
             subsideManager.addSubside(SubsideDTO.builder()
                     .name("Wheat subside")
                     .speciesAllowed(Set.of(speciesRepository.getSpeciesByName("Wheat")
                             .orElse(Species.NONE).getId()))
                     .yearOfSubside(LocalDate.ofYearDay(2024, 22))
-                    .subsideValuePerAreaUnit(300)
+                    .subsideValuePerAreaUnit(BigDecimal.valueOf(300))
                     .build());
             subsideManager.addSubside(SubsideDTO.builder()
                     .name("Rape subside")
                     .speciesAllowed(Set.of(speciesRepository.getSpeciesByName("Rape seed")
                             .orElse(Species.NONE).getId()))
                     .yearOfSubside(LocalDate.ofYearDay(2024, 22))
-                    .subsideValuePerAreaUnit(300)
+                    .subsideValuePerAreaUnit(BigDecimal.valueOf(300))
                     .build());
         }
     }
@@ -236,25 +239,25 @@ public class DefaultSetup {
                     .name("Polifoska 6")
                     .producer("Azoty")
                     .isNaturalFertilizer(false)
-                    .totalNPercent(6)
-                    .totalPPercent(20)
-                    .totalKPercent(30)
+                    .totalNPercent(BigDecimal.valueOf(6))
+                    .totalPPercent(BigDecimal.valueOf(20))
+                    .totalKPercent(BigDecimal.valueOf(30))
                     .build());
             fertilizerManager.addFertilizer(FertilizerDTO.builder()
                     .name("Polifoska 8")
                     .producer("Azoty")
                     .isNaturalFertilizer(false)
-                    .totalNPercent(8)
-                    .totalPPercent(20)
-                    .totalKPercent(30)
+                    .totalNPercent(BigDecimal.valueOf(8))
+                    .totalPPercent(BigDecimal.valueOf(20))
+                    .totalKPercent(BigDecimal.valueOf(30))
                     .build());
             fertilizerManager.addFertilizer(FertilizerDTO.builder()
                     .name("Polifoska 16")
                     .producer("Azoty")
                     .isNaturalFertilizer(false)
-                    .totalNPercent(16)
-                    .totalPPercent(20)
-                    .totalKPercent(30)
+                    .totalNPercent(BigDecimal.valueOf(16))
+                    .totalPPercent(BigDecimal.valueOf(20))
+                    .totalKPercent(BigDecimal.valueOf(30))
                     .build());
         }
     }

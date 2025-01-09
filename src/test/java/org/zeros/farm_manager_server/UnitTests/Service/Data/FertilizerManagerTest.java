@@ -18,13 +18,10 @@ import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Data.FertilizerRepository;
-import org.zeros.farm_manager_server.Services.Default.Data.FertilizerManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldPartManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Data.FertilizerManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,7 +47,8 @@ public class FertilizerManagerTest {
 
     @BeforeEach
     public void setUp() {
-        user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        user = userManager.getUserByUsername("DEMO_USER");
+        loggedUserConfiguration.replaceUser(user);
     }
 
     @Test
@@ -66,8 +64,8 @@ public class FertilizerManagerTest {
         return fertilizerManager.addFertilizer(FertilizerDTO.builder()
                 .name("Test Fertilizer")
                 .isNaturalFertilizer(false)
-                .totalNPercent(10)
-                .totalKPercent(30)
+                .totalNPercent(BigDecimal.valueOf(10))
+                .totalKPercent(BigDecimal.valueOf(30))
                 .build());
     }
 
@@ -101,7 +99,7 @@ public class FertilizerManagerTest {
 
         FertilizerDTO fertilizerToUpdate = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
         fertilizerToUpdate.setName("TEST_UPDATE");
-        fertilizerToUpdate.setTotalNaPercent(5);
+        fertilizerToUpdate.setTotalNaPercent(BigDecimal.valueOf(5));
         Fertilizer fertilizerUpdated = fertilizerManager.updateFertilizer(fertilizerToUpdate);
         assertThat(fertilizerUpdated.getId()).isEqualTo(fertilizerToUpdate.getId());
         assertThat(fertilizerUpdated.getName()).isEqualTo("TEST_UPDATE");

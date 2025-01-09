@@ -19,15 +19,10 @@ import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Data.SubsideRepository;
 import org.zeros.farm_manager_server.Services.Default.Data.SpeciesManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Data.SubsideManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldPartManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
-import java.rmi.NoSuchObjectException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -57,7 +52,8 @@ public class SubsidesManagerTest {
 
     @BeforeEach
     public void setUp() {
-        user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        user = userManager.getUserByUsername("DEMO_USER");
+        loggedUserConfiguration.replaceUser(user);
     }
 
     @Test
@@ -66,15 +62,15 @@ public class SubsidesManagerTest {
         assertThat(subside.getId()).isNotNull();
         assertThat(subside.getName()).isEqualTo("test1");
         assertThat(subside.getCreatedBy()).isEqualTo(user.getUsername());
-        assertThat(subside.getSubsideValuePerAreaUnit().floatValue() ).isEqualTo(10);
+        assertThat(subside.getSubsideValuePerAreaUnit().floatValue()).isEqualTo(10);
         assertThat(subsideRepository.findById(subside.getId()).get()).isEqualTo(subside);
     }
 
     private Subside saveNewSubside() {
         return subsideManager.addSubside(SubsideDTO.builder()
                 .name("test1")
-                .subsideValuePerAreaUnit(10)
-                        .speciesAllowed(Set.of(speciesManagerDefault.getDefaultSpecies(0).getContent().get(0).getId()))
+                .subsideValuePerAreaUnit(BigDecimal.valueOf(10))
+                .speciesAllowed(Set.of(speciesManagerDefault.getDefaultSpecies(0).getContent().getFirst().getId()))
                 .yearOfSubside(LocalDate.ofYearDay(2024, 1))
                 .build());
     }
@@ -102,7 +98,7 @@ public class SubsidesManagerTest {
     }
 
     @Test
-    void testUpdateSubside() throws NoSuchObjectException {
+    void testUpdateSubside() {
         Subside subside = saveNewSubside();
         SubsideDTO subsideToUpdate = DefaultMappers.subsideMapper.entityToDto(subside);
         subsideToUpdate.setName("TEST_UPDATE");
@@ -112,7 +108,7 @@ public class SubsidesManagerTest {
     }
 
     @Test
-    void testUpdateFailedAccessDenied(){
+    void testUpdateFailedAccessDenied() {
         SubsideDTO subsideToUpdate = DefaultMappers.subsideMapper.entityToDto(
                 subsideManager.getDefaultSubsides(0).stream().findFirst().orElse(Subside.NONE));
         subsideToUpdate.setName("TEST_UPDATE");

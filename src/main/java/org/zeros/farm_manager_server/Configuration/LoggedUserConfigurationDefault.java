@@ -1,11 +1,7 @@
 package org.zeros.farm_manager_server.Configuration;
 
-import javafx.beans.property.SimpleObjectProperty;
 import lombok.Getter;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;

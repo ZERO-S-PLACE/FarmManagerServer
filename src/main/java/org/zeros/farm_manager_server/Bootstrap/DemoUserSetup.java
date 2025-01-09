@@ -3,10 +3,12 @@ package org.zeros.farm_manager_server.Bootstrap;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.GrainParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.RapeSeedParametersDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldPartDTO;
@@ -14,17 +16,17 @@ import org.zeros.farm_manager_server.Domain.DTO.Operations.*;
 import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.*;
-import org.zeros.farm_manager_server.Domain.Enum.CultivationType;
-import org.zeros.farm_manager_server.Domain.Enum.OperationType;
-import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.Harvest;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Enum.CultivationType;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Services.Default.Crop.CropSaleManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.Operations.AgriculturalOperationsManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
@@ -45,6 +47,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Profile("local")
 public class DemoUserSetup {
     private final UserManager userManager;
     private final FieldPartManager fieldPartManager;
@@ -60,6 +63,7 @@ public class DemoUserSetup {
     private final Random random = new Random();
     private final CropSaleManagerDefault cropSaleManagerDefault;
     private final AgriculturalOperationsManagerDefault agriculturalOperationsManagerDefault;
+    private final LoggedUserConfiguration loggedUserConfiguration;
     private Field field1;
     private Field field2;
     private Field field3;
@@ -75,12 +79,12 @@ public class DemoUserSetup {
         if (userManager.getUserByUsername("DEMO_USER").equals(User.NONE)) {
             log.atInfo().log("Creating Demo User");
             createNewDemoUser();
-            userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+            loggedUserConfiguration.replaceUser(userManager.getUserByUsername("DEMO_USER"));
             addDemoUserFields();
             log.atInfo().log("Created Demo User fields");
             loadDefaultData();
             addDemoUserCrops();
-            userManager.logOutUser();
+            loggedUserConfiguration.replaceUser(User.NONE);
             log.atInfo().log("Created Demo User operations");
         }
     }
@@ -104,7 +108,7 @@ public class DemoUserSetup {
                 .email("demo@zeros.org")
                 .phoneNumber("999999999")
                 .build();
-        userManager.createNewUser(userDTO);
+        userManager.registerNewUser(userDTO);
 
     }
 
@@ -115,24 +119,24 @@ public class DemoUserSetup {
         field1 = fieldManager.createFieldInGroup(FieldDTO.builder()
                         .fieldName("Koło stawu")
                         .isOwnField(true)
-                        .area(12.21f)
-                        .propertyTax(132.11f)
+                        .area(BigDecimal.valueOf(12.21))
+                        .propertyTax(BigDecimal.valueOf(132.11))
                         .surveyingPlots(Set.of("11/2", "11/3", "11/8"))
                         .build()
                 , group1.getId());
         field2 = fieldManager.createFieldInGroup(FieldDTO.builder()
                         .fieldName("Kowalski za domem")
                         .isOwnField(false)
-                        .area(1.21f)
-                        .rent(1321.11f)
+                        .area(BigDecimal.valueOf(1.21))
+                        .rent(BigDecimal.valueOf(1321.11))
                         .surveyingPlots(Set.of("112/2", "112/8"))
                         .build()
                 , group1.getId());
         field3 = fieldManager.createFieldInGroup(FieldDTO.builder()
                         .fieldName("Kowalski przed domem")
                         .isOwnField(false)
-                        .area(15.11f)
-                        .rent(1321.11f)
+                        .area(BigDecimal.valueOf(15.11))
+                        .rent(BigDecimal.valueOf(1321.11))
                         .surveyingPlots(Set.of("112", "115/1"))
                         .build()
                 , group1.getId());
@@ -140,16 +144,16 @@ public class DemoUserSetup {
         field4 = fieldManager.createFieldInGroup(FieldDTO.builder()
                         .fieldName("Za domem")
                         .isOwnField(true)
-                        .area(45.11f)
-                        .propertyTax(132.11f)
+                        .area(BigDecimal.valueOf(45.11))
+                        .propertyTax(BigDecimal.valueOf(132.11))
                         .surveyingPlots(Set.of("1121", "1151/1"))
                         .build()
                 , group2.getId());
         field5 = fieldManager.createFieldInGroup(FieldDTO.builder()
                         .fieldName("Przed domem")
                         .isOwnField(true)
-                        .area(145.11f)
-                        .propertyTax(132.11f)
+                        .area(BigDecimal.valueOf(145.11))
+                        .propertyTax(BigDecimal.valueOf(132.11))
                         .surveyingPlots(Set.of("1/1", "1/11", "1/12", "1/13", "1/21", "1/22", "1/23", "1/24", "1/25", "1/26"))
                         .build()
                 , group2.getId());
@@ -162,7 +166,7 @@ public class DemoUserSetup {
         fieldPartManager.divideFieldPart(fieldManager.getFieldById(field3.getId()).getFieldParts().stream().findFirst().orElse(FieldPart.NONE).getId(),
                 FieldPartDTO.builder()
                         .fieldPartName("Część wschodnia")
-                        .area(0.5f)
+                        .area(BigDecimal.valueOf(0.5))
                         .build(),
                 FieldPartDTO.builder()
                         .fieldPartName("Część zachodnia")
@@ -171,7 +175,7 @@ public class DemoUserSetup {
         fieldPartManager.divideFieldPart(fieldManager.getFieldById(field5.getId()).getFieldParts().stream().findFirst().orElse(FieldPart.NONE).getId(),
                 FieldPartDTO.builder()
                         .fieldPartName("Część wschodnia")
-                        .area(15.11f)
+                        .area(BigDecimal.valueOf(15.11))
                         .build(),
                 FieldPartDTO.builder()
                         .fieldPartName("Część zachodnia")
@@ -228,11 +232,11 @@ public class DemoUserSetup {
         while (amountSoldSum < 0.85 * estimatedGrainQuantity) {
             float amountSold = estimatedGrainQuantity * random.nextFloat();
             cropSaleManagerDefault.addCropSale(crop.getId(), CropSaleDTO.builder()
-                    .amountSold(amountSold)
+                    .amountSold(BigDecimal.valueOf(amountSold))
                     .soldTo("CEFETRA")
                     .dateSold(harvest.getDateFinished().plusDays(random.nextInt(3, 100)))
                     .resourceType(harvest.getResourceType())
-                    .pricePerUnit(550 * (1 + random.nextFloat()))
+                    .pricePerUnit(BigDecimal.valueOf(550 * (1 + random.nextFloat())))
                     .unit("t")
                     .cropParameters(getRandomCropParameters(crop).getId())
                     .build());
@@ -297,7 +301,7 @@ public class DemoUserSetup {
     private Subside createRandomSubside(Set<Plant> plants, LocalDate subsideYear) {
         return subsideManager.addSubside(SubsideDTO.builder()
                 .name("Subside" + Math.round(random.nextFloat() * 100000))
-                .subsideValuePerAreaUnit(500 * random.nextFloat())
+                .subsideValuePerAreaUnit(BigDecimal.valueOf(500 * random.nextFloat()))
                 .yearOfSubside(subsideYear)
                 .speciesAllowed(plants.stream().map(plant -> plant.getSpecies().getId()).collect(Collectors.toSet()))
                 .build());
@@ -308,10 +312,10 @@ public class DemoUserSetup {
                 .farmingMachine(farmingMachines.stream()
                         .filter(machine -> machine.getSupportedOperationTypes().contains(OperationType.HARVEST))
                         .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
-                .quantityPerAreaUnit(random.nextFloat() * 15)
+                .quantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat() * 15))
                 .cropParameters(getRandomCropParameters(mainCrop).getId())
-                .fuelConsumptionPerUnit(random.nextFloat() * 21)
-                .fuelPrice(5.17f)
+                .fuelConsumptionPerUnit(BigDecimal.valueOf(random.nextFloat() * 21))
+                .fuelPrice(BigDecimal.valueOf(5.17f))
                 .dateStarted(harvestDate)
                 .dateFinished(harvestDate.plusDays(1))
                 .build();
@@ -324,12 +328,12 @@ public class DemoUserSetup {
                         .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
                 .fertilizer(fertilizers.get(random.nextInt(fertilizers.size() - 1)).getId())
                 .spray(sprays.get(random.nextInt(sprays.size() - 1)).getId())
-                .quantityPerAreaUnit(random.nextFloat())
-                .pricePerUnit(random.nextFloat() * 2000)
-                .fertilizerQuantityPerAreaUnit(random.nextFloat())
-                .fertilizerPricePerUnit(random.nextFloat() * 2000)
-                .fuelConsumptionPerUnit(random.nextFloat() * 4)
-                .fuelPrice(5.17f)
+                .quantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat()))
+                .pricePerUnit(BigDecimal.valueOf(random.nextFloat() * 2000))
+                .fertilizerQuantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat()))
+                .fertilizerPricePerUnit(BigDecimal.valueOf(random.nextFloat() * 2000))
+                .fuelConsumptionPerUnit(BigDecimal.valueOf(random.nextFloat() * 4))
+                .fuelPrice(BigDecimal.valueOf(5.17))
                 .dateStarted(sprayApplicationDate)
                 .dateFinished(sprayApplicationDate.plusDays(1))
                 .build();
@@ -341,10 +345,10 @@ public class DemoUserSetup {
                         .filter(machine -> machine.getSupportedOperationTypes().contains(OperationType.FERTILIZER_APPLICATION))
                         .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
                 .fertilizer(fertilizers.get(random.nextInt(fertilizers.size() - 1)).getId())
-                .quantityPerAreaUnit(random.nextFloat())
-                .pricePerUnit(random.nextInt(100, 2000))
-                .fuelConsumptionPerUnit(random.nextFloat() * 5)
-                .fuelPrice(5.17f)
+                .quantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat()))
+                .pricePerUnit(BigDecimal.valueOf(random.nextInt(100, 2000)))
+                .fuelConsumptionPerUnit(BigDecimal.valueOf(random.nextFloat() * 5))
+                .fuelPrice(BigDecimal.valueOf(5.17f))
                 .dateStarted(fertilizerApplicationDate)
                 .dateFinished(fertilizerApplicationDate.plusDays(1))
                 .build();
@@ -355,10 +359,10 @@ public class DemoUserSetup {
                 .farmingMachine(farmingMachines.stream()
                         .filter(machine -> machine.getSupportedOperationTypes().contains(OperationType.CULTIVATION))
                         .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
-                .depth(depth)
+                .depth(BigDecimal.valueOf(depth))
                 .cultivationType(cultivationTypeAccordingToDepth(depth))
-                .fuelConsumptionPerUnit(random.nextFloat() * 30)
-                .fuelPrice(5.17f)
+                .fuelConsumptionPerUnit(BigDecimal.valueOf(random.nextFloat() * 30))
+                .fuelPrice(BigDecimal.valueOf(5.17))
                 .dateStarted(cultivationDate)
                 .dateFinished(cultivationDate.plusDays(1))
                 .build();
@@ -370,12 +374,12 @@ public class DemoUserSetup {
                 .farmingMachine(farmingMachines.stream()
                         .filter(machine -> machine.getSupportedOperationTypes().contains(OperationType.SEEDING))
                         .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
-                .quantityPerAreaUnit(random.nextFloat() * 100)
-                .thousandSeedsMass(random.nextFloat() * 50)
-                .depth(random.nextFloat() * 10)
-                .seedsCostPerUnit(random.nextFloat() * 2000)
-                .fuelConsumptionPerUnit(random.nextFloat() * 30)
-                .fuelPrice(5.17f)
+                .quantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat() * 100))
+                .thousandSeedsMass(BigDecimal.valueOf(random.nextFloat() * 50))
+                .depth(BigDecimal.valueOf(random.nextFloat() * 10))
+                .seedsCostPerUnit(BigDecimal.valueOf(random.nextFloat() * 2000))
+                .fuelConsumptionPerUnit(BigDecimal.valueOf(random.nextFloat() * 30))
+                .fuelPrice(BigDecimal.valueOf(5.17f))
                 .dateStarted(seedingDate)
                 .dateFinished(seedingDate.plusDays(1))
                 .build();
@@ -394,8 +398,8 @@ public class DemoUserSetup {
         if (cropManager.getCropById(mainCrop.getId()).getCultivatedPlants().stream().findFirst().orElse(Plant.NONE).getSpecies().getName().equals("Rape seed")) {
             return cropParametersManager.addCropParameters(RapeSeedParametersDTO.builder()
                     .name("Parameters" + Math.round(random.nextFloat() * 10000))
-                    .density(600 + random.nextInt(100))
-                    .humidity(5 + random.nextFloat() * 5)
+                    .density(BigDecimal.valueOf(600 + random.nextInt(100)))
+                    .humidity(BigDecimal.valueOf(5 + random.nextFloat() * 5))
                     .resourceType(ResourceType.GRAIN)
                     .build());
 
@@ -409,6 +413,4 @@ public class DemoUserSetup {
                 .resourceType(ResourceType.GRAIN)
                 .build());
     }
-
-
 }

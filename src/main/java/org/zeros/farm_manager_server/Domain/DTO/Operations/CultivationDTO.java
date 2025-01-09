@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.Enum.CultivationType;
 
+import java.math.BigDecimal;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -12,6 +14,6 @@ import org.zeros.farm_manager_server.Domain.Enum.CultivationType;
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 public class CultivationDTO extends AgriculturalOperationDTO {
-    private float depth;
+    private BigDecimal depth;
     private CultivationType cultivationType;
 }

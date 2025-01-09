@@ -1,6 +1,7 @@
 package org.zeros.farm_manager_server.Services.Interface.User;
 
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
 import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 
@@ -8,7 +9,7 @@ import java.util.UUID;
 
 public interface UserManager {
 
-    User createNewUser(@NotNull UserDTO userDTO);
+
 
     User getUserById(@NotNull UUID id);
 
@@ -16,11 +17,9 @@ public interface UserManager {
 
     User getUserByUsername(@NotNull String username);
 
-    User logInNewUserByEmailAndPassword(@NotNull String email, @NotNull String password);
+    Page<User> getAllUsers(@NotNull int pageNumber);
 
-    User logInNewUserByUsernameAndPassword(@NotNull String username, @NotNull String password);
-
-    void logOutUser();
+    User registerNewUser(@NotNull UserDTO userDTO);
 
     User updateUserInfo(@NotNull UserDTO userDTO);
 

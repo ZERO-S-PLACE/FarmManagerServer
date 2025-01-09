@@ -22,7 +22,7 @@ public class ResourcesSummary {
     @NonNull
     @Builder.Default
     private UUID cropId = ApplicationDefaults.UUID_UNDEFINED;
-    private float area;
+    private BigDecimal area;
     @NonNull
     @Builder.Default
     private Map<UUID, BigDecimal> sprayPerAreaUnit = new HashMap<>();

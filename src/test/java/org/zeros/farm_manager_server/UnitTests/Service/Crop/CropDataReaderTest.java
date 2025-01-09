@@ -32,6 +32,7 @@ import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
 import org.zeros.farm_manager_server.Services.Interface.Operations.AgriculturalOperationsManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -76,7 +77,8 @@ public class CropDataReaderTest {
 
     @BeforeEach
     public void setUp() {
-        User user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        User user = userManager.getUserByUsername("DEMO_USER");
+        loggedUserConfiguration.replaceUser(user);
         Field field = user.getFields().stream().findAny().orElse(Field.NONE);
         FieldPart fieldPart = field.getFieldParts().stream().findAny().orElse(FieldPart.NONE);
         unsoldCrop = userDataReaderDefault.getAllUnsoldCrops().stream().findAny().orElse(null);
@@ -90,18 +92,18 @@ public class CropDataReaderTest {
         CropSummary summaryActive = cropDataReader.getCropSummary(activeCrop.getId());
         assertThat(summaryActive).isNotNull();
         assertThat(summaryActive.getCropId()).isNotNull();
-        assertThat(summaryActive.getArea()).isGreaterThan(0);
-        assertThat(summaryActive.getTotalFertilizerCostPerAreaUnit()).isGreaterThan(0);
-        assertThat(summaryActive.getTotalSprayCostPerAreaUnit()).isGreaterThan(0);
-        assertThat(summaryActive.getTotalFuelCostPerAreaUnit()).isGreaterThan(0);
+        assertThat(summaryActive.getArea().floatValue()).isGreaterThan(0);
+        assertThat(summaryActive.getTotalFertilizerCostPerAreaUnit().floatValue()).isGreaterThan(0);
+        assertThat(summaryActive.getTotalSprayCostPerAreaUnit().floatValue()).isGreaterThan(0);
+        assertThat(summaryActive.getTotalFuelCostPerAreaUnit().floatValue()).isGreaterThan(0);
         assertThat(summaryActive.getMeanSellPrice().size()).isEqualTo(0);
 
         CropSummary summaryUnsold = cropDataReader.getCropSummary(unsoldCrop.getId());
         assertThat(summaryUnsold).isNotNull();
         assertThat(summaryUnsold.getCropId()).isNotNull();
-        assertThat(summaryUnsold.getArea()).isGreaterThan(0);
-        assertThat(summaryUnsold.getTotalFertilizerCostPerAreaUnit()).isGreaterThan(0);
-        assertThat(summaryUnsold.getTotalFuelCostPerAreaUnit()).isGreaterThan(0);
+        assertThat(summaryUnsold.getArea().floatValue()).isGreaterThan(0);
+        assertThat(summaryUnsold.getTotalFertilizerCostPerAreaUnit().floatValue()).isGreaterThan(0);
+        assertThat(summaryUnsold.getTotalFuelCostPerAreaUnit().floatValue()).isGreaterThan(0);
         if (unsoldCrop instanceof MainCrop) {
             if (!((MainCrop) unsoldCrop).getHarvest().isEmpty()) {
                 assertThat(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit().size()).isEqualTo(1);
@@ -113,10 +115,10 @@ public class CropDataReaderTest {
         CropSummary summaryArchived = cropDataReader.getCropSummary(archivedCrop.getId());
         assertThat(summaryArchived).isNotNull();
         assertThat(summaryArchived.getCropId()).isNotNull();
-        assertThat(summaryArchived.getArea()).isGreaterThan(0);
-        assertThat(summaryArchived.getTotalFertilizerCostPerAreaUnit()).isGreaterThan(0);
-        assertThat(summaryArchived.getTotalSprayCostPerAreaUnit()).isGreaterThan(0);
-        assertThat(summaryArchived.getTotalFuelCostPerAreaUnit()).isGreaterThan(0);
+        assertThat(summaryArchived.getArea().floatValue()).isGreaterThan(0);
+        assertThat(summaryArchived.getTotalFertilizerCostPerAreaUnit().floatValue()).isGreaterThan(0);
+        assertThat(summaryArchived.getTotalSprayCostPerAreaUnit().floatValue()).isGreaterThan(0);
+        assertThat(summaryArchived.getTotalFuelCostPerAreaUnit().floatValue()).isGreaterThan(0);
         assertThat(summaryArchived.getMeanSellPrice().size()).isEqualTo(1);
         assertThat(summaryArchived.getYieldPerAreaUnit().size()).isEqualTo(1);
         assertThat(summaryArchived.getEstimatedAmountNotSoldPerAreaUnit().size()).isEqualTo(0);
@@ -127,7 +129,7 @@ public class CropDataReaderTest {
         ResourcesSummary summary = cropDataReader.getCropResourcesSummary(archivedCrop.getId());
         assertThat(summary).isNotNull();
         assertThat(summary.getCropId()).isNotNull();
-        assertThat(summary.getArea()).isGreaterThan(0);
+        assertThat(summary.getArea().floatValue()).isGreaterThan(0);
         assertThat(summary.getFertilizerPerAreaUnit().size()).isGreaterThan(0);
         assertThat(summary.getSprayPerAreaUnit().size()).isGreaterThan(0);
         assertThat(summary.getSeedingMaterialPerAreaUnit().size()).isGreaterThan(0);
@@ -138,7 +140,7 @@ public class CropDataReaderTest {
         ResourcesSummary summary = cropDataReader.getCropResourcesSummary(unsoldCrop.getId());
         assertThat(summary).isNotNull();
         assertThat(summary.getCropId()).isNotNull();
-        assertThat(summary.getArea()).isGreaterThan(0);
+        assertThat(summary.getArea().floatValue()).isGreaterThan(0);
         assertThat(summary.getFertilizerPerAreaUnit().size()).isGreaterThan(0);
         assertThat(summary.getSprayPerAreaUnit().size()).isGreaterThan(0);
         assertThat(summary.getSeedingMaterialPerAreaUnit().size()).isGreaterThan(0);
@@ -151,17 +153,17 @@ public class CropDataReaderTest {
                 SeedingDTO.builder()
                         .sownPlants(Set.copyOf(activeCrop.getCultivatedPlants()).stream().map(BaseEntity::getId).collect(Collectors.toSet()))
                         .farmingMachine(farmingMachineManager.getUndefinedFarmingMachine().getId())
-                        .quantityPerAreaUnit(random.nextFloat() * 100)
-                        .thousandSeedsMass(random.nextFloat() * 50)
-                        .depth(random.nextFloat() * 10)
-                        .seedsCostPerUnit(random.nextFloat() * 2000)
-                        .fuelConsumptionPerUnit(random.nextFloat() * 30)
-                        .fuelPrice(5.17f)
+                        .quantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat() * 100))
+                        .thousandSeedsMass(BigDecimal.valueOf(random.nextFloat() * 50))
+                        .depth(BigDecimal.valueOf(random.nextFloat() * 10))
+                        .seedsCostPerUnit(BigDecimal.valueOf(random.nextFloat() * 2000))
+                        .fuelConsumptionPerUnit(BigDecimal.valueOf(random.nextFloat() * 30))
+                        .fuelPrice(BigDecimal.valueOf(5.17))
                         .build());
         ResourcesSummary summary = cropDataReader.getPlannedResourcesSummary(activeCrop.getId());
         assertThat(summary).isNotNull();
         assertThat(summary.getCropId()).isNotNull();
-        assertThat(summary.getArea()).isGreaterThan(0);
+        assertThat(summary.getArea().floatValue()).isGreaterThan(0);
         assertThat(summary.getSeedingMaterialPerAreaUnit().size()).isGreaterThan(0);
     }
 

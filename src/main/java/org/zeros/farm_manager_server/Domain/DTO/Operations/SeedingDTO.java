@@ -3,6 +3,7 @@ package org.zeros.farm_manager_server.Domain.DTO.Operations;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,12 +15,12 @@ import java.util.UUID;
 @SuperBuilder
 public class SeedingDTO extends AgriculturalOperationDTO {
     private Set<UUID> sownPlants;
-    private float depth;
-    private float rowSpacing;
-    private float quantityPerAreaUnit;
-    private float germinationRate;
-    private float materialPurity;
-    private float thousandSeedsMass;
-    private float seedsPerAreaUnit;
-    private float seedsCostPerUnit;
+    private BigDecimal depth;
+    private BigDecimal rowSpacing;
+    private BigDecimal quantityPerAreaUnit;
+    private BigDecimal germinationRate;
+    private BigDecimal materialPurity;
+    private BigDecimal thousandSeedsMass;
+    private BigDecimal seedsPerAreaUnit;
+    private BigDecimal seedsCostPerUnit;
 }

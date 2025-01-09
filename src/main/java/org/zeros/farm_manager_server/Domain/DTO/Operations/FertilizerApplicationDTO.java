@@ -3,6 +3,7 @@ package org.zeros.farm_manager_server.Domain.DTO.Operations;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Setter
@@ -13,6 +14,6 @@ import java.util.UUID;
 @SuperBuilder
 public class FertilizerApplicationDTO extends AgriculturalOperationDTO {
     private UUID fertilizer;
-    private float quantityPerAreaUnit;
-    private float pricePerUnit;
+    private BigDecimal quantityPerAreaUnit;
+    private BigDecimal pricePerUnit;
 }

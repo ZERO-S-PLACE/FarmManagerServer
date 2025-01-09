@@ -53,12 +53,6 @@ public UserDTO getUserDataById(@PathVariable("id") UUID id) {
 
     User getUserByUsername(String username);
 
-    User logInNewUserByEmailAndPassword(String email, String password);
-
-    User logInNewUserByUsernameAndPassword(String username, String password);
-
-    void logOutUser();
-
     User updateUserInfo(User user);
 
     void deleteAllUserData(User user);

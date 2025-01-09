@@ -51,11 +51,7 @@ public class CropDataReaderControllerTest {
     CropParametersManager cropParametersManager;
     @Autowired
     UserManager userManager;
-    @Autowired
-    ObjectMapper objectMapper;
-    @Autowired
-    WebApplicationContext wac;
-    MockMvc mockMvc;
+
 
     @Autowired
     FieldPartManager fieldPartManager;
@@ -69,11 +65,17 @@ public class CropDataReaderControllerTest {
     LoggedUserConfiguration loggedUserConfiguration;
     @Autowired
     EntityManager entityManager;
+    @Autowired
+    ObjectMapper objectMapper;
+    @Autowired
+    WebApplicationContext wac;
+
+    MockMvc mockMvc;
+
     Crop unsoldCrop;
     Crop activeCrop;
     Crop archivedCrop;
-    @Autowired
-    private UserDataReaderDefault userDataReaderDefault;
+
 
 
 

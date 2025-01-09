@@ -15,15 +15,10 @@ import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationService;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Data.SprayRepository;
-import org.zeros.farm_manager_server.Services.Default.Data.SprayManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldPartManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Data.SprayManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
@@ -50,7 +45,8 @@ public class SprayManagerTest {
 
     @BeforeEach
     public void setUp() {
-        user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        user = userManager.getUserByUsername("DEMO_USER");
+        loggedUserConfiguration.replaceUser(user);
     }
 
     @Test

@@ -21,13 +21,11 @@ import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.Repositories.User.UserRepository;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldGroupManager;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
+import java.math.BigDecimal;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,7 +62,8 @@ public class UserGroupManagerTest {
 
     @BeforeEach
     public void setUp() {
-        user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        user = userManager.getUserByUsername("DEMO_USER");
+        loggedUserConfiguration.replaceUser(user);
     }
 
 
@@ -134,11 +133,11 @@ public class UserGroupManagerTest {
     public FieldDTO createTestField(int fieldNumber) {
         Random random = new Random();
         return FieldDTO.builder()
-                .area(random.nextFloat() * 100)
+                .area(BigDecimal.valueOf(random.nextFloat() * 100))
                 .fieldName("TestField" + fieldNumber)
                 .isOwnField(true)
                 .isArchived(false)
-                .propertyTax(random.nextFloat() * 100)
+                .propertyTax(BigDecimal.valueOf(random.nextFloat() * 100))
                 .build();
 
     }

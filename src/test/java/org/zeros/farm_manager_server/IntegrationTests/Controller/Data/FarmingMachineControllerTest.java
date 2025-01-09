@@ -8,7 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -18,6 +20,8 @@ import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
+import org.zeros.farm_manager_server.Repositories.Data.FarmingMachineRepository;
 import org.zeros.farm_manager_server.Services.Interface.Data.FarmingMachineManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
@@ -44,18 +48,21 @@ public class FarmingMachineControllerTest {
     @Autowired
     WebApplicationContext wac;
     MockMvc mockMvc;
+    @Autowired
+    private FarmingMachineRepository farmingMachineRepository;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-        userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(SecurityMockMvcConfigurers.springSecurity()).build();
     }
 
     @Test
     void getMachineById() throws Exception {
-        FarmingMachine testMachine = farmingMachineManager.getAllFarmingMachines(0).getContent().get(3);
+        FarmingMachine testMachine = findAnyFarmingMachine();
         MvcResult result = mockMvc.perform(
                         get(FarmingMachineController.ID_PATH,testMachine.getId())
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("id", testMachine.getId().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -71,6 +78,7 @@ public class FarmingMachineControllerTest {
     void getMachineByIdNotFound() throws Exception {
         mockMvc.perform(
                         get(FarmingMachineController.ID_PATH,UUID.randomUUID())
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
@@ -81,6 +89,7 @@ public class FarmingMachineControllerTest {
     void getAllFarmingMachines() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(FarmingMachineController.LIST_ALL_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -93,6 +102,7 @@ public class FarmingMachineControllerTest {
     void getDefaultFarmingMachines() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(FarmingMachineController.LIST_DEFAULT_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -105,6 +115,7 @@ public class FarmingMachineControllerTest {
     void getUserFarmingMachines() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(FarmingMachineController.LIST_USER_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -118,6 +129,7 @@ public class FarmingMachineControllerTest {
     void getFarmingMachineByModelAs() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(FarmingMachineController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("model", "Trion")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -131,6 +143,7 @@ public class FarmingMachineControllerTest {
     void getFarmingMachineByProducerAs() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(FarmingMachineController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("producer", "Class")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -145,6 +158,7 @@ public class FarmingMachineControllerTest {
         MvcResult result = mockMvc.perform(
                         get(FarmingMachineController.LIST_PARAM_PATH)
                                 .param("producer", "Class")
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("model", "Trion")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -160,6 +174,7 @@ public class FarmingMachineControllerTest {
     void getFarmingMachineBySupportedOperation() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(FarmingMachineController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("operationType", "HARVEST")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -177,8 +192,9 @@ public class FarmingMachineControllerTest {
                 .producer("TEST2")
                 .model("TEST2")
                 .build();
-        System.out.println(objectMapper.writeValueAsString(farmingMachineDTO));
+
         MvcResult result = mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(farmingMachineDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -189,7 +205,7 @@ public class FarmingMachineControllerTest {
         assertThat(result.getResponse().getHeaders("Location")).isNotNull();
 
         String[] locationUUID = result.getResponse().getHeaders("Location")
-                .get(0).split("/");
+                .getFirst().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[4]);
 
         assertThat(farmingMachineManager.getFarmingMachineById(savedUUID).equals(FarmingMachine.NONE)).isFalse();
@@ -202,6 +218,7 @@ public class FarmingMachineControllerTest {
         FarmingMachineDTO farmingMachineDTO = DefaultMappers.farmingMachineMapper.entityToDto(
                 farmingMachineManager.getDefaultFarmingMachines(0).getContent().get(2));
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(farmingMachineDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -215,6 +232,7 @@ public class FarmingMachineControllerTest {
         FarmingMachineDTO farmingMachineDTO = DefaultMappers.farmingMachineMapper.entityToDto(
                 farmingMachineManager.getDefaultFarmingMachines(0).getContent().get(2));
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(farmingMachineDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -226,16 +244,13 @@ public class FarmingMachineControllerTest {
     @Test
     @Transactional
     void updateFarmingMachine() throws Exception {
-        FarmingMachine farmingMachineUser = farmingMachineManager.addFarmingMachine(FarmingMachineDTO.builder()
-                .supportedOperationTypes(Set.of(OperationType.SEEDING))
-                .producer("TEST_TO_UPDATE")
-                .model("TEST")
-                .build());
+        FarmingMachine farmingMachineUser = saveNewFarmingMachine();
 
         FarmingMachineDTO farmingMachineDTO = DefaultMappers.farmingMachineMapper.entityToDto(farmingMachineUser);
         farmingMachineDTO.setModel("TEST_UPDATED");
         farmingMachineDTO.setDescription(null);
         mockMvc.perform(patch(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(farmingMachineDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -246,6 +261,28 @@ public class FarmingMachineControllerTest {
                 .isEqualTo("TEST_UPDATED");
     }
 
+    private FarmingMachine saveNewFarmingMachine() throws Exception {
+        FarmingMachineDTO farmingMachineDTO=FarmingMachineDTO.builder()
+                .supportedOperationTypes(Set.of(OperationType.SEEDING))
+                .producer("TEST_TO_UPDATE")
+                .model("TEST")
+                .build();
+
+        MvcResult result = mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(farmingMachineDTO))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String[] locationUUID = result.getResponse().getHeaders("Location")
+                .getFirst().split("/");
+        UUID savedUUID = UUID.fromString(locationUUID[4]);
+        return farmingMachineManager.getFarmingMachineById(savedUUID);
+    }
+
     @Test
     @Transactional
     void updateFarmingMachineAccessDenied() throws Exception {
@@ -253,6 +290,7 @@ public class FarmingMachineControllerTest {
                 farmingMachineManager.getDefaultFarmingMachines(0).getContent().get(2));
         farmingMachineDTO.setModel("TEST_UPDATED");
         mockMvc.perform(patch(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(farmingMachineDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -266,6 +304,7 @@ public class FarmingMachineControllerTest {
                 farmingMachineManager.getDefaultFarmingMachines(0).getContent().get(2));
         farmingMachineDTO.setModel("");
         mockMvc.perform(patch(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(farmingMachineDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -276,14 +315,10 @@ public class FarmingMachineControllerTest {
     @Test
     @Transactional
     void deleteFarmingMachine() throws Exception {
-        FarmingMachine farmingMachineUser = farmingMachineManager.addFarmingMachine(
-                FarmingMachineDTO.builder()
-                        .supportedOperationTypes(Set.of(OperationType.SEEDING))
-                        .producer("TEST_TO_DELETE")
-                        .model("TEST")
-                        .build());
+        FarmingMachine farmingMachineUser = saveNewFarmingMachine();
 
         mockMvc.perform(delete(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", farmingMachineUser.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -295,10 +330,10 @@ public class FarmingMachineControllerTest {
     @Test
     @Transactional
     void deleteFarmingMachineFailed() throws Exception {
-        FarmingMachine farmingMachine = farmingMachineManager
-                .getAllFarmingMachines(0).getContent().get(0);
+        FarmingMachine farmingMachine = findAnyFarmingMachine();
 
         mockMvc.perform(delete(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", farmingMachine.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -306,6 +341,11 @@ public class FarmingMachineControllerTest {
                 .andExpect(status().isMethodNotAllowed());
         assertThat(farmingMachineManager.getFarmingMachineById(farmingMachine.getId()).equals(FarmingMachine.NONE)).isFalse();
 
+    }
+
+    private FarmingMachine findAnyFarmingMachine() {
+        return farmingMachineRepository.findAllByCreatedByIn(Set.of("ADMIN"), PageRequest.of(0,2))
+                .stream().findFirst().get();
     }
 
 

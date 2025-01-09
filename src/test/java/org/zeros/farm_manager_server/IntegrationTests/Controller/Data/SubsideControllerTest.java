@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -18,11 +19,13 @@ import org.zeros.farm_manager_server.Controllers.Data.SubsideController;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Subside;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
@@ -53,15 +56,16 @@ public class SubsideControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-        userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(SecurityMockMvcConfigurers.springSecurity()).build();
     }
 
     @Test
     void getById() throws Exception {
-        Subside subside = subsideManager.getAllSubsides(0).getContent().get(1);
+        Subside subside = findDefaultSubside();
         MvcResult result = mockMvc.perform(
                         get(SubsideController.ID_PATH,subside.getId())
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -76,6 +80,7 @@ public class SubsideControllerTest {
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
                         get(SubsideController.ID_PATH,UUID.randomUUID())
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
@@ -86,6 +91,7 @@ public class SubsideControllerTest {
     void getAll() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(SubsideController.LIST_ALL_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -98,6 +104,7 @@ public class SubsideControllerTest {
     void getDefault() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(SubsideController.LIST_DEFAULT_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -110,6 +117,7 @@ public class SubsideControllerTest {
     void getUserCreated() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(SubsideController.LIST_USER_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -121,9 +129,10 @@ public class SubsideControllerTest {
 
     @Test
     void getByNameAs() throws Exception {
-        Subside subside = subsideManager.getAllSubsides(0).getContent().get(1);
+        Subside subside = findDefaultSubside();
         MvcResult result = mockMvc.perform(
                         get(SubsideController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("name", subside.getName().substring(0, 3))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -137,9 +146,10 @@ public class SubsideControllerTest {
     @Test
     @Transactional
     void getBySpeciesAllowed() throws Exception {
-        Subside subside = subsideManager.getAllSubsides(0).getContent().get(1);
+        Subside subside = findDefaultSubside();
         MvcResult result = mockMvc.perform(
                         get(SubsideController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("speciesId", String.valueOf(
                                         subside.getSpeciesAllowed().stream().toList().getFirst().getId()))
                                 .accept(MediaType.APPLICATION_JSON))
@@ -152,9 +162,10 @@ public class SubsideControllerTest {
     @Test
     @Transactional
     void getByNameAndSpeciesAllowed() throws Exception {
-        Subside subside = subsideManager.getAllSubsides(0).getContent().get(1);
+        Subside subside = findDefaultSubside();
         MvcResult result = mockMvc.perform(
                         get(SubsideController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("name", subside.getName().substring(0, 3))
                                 .param("speciesId", String.valueOf(
                                         subside.getSpeciesAllowed().stream().toList().getFirst().getId()))
@@ -173,11 +184,12 @@ public class SubsideControllerTest {
         SubsideDTO subsideDTO = SubsideDTO.builder()
                 .name("TEST")
                 .yearOfSubside(LocalDate.now())
-                .subsideValuePerAreaUnit(321.21f)
-                .speciesAllowed(Set.of(speciesManager.getAllSpecies(0).getContent().get(3).getId()))
+                .subsideValuePerAreaUnit(BigDecimal.valueOf(321.21))
+                .speciesAllowed(Set.of(speciesManager.getDefaultSpecies(0).getContent().get(3).getId()))
                 .build();
 
         MvcResult result = mockMvc.perform(post(SubsideController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -200,8 +212,9 @@ public class SubsideControllerTest {
     void addNewErrorAlreadyExists() throws Exception {
 
         SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(
-                subsideManager.getAllSubsides(0).getContent().get(2));
+              findDefaultSubside());
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -214,12 +227,13 @@ public class SubsideControllerTest {
     void addNewMissingName() throws Exception {
         SubsideDTO subsideDTO = SubsideDTO.builder()
                 .yearOfSubside(LocalDate.now())
-                .subsideValuePerAreaUnit(321.21f)
-                .speciesAllowed(Set.of(speciesManager.getAllSpecies(0).getContent().get(3).getId()))
+                .subsideValuePerAreaUnit(BigDecimal.valueOf(321.21))
+                .speciesAllowed(Set.of(speciesManager.getDefaultSpecies(0).getContent().get(3).getId()))
                 .build();
 
 
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -236,6 +250,7 @@ public class SubsideControllerTest {
         subsideDTO.setName("TEST_UPDATED");
         subsideDTO.setDescription("DESCRIPTION_UPDATED");
         mockMvc.perform(patch(SubsideController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -248,13 +263,29 @@ public class SubsideControllerTest {
         assertThat(subsideUpdated.getDescription()).isEqualTo("DESCRIPTION_UPDATED");
     }
 
-    private Subside saveNewSubside() {
-        return subsideManager.addSubside(SubsideDTO.builder()
+    private Subside saveNewSubside() throws Exception {
+        SubsideDTO subsideDTO = SubsideDTO.builder()
                 .name("TEST")
                 .yearOfSubside(LocalDate.now())
-                .subsideValuePerAreaUnit(321.21f)
-                .speciesAllowed(Set.of(speciesManager.getAllSpecies(0).getContent().get(3).getId()))
-                .build());
+                .subsideValuePerAreaUnit(BigDecimal.valueOf(321.21))
+                .speciesAllowed(Set.of(speciesManager.getDefaultSpecies(0).getContent().get(3).getId()))
+                .build();
+
+        MvcResult result = mockMvc.perform(post(SubsideController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(subsideDTO))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        assertThat(result.getResponse().getHeaders("Location")).isNotNull();
+
+        String[] locationUUID = result.getResponse().getHeaders("Location")
+                .getFirst().split("/");
+        UUID savedUUID = UUID.fromString(locationUUID[4]);
+        return subsideManager.getSubsideById(savedUUID);
 
     }
 
@@ -262,9 +293,10 @@ public class SubsideControllerTest {
     @Transactional
     void updateAccessDenied() throws Exception {
         SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(
-                subsideManager.getDefaultSubsides(0).getContent().get(2));
+               findDefaultSubside());
         subsideDTO.setName("TEST_UPDATED");
         mockMvc.perform(patch(SubsideController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -279,6 +311,7 @@ public class SubsideControllerTest {
         SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(subside);
         subsideDTO.setName("");
         mockMvc.perform(patch(SubsideController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(subsideDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -292,6 +325,7 @@ public class SubsideControllerTest {
         Subside subside = saveNewSubside();
 
         mockMvc.perform(delete(SubsideController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", subside.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -302,9 +336,10 @@ public class SubsideControllerTest {
 
     @Test
     void deleteFailed() throws Exception {
-        Subside subside = subsideManager.getAllSubsides(0).getContent().getFirst();
+        Subside subside = findDefaultSubside();
 
         mockMvc.perform(delete(SubsideController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", subside.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -312,6 +347,10 @@ public class SubsideControllerTest {
                 .andExpect(status().isMethodNotAllowed());
         assertThat(subsideManager.getSubsideById(subside.getId()).equals(Subside.NONE)).isFalse();
 
+    }
+
+    private Subside findDefaultSubside() {
+        return subsideManager.getDefaultSubsides(0).getContent().getFirst();
     }
 
 

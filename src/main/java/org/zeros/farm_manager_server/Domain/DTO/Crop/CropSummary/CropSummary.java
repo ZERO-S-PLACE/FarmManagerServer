@@ -25,7 +25,7 @@ public class CropSummary {
     @NonNull
     @Builder.Default
     private UUID cropId = ApplicationDefaults.UUID_UNDEFINED;
-    private float area;
+    private BigDecimal area;
     @NonNull
     @Builder.Default
     private Map<ResourceType, BigDecimal> yieldPerAreaUnit = new HashMap<>();
@@ -35,9 +35,9 @@ public class CropSummary {
     @NonNull
     @Builder.Default
     private Map<ResourceType, BigDecimal> estimatedAmountNotSoldPerAreaUnit = new HashMap<>();
-    private float totalFuelCostPerAreaUnit;
-    private float totalFertilizerCostPerAreaUnit;
-    private float totalSprayCostPerAreaUnit;
-    private float totalSubsidesValuePerAreaUnit;
+    private BigDecimal totalFuelCostPerAreaUnit;
+    private BigDecimal totalFertilizerCostPerAreaUnit;
+    private BigDecimal totalSprayCostPerAreaUnit;
+    private BigDecimal totalSubsidesValuePerAreaUnit;
 
 }

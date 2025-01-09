@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -18,6 +19,7 @@ import org.zeros.farm_manager_server.Controllers.Data.SpeciesController;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
@@ -47,15 +49,16 @@ public class SpeciesControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-        userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(SecurityMockMvcConfigurers.springSecurity()).build();
     }
 
     @Test
     void getById() throws Exception {
-        Species species = speciesManager.getAllSpecies(0).getContent().get(1);
+        Species species = findDefaultSpecies();
         MvcResult result = mockMvc.perform(
                         get(SpeciesController.ID_PATH,species.getId())
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -66,10 +69,15 @@ public class SpeciesControllerTest {
         displayResponse(result);
     }
 
+    private Species findDefaultSpecies() {
+        return speciesManager.getDefaultSpecies(0).getContent().getFirst();
+    }
+
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
                         get(SpeciesController.ID_PATH,UUID.randomUUID())
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
@@ -80,6 +88,7 @@ public class SpeciesControllerTest {
     void getAll() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(SpeciesController.LIST_ALL_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -92,6 +101,7 @@ public class SpeciesControllerTest {
     void getDefault() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(SpeciesController.LIST_DEFAULT_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -104,6 +114,7 @@ public class SpeciesControllerTest {
     void getUserCreated() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(SpeciesController.LIST_USER_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -115,9 +126,10 @@ public class SpeciesControllerTest {
 
     @Test
     void getByNameAs() throws Exception {
-        Species species = speciesManager.getAllSpecies(0).getContent().get(1);
+        Species species = findDefaultSpecies();
         MvcResult result = mockMvc.perform(
                         get(SpeciesController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("name", species.getName().substring(0, 3))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -130,9 +142,10 @@ public class SpeciesControllerTest {
 
     @Test
     void getByFamily() throws Exception {
-        Species species = speciesManager.getAllSpecies(0).getContent().get(1);
+        Species species = findDefaultSpecies();
         MvcResult result = mockMvc.perform(
                         get(SpeciesController.LIST_PARAM_PATH)
+                                .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .param("family", species.getFamily())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -153,6 +166,7 @@ public class SpeciesControllerTest {
                 .build();
 
         MvcResult result = mockMvc.perform(post(SpeciesController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -175,8 +189,9 @@ public class SpeciesControllerTest {
     void addNewErrorAlreadyExists() throws Exception {
 
         SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(
-                speciesManager.getAllSpecies(0).getContent().get(2));
+                findDefaultSpecies());
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -193,6 +208,7 @@ public class SpeciesControllerTest {
                 .build();
 
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -209,6 +225,7 @@ public class SpeciesControllerTest {
         speciesDTO.setName("TEST_UPDATED");
         speciesDTO.setDescription("DESCRIPTION_UPDATED");
         mockMvc.perform(patch(SpeciesController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -221,20 +238,37 @@ public class SpeciesControllerTest {
         assertThat(speciesUpdated.getDescription()).isEqualTo("DESCRIPTION_UPDATED");
     }
 
-    private Species saveNewSpecies() {
-        return speciesManager.addSpecies(SpeciesDTO.builder()
+    private Species saveNewSpecies() throws Exception {
+        SpeciesDTO speciesDTO = SpeciesDTO.builder()
                 .family("TEST")
                 .name("TEST")
-                .build());
+                .build();
+
+        MvcResult result = mockMvc.perform(post(SpeciesController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(speciesDTO))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        assertThat(result.getResponse().getHeaders("Location")).isNotNull();
+
+        String[] locationUUID = result.getResponse().getHeaders("Location")
+                .getFirst().split("/");
+        UUID savedUUID = UUID.fromString(locationUUID[4]);
+        return speciesManager.getSpeciesById(savedUUID);
     }
 
     @Test
     @Transactional
     void updateAccessDenied() throws Exception {
         SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(
-                speciesManager.getDefaultSpecies(0).getContent().get(2));
+               findDefaultSpecies());
         speciesDTO.setName("TEST_UPDATED");
         mockMvc.perform(patch(SpeciesController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -249,6 +283,7 @@ public class SpeciesControllerTest {
         SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(species);
         speciesDTO.setName("");
         mockMvc.perform(patch(SpeciesController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(speciesDTO))
                         .accept(MediaType.APPLICATION_JSON))
@@ -262,6 +297,7 @@ public class SpeciesControllerTest {
         Species species = saveNewSpecies();
 
         mockMvc.perform(delete(SpeciesController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", species.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -272,9 +308,10 @@ public class SpeciesControllerTest {
 
     @Test
     void deleteFailed() throws Exception {
-        Species species = speciesManager.getAllSpecies(0).getContent().getFirst();
+        Species species = findDefaultSpecies();
 
         mockMvc.perform(delete(SpeciesController.BASE_PATH)
+                        .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", species.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))

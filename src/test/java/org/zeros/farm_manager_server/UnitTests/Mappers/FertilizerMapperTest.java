@@ -40,7 +40,7 @@ public class FertilizerMapperTest {
         FertilizerDTO dto = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
         assertThat(dto.getId()).isEqualTo(fertilizer.getId());
         assertThat(dto.getName()).isEqualTo(fertilizer.getName());
-        assertThat(dto.getTotalCaPercent()).isEqualTo(fertilizer.getTotalCaPercent().floatValue());
+        assertThat(dto.getTotalCaPercent().floatValue()).isEqualTo(fertilizer.getTotalCaPercent().floatValue());
     }
 
     @Test

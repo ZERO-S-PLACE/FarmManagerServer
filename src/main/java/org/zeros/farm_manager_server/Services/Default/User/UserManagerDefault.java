@@ -3,14 +3,16 @@ package org.zeros.farm_manager_server.Services.Default.User;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
-import org.zeros.farm_manager_server.Domain.Enum.LoginError;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Enum.UserCreationError;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.Data.*;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.User.UserRepository;
@@ -24,7 +26,6 @@ import java.util.UUID;
 public class UserManagerDefault implements UserManager {
 
     private final UserRepository userRepository;
-    private final LoggedUserConfiguration loggedUserConfiguration;
     private final FieldGroupRepository fieldGroupRepository;
     private final FarmingMachineRepository farmingMachineRepository;
     private final SubsideRepository subsideRepository;
@@ -35,7 +36,7 @@ public class UserManagerDefault implements UserManager {
 
 
     @Override
-    public User createNewUser(UserDTO userDTO) {
+    public User registerNewUser(UserDTO userDTO) {
         if (userDTO.getFirstName().isBlank()) {
             return User.getBlankUserWithError(UserCreationError.FIRST_NAME_MISSING);
         }
@@ -93,36 +94,10 @@ public class UserManagerDefault implements UserManager {
     }
 
     @Override
-    public User logInNewUserByEmailAndPassword(String email, String password) {
-        User newUser = userRepository.findUserByEmail(email).orElse(User.NONE);
-        if (newUser.equals(User.NONE)) {
-            return User.getBlankUserWithError(LoginError.WRONG_EMAIL);
-        }
-        if (!newUser.getPassword().equals(password)) {
-            return User.getBlankUserWithError(LoginError.WRONG_PASSWORD);
-        }
-        loggedUserConfiguration.replaceUser(newUser);
-
-        return newUser;
+    public Page<User> getAllUsers(int pageNumber) {
+        return userRepository.findAll(PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("username")));
     }
 
-    @Override
-    public User logInNewUserByUsernameAndPassword(String username, String password) {
-        User newUser = userRepository.findUserByUsername(username).orElse(User.NONE);
-        if (newUser.equals(User.NONE)) {
-            return User.getBlankUserWithError(LoginError.WRONG_USERNAME);
-        }
-        if (!newUser.getPassword().equals(password)) {
-            return User.getBlankUserWithError(LoginError.WRONG_PASSWORD);
-        }
-        loggedUserConfiguration.replaceUser(newUser);
-        return newUser;
-    }
-
-    @Override
-    public void logOutUser() {
-        loggedUserConfiguration.replaceUser(User.NONE);
-    }
 
     @Override
     public User updateUserInfo(UserDTO userDTO) {

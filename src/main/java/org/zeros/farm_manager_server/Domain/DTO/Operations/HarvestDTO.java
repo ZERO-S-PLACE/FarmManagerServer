@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Setter
@@ -14,6 +15,6 @@ import java.util.UUID;
 @SuperBuilder
 public class HarvestDTO extends AgriculturalOperationDTO {
     private ResourceType resourceType;
-    private float quantityPerAreaUnit;
+    private BigDecimal quantityPerAreaUnit;
     private UUID cropParameters;
 }

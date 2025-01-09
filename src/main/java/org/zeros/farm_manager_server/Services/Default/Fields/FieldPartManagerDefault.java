@@ -38,7 +38,7 @@ public class FieldPartManagerDefault implements FieldPartManager {
         if (originPart.equals(FieldPart.NONE)) {
             throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        if (part1DTO.getArea() >= originPart.getArea().floatValue()) {
+        if (part1DTO.getArea().floatValue() >= originPart.getArea().floatValue()) {
             throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.NOT_COMPATIBLE);
         }
         Field field = originPart.getField();

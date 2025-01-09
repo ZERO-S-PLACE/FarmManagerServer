@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.DTO.BaseEntityDTO;
 
+import java.math.BigDecimal;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -21,17 +23,17 @@ public class FertilizerDTO extends BaseEntityDTO {
     private String name;
     private String producer;
     private Boolean isNaturalFertilizer;
-    private float organicMatterPercent;
-    private float totalNPercent;
-    private float totalPPercent;
-    private float totalKPercent;
-    private float totalCaPercent;
-    private float totalMgPercent;
-    private float totalSPercent;
-    private float totalNaPercent;
-    private float totalClPercent;
-    private float totalFePercent;
-    private float totalBPercent;
-    private float totalSiPercent;
+    private BigDecimal organicMatterPercent;
+    private BigDecimal totalNPercent;
+    private BigDecimal totalPPercent;
+    private BigDecimal totalKPercent;
+    private BigDecimal totalCaPercent;
+    private BigDecimal totalMgPercent;
+    private BigDecimal totalSPercent;
+    private BigDecimal totalNaPercent;
+    private BigDecimal totalClPercent;
+    private BigDecimal totalFePercent;
+    private BigDecimal totalBPercent;
+    private BigDecimal totalSiPercent;
 
 }

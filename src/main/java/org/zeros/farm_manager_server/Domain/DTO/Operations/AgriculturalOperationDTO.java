@@ -5,6 +5,7 @@ import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.DTO.BaseEntityDTO;
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -21,9 +22,9 @@ public class AgriculturalOperationDTO extends BaseEntityDTO {
     private LocalDate dateStarted;
     private LocalDate dateFinished;
     private Boolean isExternalService;
-    private float externalServicePrice;
-    private float fuelConsumptionPerUnit;
-    private float fuelPrice;
+    private BigDecimal externalServicePrice;
+    private BigDecimal fuelConsumptionPerUnit;
+    private BigDecimal fuelPrice;
     private Boolean isPlannedOperation;
 
 }

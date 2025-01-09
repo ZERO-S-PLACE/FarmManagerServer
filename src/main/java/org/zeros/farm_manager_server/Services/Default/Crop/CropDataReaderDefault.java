@@ -48,7 +48,7 @@ public class CropDataReaderDefault implements CropDataReader {
         Crop crop = getCropIfExist(cropId);
         return CropSummary.builder()
                 .cropId(crop.getId())
-                .area(crop.getFieldPart().getArea().floatValue())
+                .area(crop.getFieldPart().getArea())
                 .yieldPerAreaUnit(getYieldPerAreaUnit(crop))
                 .meanSellPrice(getMeanSellPrice(crop))
                 .estimatedAmountNotSoldPerAreaUnit(getEstimatedAmountNotSoldPerAreaUnit(crop))
@@ -75,16 +75,16 @@ public class CropDataReaderDefault implements CropDataReader {
         return (!((InterCrop) crop).getDateDestroyed().equals(ApplicationDefaults.UNDEFINED_DATE_MAX)) && crop.getWorkFinished();
     }
 
-    private float getSubsidesPerAreaUnit(Crop crop) {
+    private BigDecimal getSubsidesPerAreaUnit(Crop crop) {
         BigDecimal subsideSum = BigDecimal.ZERO;
         for (Subside subside : crop.getSubsides()) {
             subsideSum = subsideSum.add(subside.getSubsideValuePerAreaUnit());
         }
-        return subsideSum.setScale(2, RoundingMode.HALF_UP).floatValue();
+        return subsideSum.setScale(2, RoundingMode.HALF_UP);
 
     }
 
-    private float getFertilizerCostPerAreaUnit(Crop crop) {
+    private BigDecimal getFertilizerCostPerAreaUnit(Crop crop) {
         BigDecimal fertilizerCostSum = BigDecimal.ZERO;
         for (FertilizerApplication fertilizerApplication : crop.getFertilizerApplications()) {
             fertilizerCostSum = fertilizerCostSum.add(fertilizerApplication.getQuantityPerAreaUnit().multiply(fertilizerApplication.getPricePerUnit()));
@@ -92,20 +92,20 @@ public class CropDataReaderDefault implements CropDataReader {
         for (SprayApplication sprayApplication : crop.getSprayApplications()) {
             fertilizerCostSum = fertilizerCostSum.add(sprayApplication.getFertilizerQuantityPerAreaUnit().multiply(sprayApplication.getFertilizerPricePerUnit()));
         }
-        return fertilizerCostSum.setScale(2, RoundingMode.HALF_UP).floatValue();
+        return fertilizerCostSum.setScale(2, RoundingMode.HALF_UP);
     }
 
-    private float getSprayCostPerAreaUnit(Crop crop) {
+    private BigDecimal getSprayCostPerAreaUnit(Crop crop) {
 
         BigDecimal sprayCostSum = BigDecimal.ZERO;
 
         for (SprayApplication sprayApplication : crop.getSprayApplications()) {
             sprayCostSum = sprayCostSum.add(sprayApplication.getQuantityPerAreaUnit().multiply(sprayApplication.getPricePerUnit()));
         }
-        return sprayCostSum.setScale(2, RoundingMode.HALF_UP).floatValue();
+        return sprayCostSum.setScale(2, RoundingMode.HALF_UP);
     }
 
-    private float getFuelCostPerAreaUnit(Crop crop) {
+    private BigDecimal getFuelCostPerAreaUnit(Crop crop) {
         BigDecimal fuelCostSum = BigDecimal.ZERO;
         Set<AgriculturalOperation> operations = new java.util.HashSet<>();
         operations.addAll(crop.getSeeding());
@@ -124,7 +124,7 @@ public class CropDataReaderDefault implements CropDataReader {
                 }
             }
         }
-        return fuelCostSum.setScale(2, RoundingMode.HALF_UP).floatValue();
+        return fuelCostSum.setScale(2, RoundingMode.HALF_UP);
     }
 
     private Map<ResourceType, BigDecimal> getEstimatedAmountNotSoldPerAreaUnit(Crop crop) {
@@ -230,7 +230,7 @@ public class CropDataReaderDefault implements CropDataReader {
         Crop crop = getCropIfExist(cropId);
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
-                .area(crop.getFieldPart().getArea().floatValue())
+                .area(crop.getFieldPart().getArea())
                 .seedingMaterialPerAreaUnit(getSeedingMaterialPerAreaUnit(crop, true))
                 .sprayPerAreaUnit(getSprayQuantityPerAreaUnit(crop, true))
                 .fertilizerPerAreaUnit(getFertilizerQuantityPerAreaUnit(crop, true))
@@ -242,7 +242,7 @@ public class CropDataReaderDefault implements CropDataReader {
         Crop crop = getCropIfExist(cropId);
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
-                .area(crop.getFieldPart().getArea().floatValue())
+                .area(crop.getFieldPart().getArea())
                 .seedingMaterialPerAreaUnit(getSeedingMaterialPerAreaUnit(crop, false))
                 .sprayPerAreaUnit(getSprayQuantityPerAreaUnit(crop, false))
                 .fertilizerPerAreaUnit(getFertilizerQuantityPerAreaUnit(crop, false))
@@ -403,16 +403,44 @@ public class CropDataReaderDefault implements CropDataReader {
 
     private CropParameters multiplyParameters(CropParameters cropParameters, BigDecimal multiplier) {
         if (cropParameters instanceof GrainParameters) {
-            return GrainParameters.builder().density(((GrainParameters) cropParameters).getDensity().multiply(multiplier)).humidity(((GrainParameters) cropParameters).getHumidity().multiply(multiplier)).proteinContent(((GrainParameters) cropParameters).getProteinContent().multiply(multiplier)).glutenContent(((GrainParameters) cropParameters).getGlutenContent().multiply(multiplier)).fallingNumber(((GrainParameters) cropParameters).getHumidity().multiply(multiplier)).pollution(cropParameters.getPollution().multiply(multiplier)).build();
+            return GrainParameters.builder()
+                    .density(((GrainParameters) cropParameters)
+                            .getDensity().multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .humidity(((GrainParameters) cropParameters).getHumidity()
+                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .proteinContent(((GrainParameters) cropParameters)
+                            .getProteinContent().multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .glutenContent(((GrainParameters) cropParameters).getGlutenContent()
+                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .fallingNumber(((GrainParameters) cropParameters)
+                            .getHumidity().multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .pollution(cropParameters.getPollution()
+                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .build();
         }
         if (cropParameters instanceof RapeSeedParameters) {
-            return RapeSeedParameters.builder().density(((RapeSeedParameters) cropParameters).getDensity().multiply(multiplier)).humidity(((RapeSeedParameters) cropParameters).getHumidity().multiply(multiplier)).oilContent(((RapeSeedParameters) cropParameters).getOilContent().multiply(multiplier)).pollution(cropParameters.getPollution().multiply(multiplier)).build();
+            return RapeSeedParameters.builder()
+                    .density(((RapeSeedParameters) cropParameters).getDensity()
+                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .humidity(((RapeSeedParameters) cropParameters).getHumidity()
+                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .oilContent(((RapeSeedParameters) cropParameters).getOilContent()
+                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .pollution(cropParameters.getPollution()
+                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .build();
         }
 
         if (cropParameters instanceof SugarBeetParameters) {
-            return SugarBeetParameters.builder().sugarContent(((SugarBeetParameters) cropParameters).getSugarContent().multiply(multiplier)).pollution(cropParameters.getPollution().multiply(multiplier)).build();
+            return SugarBeetParameters.builder()
+                    .sugarContent(((SugarBeetParameters) cropParameters).getSugarContent()
+                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .pollution(cropParameters.getPollution()
+                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                    .build();
         }
-        return CropParameters.builder().pollution(cropParameters.getPollution().multiply(multiplier)).build();
-
+        return CropParameters.builder().pollution(cropParameters.getPollution()
+                .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                .build();
     }
 }

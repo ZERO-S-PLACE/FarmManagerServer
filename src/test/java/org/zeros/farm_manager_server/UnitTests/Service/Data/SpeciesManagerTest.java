@@ -19,15 +19,8 @@ import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Repositories.Data.PlantRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
-import org.zeros.farm_manager_server.Services.Default.Data.SpeciesManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldPartManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
-
-import java.rmi.NoSuchObjectException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -54,7 +47,8 @@ public class SpeciesManagerTest {
 
     @BeforeEach
     public void setUp() {
-        user = userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        user = userManager.getUserByUsername("DEMO_USER");
+        loggedUserConfiguration.replaceUser(user);
     }
 
     @Test
@@ -95,7 +89,7 @@ public class SpeciesManagerTest {
     }
 
     @Test
-    void testUpdateSpecies() throws NoSuchObjectException {
+    void testUpdateSpecies() {
         Species species = saveNewTestSpecies();
         SpeciesDTO speciesToUpdate = DefaultMappers.speciesMapper.entityToDto(species);
         speciesToUpdate.setName("TEST_UPDATE");

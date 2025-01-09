@@ -21,13 +21,10 @@ import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.Repositories.User.UserRepository;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldGroupManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.Fields.FieldPartManagerDefault;
-import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldManager;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
+import java.math.BigDecimal;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,7 +57,8 @@ public class UserFieldManagerTest {
 
     @BeforeEach
     public void setUp() {
-        userManager.logInNewUserByUsernameAndPassword("DEMO_USER", "DEMO_PASSWORD");
+        User user = userManager.getUserByUsername("DEMO_USER");
+        loggedUserConfiguration.replaceUser(user);
     }
 
 
@@ -92,7 +90,7 @@ public class UserFieldManagerTest {
         FieldDTO fieldDTO = DefaultMappers.fieldMapper.entityToDto(fieldSaved);
         fieldDTO.setFieldName("UPDATED_11");
         fieldDTO.setDescription("UPDATED_11");
-        fieldDTO.setArea(100);
+        fieldDTO.setArea(BigDecimal.valueOf(100));
         Field fieldSaved2 = fieldManager.updateField(fieldDTO);
         FieldGroup fieldGroup = fieldGroupRepository.findById(fieldSaved2.getFieldGroup().getId()).get();
         User fieldUser = userRepository.findUserById(fieldSaved2.getUser().getId()).get();
@@ -118,11 +116,11 @@ public class UserFieldManagerTest {
     public FieldDTO createTestField(int fieldNumber) {
         Random random = new Random();
         return FieldDTO.builder()
-                .area(random.nextFloat() * 100)
+                .area(BigDecimal.valueOf(random.nextFloat() * 100))
                 .fieldName("TestField" + fieldNumber)
                 .isOwnField(true)
                 .isArchived(false)
-                .propertyTax(random.nextFloat() * 100)
+                .propertyTax(BigDecimal.valueOf(random.nextFloat() * 100))
                 .build();
 
     }
