@@ -89,8 +89,8 @@ public class CropSaleControllerTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .apply(SecurityMockMvcConfigurers.springSecurity()).build();
         User user =userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
-        Field field = user.getFields().stream().findAny().orElse(Field.NONE);
-        FieldPart fieldPart = field.getFieldParts().stream().filter(fieldPart1 -> !fieldPart1.getIsArchived()).findAny().orElse(FieldPart.NONE);
+        Field field = user.getFields().stream().findFirst().orElse(Field.NONE);
+        FieldPart fieldPart = field.getFieldParts().stream().filter(fieldPart1 -> !fieldPart1.getIsArchived()).findFirst().orElse(FieldPart.NONE);
         unsoldCrop =fieldPart.getCrops().stream().filter(crop ->
                         (crop instanceof MainCrop && !((MainCrop) crop).getIsFullySold() && crop
                                 .getWorkFinished())).findAny().orElse(null);

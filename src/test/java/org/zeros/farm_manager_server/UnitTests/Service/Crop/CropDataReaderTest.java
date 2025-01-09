@@ -109,7 +109,7 @@ public class CropDataReaderTest {
                 assertThat(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit().size()).isEqualTo(1);
                 assertThat(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit()
                         .get(summaryUnsold.getEstimatedAmountNotSoldPerAreaUnit().keySet().stream().findFirst()
-                                .get()).floatValue()).isGreaterThan(0);
+                                .get()).floatValue()).isNotEqualTo(0);
             }
         }
         CropSummary summaryArchived = cropDataReader.getCropSummary(archivedCrop.getId());

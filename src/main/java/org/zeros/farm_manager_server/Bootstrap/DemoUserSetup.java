@@ -207,14 +207,14 @@ public class DemoUserSetup {
 
     @Transactional
     protected void createNotActiveCrops(Set<Field> fields) {
-        for (int i = 1; i < 5; i++) {
+        for (int i = 1; i < 10; i++) {
             for (Field f : fields) {
                 for (FieldPart fp : fieldManager.getFieldById(f.getId()).getFieldParts()) {
                     if (!fp.getIsArchived()) {
                         MainCrop crop = createRandomCropWithOperations(fp, true, i);
                         cropManager.setWorkFinished(crop.getId());
                         crop = addCropSales(crop);
-                        if (crop.getCropSales().size() > 1) {
+                        if (crop.getCropSales().size() > 2) {
                             cropManager.setFullySold(crop.getId());
                         }
                     }

@@ -12,6 +12,7 @@ import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParamete
 import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
+import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
@@ -19,8 +20,10 @@ import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
 import org.zeros.farm_manager_server.Repositories.User.UserRepository;
+import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.*;
+import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,6 +43,7 @@ public class DefaultSetup {
     private final UserRepository userRepository;
     private final LoggedUserConfiguration loggedUserConfiguration;
     private final CropParametersManager cropParametersManager;
+    private final UserManagerDefault userManagerDefault;
 
 
     @Transactional
@@ -59,7 +63,12 @@ public class DefaultSetup {
     @Transactional
     protected void createAdminUser() {
         if (userRepository.findUserByUsername("ADMIN").isEmpty()) {
-            User user = User.builder().email("admin@zeros.org").password("AdminPassword").username("ADMIN").firstName("Admin").lastName("Admin").build();
+            User user = userManagerDefault.registerNewUser(UserDTO.builder().email("admin@zeros.org")
+                    .username("ADMIN")
+                            .email("admin@zeros.org")
+                            .password("DEFAULT")
+                    .firstName("ADMIN")
+                    .lastName("ADMIN").build());
             userRepository.saveAndFlush(user);
         }
 

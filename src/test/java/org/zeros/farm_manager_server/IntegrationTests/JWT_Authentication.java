@@ -10,7 +10,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 public class JWT_Authentication {
 
-    public static final UUID USER_ID=UUID.fromString("cb6f085a-452a-40ac-a69e-f23494592ddb");
+    public static final UUID USER_ID=UUID.fromString("1b5f3562-c9be-460f-8b5d-3903dd042208");
     public static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRequestPostProcessor =
             jwt().jwt(
                     jwt -> jwt.claims(
@@ -19,6 +19,7 @@ public class JWT_Authentication {
                                 claims.put("roles", List.of("ROLE_USER"));
                             })
                     .subject(USER_ID.toString())
+
                     .notBefore(Instant.now().minusSeconds(5L)));
 
     public static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRequestPostProcessorAdmin =
@@ -26,7 +27,7 @@ public class JWT_Authentication {
                     jwt -> jwt.claims(
                                     claims -> {
                                         claims.put("sub", USER_ID.toString());
-                                        claims.put("roles", List.of("ROLE_USER", "ROLE_ADMIN"));
+                                        claims.put("scope", List.of("ROLE_USER", "ROLE_ADMIN"));
                                     })
                             .subject(USER_ID.toString())
                             .notBefore(Instant.now().minusSeconds(5L)));

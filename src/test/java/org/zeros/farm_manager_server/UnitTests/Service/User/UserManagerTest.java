@@ -11,12 +11,12 @@ import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationService;
 import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
-import org.zeros.farm_manager_server.Domain.Enum.LoginError;
-import org.zeros.farm_manager_server.Domain.Enum.UserCreationError;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ActiveProfiles("local")
 @DataJpaTest
@@ -48,9 +48,9 @@ public class UserManagerTest {
     void testCreateUserMissingEmail() {
         UserDTO userDTO = createTestUser(3);
         userDTO.setEmail("");
-        User savedUser = userManager.registerNewUser(userDTO);
-        assertThat(savedUser).isEqualTo(User.NONE);
-        assertThat(savedUser.getUserCreationError()).isEqualTo(UserCreationError.EMAIL_MISSING);
+        assertThrows(IllegalArgumentExceptionCustom.class,()->userManager.registerNewUser(userDTO));
+
+
     }
 
     @Test
@@ -59,9 +59,8 @@ public class UserManagerTest {
         userManager.registerNewUser(userDTO);
         UserDTO userNotUniqueDTO = createTestUser(3);
         userNotUniqueDTO.setUsername("USER_NOT_UNIQUE");
-        User savedUser = userManager.registerNewUser(userNotUniqueDTO);
-        assertThat(savedUser).isEqualTo(User.NONE);
-        assertThat(savedUser.getUserCreationError()).isEqualTo(UserCreationError.EMAIL_NOT_UNIQUE);
+        assertThrows(IllegalArgumentExceptionCustom.class,()->userManager.registerNewUser(userNotUniqueDTO));
+
     }
 
     @Test
@@ -70,9 +69,7 @@ public class UserManagerTest {
         userManager.registerNewUser(userDTO);
         UserDTO userNotUniqueDTO = createTestUser(3);
         userNotUniqueDTO.setEmail("NotUnique@gmail.com");
-        User savedUser = userManager.registerNewUser(userNotUniqueDTO);
-        assertThat(savedUser).isEqualTo(User.NONE);
-        assertThat(savedUser.getUserCreationError()).isEqualTo(UserCreationError.USERNAME_NOT_UNIQUE);
+        assertThrows(IllegalArgumentExceptionCustom.class,()->userManager.registerNewUser(userNotUniqueDTO));
     }
 
 
@@ -91,7 +88,7 @@ public class UserManagerTest {
         return UserDTO.builder()
                 .firstName("Test")
                 .lastName("User" + userNumber)
-                .email("test" + userNumber + "@user.com")
+                .email("testEmail" + userNumber + "@user.com")
                 .username("TestUser" + userNumber)
                 .password("password")
                 .build();

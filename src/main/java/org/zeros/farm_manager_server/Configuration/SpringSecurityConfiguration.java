@@ -1,12 +1,16 @@
 package org.zeros.farm_manager_server.Configuration;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -17,13 +21,15 @@ public class SpringSecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> {
                     authorize
-                            .requestMatchers("/api/user/**").permitAll()
+                            .requestMatchers("/api/register").permitAll()
                             .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                            .anyRequest().hasRole("USER");
+                            .requestMatchers("/api/user/**").authenticated();
                 })
                 .oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer -> {
                     httpSecurityOAuth2ResourceServerConfigurer.jwt(Customizer.withDefaults());
-                });
+                }) .csrf(AbstractHttpConfigurer::disable);
+
+
 
         return http.build();
     }
@@ -33,5 +39,6 @@ public class SpringSecurityConfiguration {
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withJwkSetUri("http://localhost:9000/oauth2/jwks").build();
     }
+
 
 }

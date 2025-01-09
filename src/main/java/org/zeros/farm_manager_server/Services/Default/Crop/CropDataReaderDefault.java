@@ -1,28 +1,29 @@
 package org.zeros.farm_manager_server.Services.Default.Crop;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.CropSummary;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.ResourcesSummary;
-import org.zeros.farm_manager_server.Domain.Entities.Operations.*;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.InterCrop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.GrainParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.RapeSeedParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.SugarBeetParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.InterCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Subside;
+import org.zeros.farm_manager_server.Domain.Entities.Operations.*;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropDataReader;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
@@ -41,9 +42,8 @@ import java.util.stream.Collectors;
 public class CropDataReaderDefault implements CropDataReader {
     private final CropManager cropManager;
 
-
-
     @Override
+    @Transactional
     public CropSummary getCropSummary(UUID cropId) {
         Crop crop = getCropIfExist(cropId);
         return CropSummary.builder()
@@ -226,6 +226,7 @@ public class CropDataReaderDefault implements CropDataReader {
     }
 
     @Override
+    @Transactional
     public ResourcesSummary getCropResourcesSummary(UUID cropId) {
         Crop crop = getCropIfExist(cropId);
         return ResourcesSummary.builder()
@@ -238,6 +239,7 @@ public class CropDataReaderDefault implements CropDataReader {
     }
 
     @Override
+    @Transactional
     public ResourcesSummary getPlannedResourcesSummary(UUID cropId) {
         Crop crop = getCropIfExist(cropId);
         return ResourcesSummary.builder()
@@ -330,11 +332,13 @@ public class CropDataReaderDefault implements CropDataReader {
         }
         return sprayQuantity;
     }
-    private  UUID getSprayId(SprayApplication sprayApplication) {
+
+    private UUID getSprayId(SprayApplication sprayApplication) {
         return sprayApplication.getSpray().getId();
     }
 
     @Override
+    @Transactional
     public Map<ResourceType, CropParametersDTO> getMeanCropParameters(UUID cropId) {
         Crop crop = getCropIfExist(cropId);
         if (crop instanceof InterCrop) {
@@ -405,42 +409,42 @@ public class CropDataReaderDefault implements CropDataReader {
         if (cropParameters instanceof GrainParameters) {
             return GrainParameters.builder()
                     .density(((GrainParameters) cropParameters)
-                            .getDensity().multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .getDensity().multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .humidity(((GrainParameters) cropParameters).getHumidity()
-                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .proteinContent(((GrainParameters) cropParameters)
-                            .getProteinContent().multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .getProteinContent().multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .glutenContent(((GrainParameters) cropParameters).getGlutenContent()
-                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .fallingNumber(((GrainParameters) cropParameters)
-                            .getHumidity().multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .getHumidity().multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .pollution(cropParameters.getPollution()
-                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .build();
         }
         if (cropParameters instanceof RapeSeedParameters) {
             return RapeSeedParameters.builder()
                     .density(((RapeSeedParameters) cropParameters).getDensity()
-                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .humidity(((RapeSeedParameters) cropParameters).getHumidity()
-                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .oilContent(((RapeSeedParameters) cropParameters).getOilContent()
-                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .pollution(cropParameters.getPollution()
-                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .build();
         }
 
         if (cropParameters instanceof SugarBeetParameters) {
             return SugarBeetParameters.builder()
                     .sugarContent(((SugarBeetParameters) cropParameters).getSugarContent()
-                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .pollution(cropParameters.getPollution()
-                            .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                            .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                     .build();
         }
         return CropParameters.builder().pollution(cropParameters.getPollution()
-                .multiply(multiplier).setScale(2,RoundingMode.HALF_UP))
+                        .multiply(multiplier).setScale(2, RoundingMode.HALF_UP))
                 .build();
     }
 }
