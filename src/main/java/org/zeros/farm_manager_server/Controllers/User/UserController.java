@@ -42,7 +42,7 @@ public class UserController {
 
     @GetMapping(ADMIN_USER_PATH_ID)
     public UserDTO getUserDataById(@PathVariable("id") UUID id) {
-        User user = userManager.getUserById(id);
+        User user = userManager.getUserEntityById(id);
         if (user.getId() == null) {
             throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }

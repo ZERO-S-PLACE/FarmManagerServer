@@ -125,7 +125,7 @@ public class FieldManagerDefault implements FieldManager {
         flushChanges();
     }
     private String validateNewFieldName(String name) {
-        User user = userManager.getUserById(loggedUserConfiguration.getLoggedUser().getId());
+        User user = userManager.getUserEntityById(loggedUserConfiguration.getLoggedUser().getId());
         if (name.isBlank()) {
             name = "NewField" + fieldRepository.findAllByUser(user).size();
         }

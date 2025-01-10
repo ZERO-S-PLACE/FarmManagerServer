@@ -8,11 +8,11 @@ import java.util.UUID;
 
 public interface CropSaleManager {
 
-    CropSale addCropSale(@NotNull UUID cropId, @NotNull CropSaleDTO cropSaleDTO);
+    CropSaleDTO  addCropSale(@NotNull UUID cropId, @NotNull CropSaleDTO cropSaleDTO);
 
-    CropSale updateCropSale(@NotNull CropSaleDTO cropSaleDTO);
+    CropSaleDTO  updateCropSale(@NotNull CropSaleDTO cropSaleDTO);
 
     void deleteCropSale(@NotNull UUID cropSaleId);
 
-    CropSale getCropSaleById(@NotNull UUID id);
+    CropSaleDTO  getCropSaleById(@NotNull UUID id);
 }

@@ -9,27 +9,27 @@ import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import java.util.UUID;
 
 public interface FarmingMachineManager {
-    Page<FarmingMachine> getAllFarmingMachines(int pageNumber);
+    Page<FarmingMachineDTO > getAllFarmingMachines(int pageNumber);
 
-    Page<FarmingMachine> getDefaultFarmingMachines(int pageNumber);
+    Page<FarmingMachineDTO > getDefaultFarmingMachines(int pageNumber);
 
-    Page<FarmingMachine> getUserFarmingMachines(int pageNumber);
+    Page<FarmingMachineDTO > getUserFarmingMachines(int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineByNameAs(@NotNull String name, int pageNumber);
+    Page<FarmingMachineDTO > getFarmingMachineByNameAs(@NotNull String name, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineByProducerAs(@NotNull String producer, int pageNumber);
+    Page<FarmingMachineDTO > getFarmingMachineByProducerAs(@NotNull String producer, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineByProducerAndNameAs(@NotNull String producer, @NotNull String model, int pageNumber);
+    Page<FarmingMachineDTO > getFarmingMachineByProducerAndNameAs(@NotNull String producer, @NotNull String model, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineBySupportedOperation(@NotNull OperationType operationType, int pageNumber);
+    Page<FarmingMachineDTO > getFarmingMachineBySupportedOperation(@NotNull OperationType operationType, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineCriteria(String model, String producer, OperationType operationType, int pageNumber);
+    Page<FarmingMachineDTO > getFarmingMachineCriteria(String model, String producer, OperationType operationType, int pageNumber);
 
-    FarmingMachine getFarmingMachineById(@NotNull UUID id);
+    FarmingMachineDTO  getFarmingMachineById(@NotNull UUID id);
 
-    FarmingMachine addFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO);
+    FarmingMachineDTO  addFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO);
 
-    FarmingMachine updateFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO);
+    FarmingMachineDTO  updateFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO);
 
     void deleteFarmingMachineSafe(@NotNull UUID farmingMachineId);
 

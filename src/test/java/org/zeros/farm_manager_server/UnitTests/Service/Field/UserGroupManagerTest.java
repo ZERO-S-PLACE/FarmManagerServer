@@ -70,7 +70,7 @@ public class UserGroupManagerTest {
     @Test
     void testCreateEmptyFieldGroup() {
         FieldGroup fieldGroup = fieldGroupManager.createEmptyFieldGroup("TEST1", "");
-        User groupUser = userManager.getUserById(user.getId());
+        User groupUser = userManager.getUserEntityById(user.getId());
 
         assertThat(fieldGroup).isNotNull();
         assertThat(fieldGroup.getId()).isNotNull();
@@ -94,7 +94,7 @@ public class UserGroupManagerTest {
         assertThat(fieldGroupPatched).isNotNull();
         assertThat(fieldGroupPatched.getId()).isNotNull();
         assertThat(fieldGroupPatched.getFieldGroupName()).isEqualTo("TEST1PATCHED");
-        assertThat(userManager.getUserById(user.getId()).getFieldGroups()).contains(fieldGroupPatched);
+        assertThat(userManager.getUserEntityById(user.getId()).getFieldGroups()).contains(fieldGroupPatched);
     }
 
     @Test

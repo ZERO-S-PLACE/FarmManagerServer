@@ -12,15 +12,15 @@ import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 
 import java.util.UUID;
 
-public interface OperationManager<E extends AgriculturalOperation, D extends AgriculturalOperationDTO> {
+public interface OperationManager<D extends AgriculturalOperationDTO> {
 
-    E getOperationById(@NotNull UUID id);
+    D getOperationById(@NotNull UUID id);
 
-    E planOperation(@NotNull UUID cropId, @NotNull D operationDTO);
+    D planOperation(@NotNull UUID cropId, @NotNull D operationDTO);
 
-    E addOperation(@NotNull UUID cropId, @NotNull D operationDTO);
+    D addOperation(@NotNull UUID cropId, @NotNull D operationDTO);
 
-    E updateOperation(@NotNull D operationDTO);
+    D updateOperation(@NotNull D operationDTO);
 
     void deleteOperation(@NotNull UUID operationId);
 

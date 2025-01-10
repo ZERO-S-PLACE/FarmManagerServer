@@ -1,6 +1,7 @@
 package org.zeros.farm_manager_server.Services.Default.User;
 
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -40,7 +41,8 @@ public class UserManagerDefault implements UserManager {
 
 
     @Override
-    public User registerNewUser(UserDTO userDTO) {
+    @Transactional
+    public UserDTO registerNewUser(UserDTO userDTO) {
         if (userDTO.getFirstName()==null||userDTO.getFirstName().isBlank()) {
             throw new IllegalArgumentExceptionCustom(User.class, Set.of("firstName") ,IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
@@ -67,7 +69,7 @@ public class UserManagerDefault implements UserManager {
             FieldGroup defaultFieldGroup = FieldGroup.getDefaultFieldGroup(userSaved);
             userSaved.addFieldGroup(defaultFieldGroup);
             fieldGroupRepository.saveAndFlush(defaultFieldGroup);
-            return userRepository.saveAndFlush(userSaved);
+            return DefaultMappers.userMapper.entityToDto(userRepository.saveAndFlush(userSaved));
 
     }
 
@@ -78,19 +80,22 @@ public class UserManagerDefault implements UserManager {
         entityParsed.setLastModifiedDate(entity.getLastModifiedDate());
         return entityParsed;
     }
-
     @Override
-    public User getUserById(UUID id) {
+    public UserDTO getUserById(UUID id) {
+        return DefaultMappers.userMapper.entityToDto(userRepository.findUserById(id).orElse(User.NONE));
+    }
+
+    public User getUserEntityById(UUID id) {
         return userRepository.findUserById(id).orElse(User.NONE);
     }
 
     @Override
-    public User getUserByEmail(String email) {
-        return userRepository.findUserByEmail(email).orElse(User.NONE);
+    public UserDTO getUserByEmail(String email) {
+        return DefaultMappers.userMapper.entityToDto(userRepository.findUserByEmail(email).orElse(User.NONE));
     }
 
     @Override
-    public User getUserByUsername(String username) {
+    public UserDTO getUserByUsername(String username) {
         return userRepository.findUserByUsername(username).orElse(User.NONE);
     }
 
@@ -122,7 +127,7 @@ public class UserManagerDefault implements UserManager {
 
     @Override
     public void deleteAllUserData(UUID userId) {
-        User user = getUserById(userId);
+        User user = getUserEntityById(userId);
         if (user == User.NONE) {
             return;
         }

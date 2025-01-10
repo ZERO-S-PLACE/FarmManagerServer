@@ -8,25 +8,25 @@ import org.zeros.farm_manager_server.Domain.Entities.Data.Subside;
 import java.util.UUID;
 
 public interface SubsideManager {
-    Page<Subside> getAllSubsides(int pageNumber);
+    Page<SubsideDTO > getAllSubsides(int pageNumber);
 
-    Page<Subside> getDefaultSubsides(int pageNumber);
+    Page<SubsideDTO > getDefaultSubsides(int pageNumber);
 
-    Page<Subside> getUserSubsides(int pageNumber);
+    Page<SubsideDTO > getUserSubsides(int pageNumber);
 
-    Page<Subside> getSubsidesByNameAs(@NotNull String name, int pageNumber);
+    Page<SubsideDTO > getSubsidesByNameAs(@NotNull String name, int pageNumber);
 
-    Page<Subside> getSubsidesBySpeciesAllowed(@NotNull UUID speciesId, int pageNumber);
+    Page<SubsideDTO > getSubsidesBySpeciesAllowed(@NotNull UUID speciesId, int pageNumber);
 
-    Page<Subside> getSubsidesByNameAsAndSpeciesAllowed(@NotNull String name, @NotNull UUID speciesId, int pageNumber);
+    Page<SubsideDTO > getSubsidesByNameAsAndSpeciesAllowed(@NotNull String name, @NotNull UUID speciesId, int pageNumber);
 
-    Page<Subside> getSubsidesCriteria(String name, UUID speciesId, int pageNumber);
+    Page<SubsideDTO > getSubsidesCriteria(String name, UUID speciesId, int pageNumber);
 
-    Subside getSubsideById(@NotNull UUID id);
+    SubsideDTO  getSubsideById(@NotNull UUID id);
 
-    Subside addSubside(@NotNull SubsideDTO subsideDTO);
+    SubsideDTO  addSubside(@NotNull SubsideDTO subsideDTO);
 
-    Subside updateSubside(@NotNull SubsideDTO subsideDTO);
+    SubsideDTO  updateSubside(@NotNull SubsideDTO subsideDTO);
 
     void deleteSubsideSafe(@NotNull UUID subsideId);
 

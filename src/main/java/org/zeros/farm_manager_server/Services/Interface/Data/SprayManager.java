@@ -9,27 +9,27 @@ import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import java.util.UUID;
 
 public interface SprayManager {
-    Page<Spray> getAllSprays(int pageNumber);
+    Page<SprayDTO > getAllSprays(int pageNumber);
 
-    Page<Spray> getDefaultSprays(int pageNumber);
+    Page<SprayDTO > getDefaultSprays(int pageNumber);
 
-    Page<Spray> getUserSprays(int pageNumber);
+    Page<SprayDTO > getUserSprays(int pageNumber);
 
-    Page<Spray> getSpraysByNameAs(@NotNull String name, int pageNumber);
+    Page<SprayDTO > getSpraysByNameAs(@NotNull String name, int pageNumber);
 
-    Page<Spray> getSpraysByProducerAs(@NotNull String producer, int pageNumber);
+    Page<SprayDTO > getSpraysByProducerAs(@NotNull String producer, int pageNumber);
 
-    Page<Spray> getSpraysBySprayType(@NotNull SprayType sprayType, int pageNumber);
+    Page<SprayDTO > getSpraysBySprayType(@NotNull SprayType sprayType, int pageNumber);
 
-    Page<Spray> getSpraysByActiveSubstance(@NotNull String activeSubstance, int pageNumber);
+    Page<SprayDTO > getSpraysByActiveSubstance(@NotNull String activeSubstance, int pageNumber);
 
-    Page<Spray> getSpraysCriteria(String name, String producer, SprayType sprayType, String activeSubstance, Integer pageNumber);
+    Page<SprayDTO > getSpraysCriteria(String name, String producer, SprayType sprayType, String activeSubstance, Integer pageNumber);
 
-    Spray getSprayById(@NotNull UUID uuid);
+    SprayDTO  getSprayById(@NotNull UUID uuid);
 
-    Spray addSpray(@NotNull SprayDTO sprayDTO);
+    SprayDTO  addSpray(@NotNull SprayDTO sprayDTO);
 
-    Spray updateSpray(@NotNull SprayDTO sprayDTO);
+    SprayDTO  updateSpray(@NotNull SprayDTO sprayDTO);
 
     void deleteSpraySafe(@NotNull UUID sprayId);
 

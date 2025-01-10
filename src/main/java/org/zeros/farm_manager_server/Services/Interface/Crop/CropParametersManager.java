@@ -9,25 +9,25 @@ import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropPar
 import java.util.UUID;
 
 public interface CropParametersManager {
-    Page<CropParameters> getParametersByNameAndResourceType(@NotNull String name, @NotNull ResourceType resourceType, int pageNumber);
+    Page<CropParametersDTO > getParametersByNameAndResourceType(@NotNull String name, @NotNull ResourceType resourceType, int pageNumber);
 
-    Page<CropParameters> getCropParametersCriteria(@NotNull String name, @NotNull ResourceType resourceType, int pageNumber);
+    Page<CropParametersDTO > getCropParametersCriteria(@NotNull String name, @NotNull ResourceType resourceType, int pageNumber);
 
-    CropParameters getCropParametersById(@NotNull UUID id);
+    CropParametersDTO  getCropParametersById(@NotNull UUID id);
 
-    CropParameters addCropParameters(@NotNull CropParametersDTO cropParametersDTO);
+    CropParametersDTO  addCropParameters(@NotNull CropParametersDTO cropParametersDTO);
 
-    CropParameters updateCropParameters(@NotNull CropParametersDTO cropParametersDTO);
+    CropParametersDTO  updateCropParameters(@NotNull CropParametersDTO cropParametersDTO);
 
-    Page<CropParameters> getParametersByName(@NotNull String name, int pageNumber);
+    Page<CropParametersDTO > getParametersByName(@NotNull String name, int pageNumber);
 
-    Page<CropParameters> getAllCropParameters(int pageNumber);
+    Page<CropParametersDTO > getAllCropParameters(int pageNumber);
 
-    Page<CropParameters> getParametersByResourceType(@NotNull ResourceType resourceType, int pageNumber);
+    Page<CropParametersDTO > getParametersByResourceType(@NotNull ResourceType resourceType, int pageNumber);
 
-    CropParameters getCropParametersIfExist(UUID cropParametersId);
+    CropParametersDTO  getCropParametersIfExist(UUID cropParametersId);
 
     void deleteCropParametersSafe(@NotNull UUID cropParametersId);
 
-    CropParameters getUndefinedCropParameters();
+    CropParametersDTO  getUndefinedCropParameters();
 }

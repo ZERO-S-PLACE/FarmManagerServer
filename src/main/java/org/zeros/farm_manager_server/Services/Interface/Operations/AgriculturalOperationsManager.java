@@ -9,11 +9,11 @@ import java.util.UUID;
 
 public interface AgriculturalOperationsManager {
 
-    AgriculturalOperation getOperationById(@NotNull UUID operationId, @NotNull OperationType operationType);
+    AgriculturalOperationDTO getOperationById(@NotNull UUID operationId, @NotNull OperationType operationType);
 
-    AgriculturalOperation planOperation(@NotNull UUID cropId, @NotNull AgriculturalOperationDTO agriculturalOperationDTO);
+    AgriculturalOperationDTO planOperation(@NotNull UUID cropId, @NotNull AgriculturalOperationDTO agriculturalOperationDTO);
 
-    AgriculturalOperation addOperation(@NotNull UUID cropId, @NotNull AgriculturalOperationDTO agriculturalOperationDTO);
+    AgriculturalOperationDTO addOperation(@NotNull UUID cropId, @NotNull AgriculturalOperationDTO agriculturalOperationDTO);
 
     void setPlannedOperationPerformed(@NotNull UUID operationId, @NotNull OperationType operationType);
 

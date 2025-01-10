@@ -9,27 +9,27 @@ import java.util.UUID;
 
 public interface SpeciesManager {
 
-    Page<Species> getAllSpecies(int pageNumber);
+    Page<SpeciesDTO > getAllSpecies(int pageNumber);
 
-    Page<Species> getDefaultSpecies(int pageNumber);
+    Page<SpeciesDTO > getDefaultSpecies(int pageNumber);
 
-    Page<Species> getUserSpecies(int pageNumber);
+    Page<SpeciesDTO > getUserSpecies(int pageNumber);
 
-    Page<Species> getSpeciesByNameAs(@NotNull String name, int pageNumber);
+    Page<SpeciesDTO > getSpeciesByNameAs(@NotNull String name, int pageNumber);
 
-    Page<Species> getSpeciesByFamilyAs(@NotNull String family, int pageNumber);
+    Page<SpeciesDTO > getSpeciesByFamilyAs(@NotNull String family, int pageNumber);
 
-    Page<Species> getSpeciesCriteria(String name, String family, int pageNumber);
+    Page<SpeciesDTO > getSpeciesCriteria(String name, String family, int pageNumber);
 
-    Species getSpeciesById(@NotNull UUID id);
+    SpeciesDTO  getSpeciesById(@NotNull UUID id);
 
-    Species addSpecies(@NotNull SpeciesDTO speciesDTO);
+    SpeciesDTO  addSpecies(@NotNull SpeciesDTO speciesDTO);
 
-    Species updateSpecies(@NotNull SpeciesDTO speciesDTO);
+    SpeciesDTO  updateSpecies(@NotNull SpeciesDTO speciesDTO);
 
     void deleteSpeciesSafe(@NotNull UUID speciesId);
 
-    Species getUndefinedSpecies();
+    Species  getUndefinedSpecies();
 
 
 }

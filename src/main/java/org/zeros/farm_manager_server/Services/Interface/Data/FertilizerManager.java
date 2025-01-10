@@ -9,27 +9,27 @@ import java.util.UUID;
 
 public interface FertilizerManager {
 
-    Page<Fertilizer> getAllFertilizers(int pageNumber);
+    Page<FertilizerDTO> getAllFertilizers(int pageNumber);
 
-    Page<Fertilizer> getDefaultFertilizers(int pageNumber);
+    Page<FertilizerDTO> getDefaultFertilizers(int pageNumber);
 
-    Page<Fertilizer> getUserFertilizers(int pageNumber);
+    Page<FertilizerDTO> getUserFertilizers(int pageNumber);
 
-    Page<Fertilizer> getFertilizerByNameAs(@NotNull String name, int pageNumber);
+    Page<FertilizerDTO> getFertilizerByNameAs(@NotNull String name, int pageNumber);
 
-    Page<Fertilizer> getNaturalFertilizers(int pageNumber);
+    Page<FertilizerDTO> getNaturalFertilizers(int pageNumber);
 
-    Page<Fertilizer> getSyntheticFertilizers(int pageNumber);
+    Page<FertilizerDTO> getSyntheticFertilizers(int pageNumber);
 
-    Page<Fertilizer> getFertilizersCriteria(@NotNull String name, Boolean isNatural, int pageNumber);
+    Page<FertilizerDTO> getFertilizersCriteria(@NotNull String name, Boolean isNatural, int pageNumber);
 
-    Fertilizer getFertilizerById(@NotNull UUID id);
+    FertilizerDTO  getFertilizerById(@NotNull UUID id);
 
-    Fertilizer addFertilizer(@NotNull FertilizerDTO fertilizerDTO);
+    FertilizerDTO  addFertilizer(@NotNull FertilizerDTO fertilizerDTO);
 
-    Fertilizer updateFertilizer(@NotNull FertilizerDTO fertilizerDTO);
+    FertilizerDTO  updateFertilizer(@NotNull FertilizerDTO fertilizerDTO);
 
-    Fertilizer getFertilizerIfExists(UUID fertilizerId);
+    FertilizerDTO  getFertilizerIfExists(UUID fertilizerId);
 
     void deleteFertilizerSafe(@NotNull UUID fertilizerId);
 

@@ -13,19 +13,19 @@ public interface FieldPartManager {
 
     void divideFieldPart(@NotNull UUID originPartId, @NotNull FieldPartDTO part1DTO, @NotNull FieldPartDTO part2DTO);
 
-    FieldPart mergeFieldParts(@NotNull Set<UUID> fieldPartsIds);
+    FieldPartDTO mergeFieldParts(@NotNull Set<UUID> fieldPartsIds);
 
-    Set<FieldPart> getAllFieldParts(@NotNull UUID fieldId);
+    Set<FieldPartDTO > getAllFieldParts(@NotNull UUID fieldId);
 
-    Set<FieldPart> getAllNonArchivedFieldParts(@NotNull UUID fieldId);
+    Set<FieldPartDTO > getAllNonArchivedFieldParts(@NotNull UUID fieldId);
 
-    FieldPart updateFieldPartName(@NotNull UUID fieldPartId, @NotNull String newName);
+    FieldPartDTO  updateFieldPartName(@NotNull UUID fieldPartId, @NotNull String newName);
 
     void updateFieldPartAreaResizeField(@NotNull UUID fieldPartId, @NotNull BigDecimal newArea);
 
     void updateFieldPartAreaTransfer(@NotNull UUID changedPartId, @NotNull UUID resizedPartId, @NotNull BigDecimal newArea);
 
-    FieldPart getFieldPartById(@NotNull UUID id);
+    FieldPartDTO  getFieldPartById(@NotNull UUID id);
 
 
 }
