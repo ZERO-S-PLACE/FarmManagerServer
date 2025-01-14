@@ -1,36 +1,39 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FarmingMachineDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 
 import java.util.UUID;
 
 public interface FarmingMachineManager {
-    Page<FarmingMachine> getAllFarmingMachines(int pageNumber);
+    Page<FarmingMachineDTO> getAllFarmingMachines(int pageNumber);
 
-    Page<FarmingMachine> getDefaultFarmingMachines(int pageNumber);
+    Page<FarmingMachineDTO> getDefaultFarmingMachines(int pageNumber);
 
-    Page<FarmingMachine> getUserFarmingMachines(int pageNumber);
+    Page<FarmingMachineDTO> getUserFarmingMachines(int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineByNameAs(String name, int pageNumber);
+    Page<FarmingMachineDTO> getFarmingMachineByNameAs(@NotNull String name, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineByProducerAs(String producer, int pageNumber);
+    Page<FarmingMachineDTO> getFarmingMachineByProducerAs(@NotNull String producer, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineByProducerAndNameAs(String producer, String model, int pageNumber);
+    Page<FarmingMachineDTO> getFarmingMachineByProducerAndNameAs(@NotNull String producer, @NotNull String model, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineBySupportedOperation(OperationType operationType, int pageNumber);
+    Page<FarmingMachineDTO> getFarmingMachineBySupportedOperation(@NotNull OperationType operationType, int pageNumber);
 
-    Page<FarmingMachine> getFarmingMachineCriteria( String model,String producer,OperationType operationType, int pageNumber);
+    Page<FarmingMachineDTO> getFarmingMachineCriteria(String model, String producer, OperationType operationType, int pageNumber);
 
-    FarmingMachine getFarmingMachineById(UUID id);
+    FarmingMachineDTO getFarmingMachineById(@NotNull UUID id);
 
-    FarmingMachine addFarmingMachine(FarmingMachineDTO farmingMachineDTO);
+    FarmingMachineDTO addFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO);
 
-    FarmingMachine updateFarmingMachine(FarmingMachineDTO farmingMachineDTO);
+    FarmingMachineDTO updateFarmingMachine(@NotNull FarmingMachineDTO farmingMachineDTO);
 
-    void deleteFarmingMachineSafe(UUID farmingMachineId);
+    void deleteFarmingMachineSafe(@NotNull UUID farmingMachineId);
 
     FarmingMachine getUndefinedFarmingMachine();
+
+    FarmingMachine getFarmingMachineIfCompatible(UUID farmingMachineId, @NotNull OperationType operationType);
 }

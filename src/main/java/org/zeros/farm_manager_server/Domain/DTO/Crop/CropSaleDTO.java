@@ -3,10 +3,12 @@ package org.zeros.farm_manager_server.Domain.DTO.Crop;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.DTO.BaseEntityDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -18,8 +20,8 @@ public class CropSaleDTO extends BaseEntityDTO {
     private UUID crop;
     private LocalDate dateSold;
     private String soldTo;
-    private float amountSold;
-    private float pricePerUnit;
+    private BigDecimal amountSold;
+    private BigDecimal pricePerUnit;
     private ResourceType resourceType;
     private String unit;
     private UUID cropParameters;

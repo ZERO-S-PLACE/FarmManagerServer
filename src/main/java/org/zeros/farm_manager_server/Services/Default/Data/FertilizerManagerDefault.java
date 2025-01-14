@@ -1,20 +1,20 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCause;
-import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FertilizerDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.FertilizerApplicationRepository;
 import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.SprayApplicationRepository;
@@ -40,45 +40,58 @@ public class FertilizerManagerDefault implements FertilizerManager {
 
 
     @Override
-    public Page<Fertilizer> getAllFertilizers(int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<FertilizerDTO> getAllFertilizers(int pageNumber) {
         return fertilizerRepository.findAllByCreatedByIn(
-                config.allRows(), getPageRequest(pageNumber));
+                        config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.fertilizerMapper::entityToDto);
     }
 
     @Override
-    public Page<Fertilizer> getDefaultFertilizers(int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<FertilizerDTO> getDefaultFertilizers(int pageNumber) {
         return fertilizerRepository.findAllByCreatedByIn(
-                config.defaultRows(), getPageRequest(pageNumber));
+                        config.defaultRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.fertilizerMapper::entityToDto);
     }
 
     @Override
-    public Page<Fertilizer> getUserFertilizers(int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<FertilizerDTO> getUserFertilizers(int pageNumber) {
         return fertilizerRepository.findAllByCreatedByIn(
-                config.userRows(), getPageRequest(pageNumber));
+                        config.userRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.fertilizerMapper::entityToDto);
     }
 
     @Override
-    public Page<Fertilizer> getFertilizerByNameAs(@NotNull String name, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<FertilizerDTO> getFertilizerByNameAs(String name, int pageNumber) {
         return fertilizerRepository.findAllByNameContainingAndCreatedByIn(
-                name, config.allRows(), getPageRequest(pageNumber));
+                        name, config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.fertilizerMapper::entityToDto);
 
     }
 
     @Override
-    public Page<Fertilizer> getNaturalFertilizers(int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<FertilizerDTO> getNaturalFertilizers(int pageNumber) {
         return fertilizerRepository.findAllByIsNaturalFertilizerAndCreatedByIn(
-                true, config.allRows(), getPageRequest(pageNumber));
+                        true, config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.fertilizerMapper::entityToDto);
 
     }
 
     @Override
-    public Page<Fertilizer> getSyntheticFertilizers(int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<FertilizerDTO> getSyntheticFertilizers(int pageNumber) {
         return fertilizerRepository.findAllByIsNaturalFertilizerAndCreatedByIn(
-                false, config.allRows(), getPageRequest(pageNumber));
+                        false, config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.fertilizerMapper::entityToDto);
     }
 
     @Override
-    public Page<Fertilizer> getFertilizersCriteria(@NotNull String name, @NotNull Boolean isNatural, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<FertilizerDTO> getFertilizersCriteria(String name, Boolean isNatural, int pageNumber) {
         if (name == null || name.isBlank()) {
 
             if (isNatural == null) {
@@ -94,16 +107,21 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     @Override
-    public Fertilizer getFertilizerById(@NotNull UUID id) {
-        return fertilizerRepository.findById(id).orElse(Fertilizer.NONE);
+    @Transactional(readOnly = true)
+    public FertilizerDTO getFertilizerById(UUID id) {
+        Fertilizer fertilizer = fertilizerRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Fertilizer.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
     }
 
     @Override
-    public Fertilizer addFertilizer(@NotNull FertilizerDTO fertilizerDTO) {
+    @Transactional
+    public FertilizerDTO addFertilizer(FertilizerDTO fertilizerDTO) {
         checkIfRequiredFieldsPresent(fertilizerDTO);
         checkIfUnique(fertilizerDTO);
-        return fertilizerRepository.saveAndFlush(
+        Fertilizer fertilizer = fertilizerRepository.saveAndFlush(
                 rewriteValuesToEntity(fertilizerDTO, Fertilizer.NONE));
+        return DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
     }
 
     private void checkIfRequiredFieldsPresent(FertilizerDTO fertilizerDTO) {
@@ -116,7 +134,7 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     private void checkIfUnique(FertilizerDTO fertilizerDTO) {
-        if (fertilizerDTO.getId()==null&&fertilizerRepository.findByNameAndProducerAndCreatedByIn(fertilizerDTO.getName()
+        if (fertilizerDTO.getId() == null && fertilizerRepository.findByNameAndProducerAndCreatedByIn(fertilizerDTO.getName()
                 , fertilizerDTO.getProducer(), config.allRows()).isEmpty()) {
             return;
         }
@@ -134,13 +152,13 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     @Override
-    public Fertilizer updateFertilizer(@NotNull FertilizerDTO fertilizerDTO) {
-
-        Fertilizer originalFertilizer = getFertilizerIfExists(fertilizerDTO);
+    @Transactional
+    public FertilizerDTO updateFertilizer(FertilizerDTO fertilizerDTO) {
+        Fertilizer originalFertilizer = getFertilizerIfExists(fertilizerDTO.getId());
         checkAccess(originalFertilizer);
         checkIfRequiredFieldsPresent(fertilizerDTO);
-        return fertilizerRepository.saveAndFlush(
-                rewriteValuesToEntity(fertilizerDTO, originalFertilizer));
+        return DefaultMappers.fertilizerMapper.entityToDto(fertilizerRepository.saveAndFlush(
+                rewriteValuesToEntity(fertilizerDTO, originalFertilizer)));
 
     }
 
@@ -152,25 +170,21 @@ public class FertilizerManagerDefault implements FertilizerManager {
                 IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
     }
 
-    private Fertilizer getFertilizerIfExists(FertilizerDTO fertilizerDTO) {
-        if (fertilizerDTO.getId() == null) {
-            throw new IllegalArgumentExceptionCustom(
-                    Fertilizer.class,
-                    Set.of("Id"),
+    @Override
+    @Transactional
+    public Fertilizer getFertilizerIfExists(UUID fertilizerId) {
+        if (fertilizerId == null) {
+            throw new IllegalArgumentExceptionCustom(Fertilizer.class, Set.of("Id"),
                     IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        Fertilizer originalFertilizer = getFertilizerById(fertilizerDTO.getId());
-        if (originalFertilizer.equals(Fertilizer.NONE)) {
-            throw new IllegalArgumentExceptionCustom(
-                    Fertilizer.class,
-                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return originalFertilizer;
+        return fertilizerRepository.findById(fertilizerId).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Fertilizer.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
 
     @Override
-    public void deleteFertilizerSafe(@NotNull UUID fertilizerId) {
-        Fertilizer originalFertilizer = getFertilizerById(fertilizerId);
+    @Transactional
+    public void deleteFertilizerSafe(UUID fertilizerId) {
+        Fertilizer originalFertilizer = fertilizerRepository.findById(fertilizerId).orElse(Fertilizer.NONE);
         if (originalFertilizer.equals(Fertilizer.NONE)) {
             return;
         }
@@ -189,10 +203,10 @@ public class FertilizerManagerDefault implements FertilizerManager {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Fertilizer getUndefinedFertilizer() {
         return fertilizerRepository.findByNameAndProducerAndCreatedByIn("UNDEFINED", "UNDEFINED",
                 config.defaultRows()).orElse(Fertilizer.NONE);
     }
-
 
 }

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 
 import java.math.BigDecimal;
 
@@ -20,28 +20,6 @@ import java.math.BigDecimal;
 @SuperBuilder
 public class CropParameters extends BaseEntity {
 
-    @NonNull
-    @Builder.Default
-    private String name = "";
-
-    @NonNull
-    @Builder.Default
-    private String createdBy = "";
-
-    @NonNull
-    @Builder.Default
-    private String comment = "";
-
-    @NonNull
-    @Builder.Default
-    @DecimalMin("0.00")
-    private BigDecimal pollution = BigDecimal.ZERO;
-
-    @NonNull
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    private ResourceType resourceType = ResourceType.GRAIN;
-
     @Transient
     public static final CropParameters NONE = CropParameters.builder()
             .name("NONE")
@@ -49,11 +27,27 @@ public class CropParameters extends BaseEntity {
             .resourceType(ResourceType.NONE)
             .comment("NONE")
             .build();
-
     @Transient
     public static final CropParameters UNDEFINED = CropParameters.builder()
             .name("UNDEFINED")
             .resourceType(ResourceType.ANY)
             .comment("UNDEFINED")
             .build();
+    @NonNull
+    @Builder.Default
+    private String name = "";
+    @NonNull
+    @Builder.Default
+    private String createdBy = "";
+    @NonNull
+    @Builder.Default
+    private String comment = "";
+    @NonNull
+    @Builder.Default
+    @DecimalMin("0.00")
+    private BigDecimal pollution = BigDecimal.ZERO;
+    @NonNull
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private ResourceType resourceType = ResourceType.GRAIN;
 }

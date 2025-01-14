@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.DTO.BaseEntityDTO;
 
+import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ import java.util.UUID;
 public class FieldPartDTO extends BaseEntityDTO {
     private String fieldPartName;
     private String description;
-    private float area;
+    private BigDecimal area;
     private Boolean isArchived;
     private Set<UUID> crops;
     private UUID field;

@@ -10,7 +10,6 @@ create table user
     zip_code           varchar(10),
     phone_number       varchar(12),
     username           varchar(36)  not null unique,
-    password           varchar(255) not null,
     version            integer      not null,
     created_date       timestamp    not null,
     last_modified_date timestamp    not null

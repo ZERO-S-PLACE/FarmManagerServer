@@ -2,30 +2,30 @@ package org.zeros.farm_manager_server.Bootstrap;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FarmingMachineDTO;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.FertilizerDTO;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.SprayDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.PlantDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.Plant.SpeciesDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Crop.SubsideDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.OperationType;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.DTO.Data.*;
+import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
-import org.zeros.farm_manager_server.Repositories.UserRepository;
-import org.zeros.farm_manager_server.Services.Interface.CropParametersManager;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
+import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
+import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
+@Profile("local")
 public class DefaultSetup {
     private final FertilizerManager fertilizerManager;
     private final SprayManager sprayManager;
@@ -37,12 +37,13 @@ public class DefaultSetup {
     private final UserRepository userRepository;
     private final LoggedUserConfiguration loggedUserConfiguration;
     private final CropParametersManager cropParametersManager;
+    private final UserManagerDefault userManagerDefault;
 
 
     @Transactional
     public void createDefaultDataSet() {
         createAdminUser();
-        loggedUserConfiguration.replaceUserBean(userRepository.findUserByUsername("ADMIN").orElse(User.NONE));
+        loggedUserConfiguration.replaceUser(userRepository.findUserByUsername("ADMIN").orElse(User.NONE));
         createTestFertilizers();
         createTestSprays();
         createTestFarmingMachines();
@@ -50,56 +51,62 @@ public class DefaultSetup {
         createTestPlants();
         createTestSubsides();
         createTestCropParameters();
-        loggedUserConfiguration.replaceUserBean(User.NONE);
+        loggedUserConfiguration.replaceUser(User.NONE);
     }
 
-
-    private void createAdminUser() {
+    @Transactional
+    protected void createAdminUser() {
         if (userRepository.findUserByUsername("ADMIN").isEmpty()) {
-            User user = User.builder().email("admin@zeros.org").password("AdminPassword").username("ADMIN").firstName("Admin").lastName("Admin").build();
-            userRepository.saveAndFlush(user);
+            userManagerDefault.registerNewUser(UserDTO.builder().email("admin@zeros.org")
+                    .username("ADMIN")
+                    .email("admin@zeros.org")
+                    .password("DEFAULT")
+                    .firstName("ADMIN")
+                    .lastName("ADMIN").build());
+
         }
 
     }
 
-    private void createTestPlants() {
+    @Transactional
+    protected void createTestPlants() {
 
         if (plantManager.getDefaultPlants(0).isEmpty()) {
             plantManager.addPlant(PlantDTO.builder()
                     .variety("Reform")
                     .productionCompany("RAGT")
                     .species(speciesManager.getSpeciesByNameAs("Wheat", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("Bilanz")
                     .productionCompany("RAGT")
                     .species(speciesManager.getSpeciesByNameAs("Wheat", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("Avenue")
                     .productionCompany("Limagrain")
                     .species(speciesManager.getSpeciesByNameAs("Wheat", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("Derrick")
                     .productionCompany("RAGT")
                     .species(speciesManager.getSpeciesByNameAs("Rape seed", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("PT 30122")
                     .productionCompany("Pioneer")
                     .species(speciesManager.getSpeciesByNameAs("Corn", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("PT 3121 122")
                     .productionCompany("Pioneer")
                     .species(speciesManager.getSpeciesByNameAs("Corn", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
         }
     }
@@ -125,32 +132,34 @@ public class DefaultSetup {
 
     }
 
-    private void createTestSubsides() {
+    @Transactional
+    protected void createTestSubsides() {
         if (subsideManager.getDefaultSubsides(0).isEmpty()) {
             subsideManager.addSubside(SubsideDTO.builder()
                     .name("Field payment")
                     .speciesAllowed(Set.of(speciesRepository.getSpeciesByName("Wheat")
                             .orElse(Species.NONE).getId()))
                     .yearOfSubside(LocalDate.ofYearDay(2024, 22))
-                    .subsideValuePerAreaUnit(300).build());
+                    .subsideValuePerAreaUnit(BigDecimal.valueOf(300)).build());
             subsideManager.addSubside(SubsideDTO.builder()
                     .name("Wheat subside")
                     .speciesAllowed(Set.of(speciesRepository.getSpeciesByName("Wheat")
                             .orElse(Species.NONE).getId()))
                     .yearOfSubside(LocalDate.ofYearDay(2024, 22))
-                    .subsideValuePerAreaUnit(300)
+                    .subsideValuePerAreaUnit(BigDecimal.valueOf(300))
                     .build());
             subsideManager.addSubside(SubsideDTO.builder()
                     .name("Rape subside")
                     .speciesAllowed(Set.of(speciesRepository.getSpeciesByName("Rape seed")
                             .orElse(Species.NONE).getId()))
                     .yearOfSubside(LocalDate.ofYearDay(2024, 22))
-                    .subsideValuePerAreaUnit(300)
+                    .subsideValuePerAreaUnit(BigDecimal.valueOf(300))
                     .build());
         }
     }
 
-    private void createTestFarmingMachines() {
+    @Transactional
+    protected void createTestFarmingMachines() {
         if (farmingMachineManager.getDefaultFarmingMachines(0).isEmpty()) {
             farmingMachineManager.addFarmingMachine(FarmingMachineDTO.UNDEFINED);
             farmingMachineManager.addFarmingMachine(FarmingMachineDTO.builder()
@@ -191,7 +200,8 @@ public class DefaultSetup {
         }
     }
 
-    private void createTestSprays() {
+    @Transactional
+    protected void createTestSprays() {
         if (sprayManager.getDefaultSprays(0).isEmpty()) {
             sprayManager.addSpray(SprayDTO.UNDEFINED);
             sprayManager.addSpray(SprayDTO.builder()
@@ -229,39 +239,41 @@ public class DefaultSetup {
         }
     }
 
-    private void createTestFertilizers() {
+    @Transactional
+    protected void createTestFertilizers() {
         if (fertilizerManager.getDefaultFertilizers(0).isEmpty()) {
             fertilizerManager.addFertilizer(FertilizerDTO.UNDEFINED);
             fertilizerManager.addFertilizer(FertilizerDTO.builder()
                     .name("Polifoska 6")
                     .producer("Azoty")
                     .isNaturalFertilizer(false)
-                    .totalNPercent(6)
-                    .totalPPercent(20)
-                    .totalKPercent(30)
+                    .totalNPercent(BigDecimal.valueOf(6))
+                    .totalPPercent(BigDecimal.valueOf(20))
+                    .totalKPercent(BigDecimal.valueOf(30))
                     .build());
             fertilizerManager.addFertilizer(FertilizerDTO.builder()
                     .name("Polifoska 8")
                     .producer("Azoty")
                     .isNaturalFertilizer(false)
-                    .totalNPercent(8)
-                    .totalPPercent(20)
-                    .totalKPercent(30)
+                    .totalNPercent(BigDecimal.valueOf(8))
+                    .totalPPercent(BigDecimal.valueOf(20))
+                    .totalKPercent(BigDecimal.valueOf(30))
                     .build());
             fertilizerManager.addFertilizer(FertilizerDTO.builder()
                     .name("Polifoska 16")
                     .producer("Azoty")
                     .isNaturalFertilizer(false)
-                    .totalNPercent(16)
-                    .totalPPercent(20)
-                    .totalKPercent(30)
+                    .totalNPercent(BigDecimal.valueOf(16))
+                    .totalPPercent(BigDecimal.valueOf(20))
+                    .totalKPercent(BigDecimal.valueOf(30))
                     .build());
         }
     }
 
-    private void createTestCropParameters() {
+    @Transactional
+    protected void createTestCropParameters() {
         if (cropParametersManager.getUndefinedCropParameters().equals(CropParameters.NONE)) {
-            cropParametersManager.createCropParameters(CropParametersDTO.UNDEFINED);
+            cropParametersManager.addCropParameters(CropParametersDTO.UNDEFINED);
         }
     }
 

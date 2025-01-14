@@ -3,6 +3,8 @@ package org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -10,9 +12,9 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 public class GrainParametersDTO extends CropParametersDTO {
-    private float glutenContent;
-    private float proteinContent;
-    private float fallingNumber;
-    private float density;
-    private float humidity;
+    private BigDecimal glutenContent;
+    private BigDecimal proteinContent;
+    private BigDecimal fallingNumber;
+    private BigDecimal density;
+    private BigDecimal humidity;
 }

@@ -1,13 +1,14 @@
 package org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.Transient;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.zeros.farm_manager_server.Domain.DTO.BaseEntityDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.ResourceType;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 
-import java.util.UUID;
+import java.math.BigDecimal;
 
 @Setter
 @Getter
@@ -15,15 +16,26 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
+
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type"
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CropParametersDTO.class, name = "COMMENT"),
+        @JsonSubTypes.Type(value = GrainParametersDTO.class, name = "GRAIN"),
+        @JsonSubTypes.Type(value = RapeSeedParametersDTO.class, name = "RAPE_SEED"),
+        @JsonSubTypes.Type(value = SugarBeetParametersDTO.class, name = "SUGAR_BEET")
+})
 public class CropParametersDTO extends BaseEntityDTO {
-    private String name;
-    private String comment;
-    private float pollution;
-    private ResourceType resourceType;
     @Transient
     public static final CropParametersDTO UNDEFINED = CropParametersDTO.builder()
             .name("UNDEFINED")
             .resourceType(ResourceType.ANY)
             .comment("UNDEFINED")
             .build();
+    private String name;
+    private String comment;
+    private BigDecimal pollution;
+    private ResourceType resourceType;
 }

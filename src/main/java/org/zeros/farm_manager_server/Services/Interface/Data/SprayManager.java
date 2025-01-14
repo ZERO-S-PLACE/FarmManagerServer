@@ -1,38 +1,39 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Range;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.SprayDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
+import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 
 import java.util.UUID;
 
 public interface SprayManager {
-    Page<Spray> getAllSprays(int pageNumber);
+    Page<SprayDTO> getAllSprays(int pageNumber);
 
-    Page<Spray> getDefaultSprays(int pageNumber);
+    Page<SprayDTO> getDefaultSprays(int pageNumber);
 
-    Page<Spray> getUserSprays(int pageNumber);
+    Page<SprayDTO> getUserSprays(int pageNumber);
 
-    Page<Spray> getSpraysByNameAs(String name, int pageNumber);
+    Page<SprayDTO> getSpraysByNameAs(@NotNull String name, int pageNumber);
 
-    Page<Spray> getSpraysByProducerAs(String producer, int pageNumber);
+    Page<SprayDTO> getSpraysByProducerAs(@NotNull String producer, int pageNumber);
 
-    Page<Spray> getSpraysBySprayType(SprayType sprayType, int pageNumber);
+    Page<SprayDTO> getSpraysBySprayType(@NotNull SprayType sprayType, int pageNumber);
 
-    Page<Spray> getSpraysByActiveSubstance(String activeSubstance, int pageNumber);
+    Page<SprayDTO> getSpraysByActiveSubstance(@NotNull String activeSubstance, int pageNumber);
 
-    Page<Spray> getSpraysCriteria(String name, String producer, SprayType sprayType, String activeSubstance, Integer pageNumber);
+    Page<SprayDTO> getSpraysCriteria(String name, String producer, SprayType sprayType, String activeSubstance, Integer pageNumber);
 
-    Spray getSprayById(UUID uuid);
+    SprayDTO getSprayById(@NotNull UUID uuid);
 
-    Spray addSpray(SprayDTO sprayDTO);
+    SprayDTO addSpray(@NotNull SprayDTO sprayDTO);
 
-    Spray updateSpray(SprayDTO sprayDTO);
+    SprayDTO updateSpray(@NotNull SprayDTO sprayDTO);
 
-    void deleteSpraySafe(UUID sprayId);
+    void deleteSpraySafe(@NotNull UUID sprayId);
 
     Spray getUndefinedSpray();
 
+    Spray getSprayIfExists(UUID sprayId);
 }

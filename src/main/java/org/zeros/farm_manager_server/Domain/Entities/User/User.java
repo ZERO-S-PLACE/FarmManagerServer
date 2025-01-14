@@ -1,7 +1,10 @@
 package org.zeros.farm_manager_server.Domain.Entities.User;
 
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,7 +22,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true, exclude = {"loginError", "userCreationError", "fields", "fieldGroups"})
+@EqualsAndHashCode(callSuper = true, exclude = {"fields", "fieldGroups"})
 @SuperBuilder
 public class User extends BaseEntity {
     @Transient
@@ -28,19 +31,18 @@ public class User extends BaseEntity {
             .lastName("NONE")
             .email("NONE@.com")
             .username("NONE")
-            .password("NONE")
             .build();
 
     @NonNull
     @NotBlank
     @Size(min = 2, max = 20)
     @Builder.Default
-    private String firstName ="";
+    private String firstName = "";
 
     @NonNull
     @Builder.Default
     @Size(max = 20)
-    private String secondName="";
+    private String secondName = "";
 
     @NonNull
     @NotBlank
@@ -78,37 +80,17 @@ public class User extends BaseEntity {
     @Size(min = 2, max = 36)
     private String username;
 
-    @NonNull
-    @NotBlank
-    @Size(min = 2, max = 255)
-    private String password;
 
     @NonNull
     @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private Set<Field> fields = new HashSet<>();
 
     @NonNull
     @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private Set<FieldGroup> fieldGroups = new HashSet<>();
 
-    @Transient
-    private LoginError loginError;
-    @Transient
-    private UserCreationError userCreationError;
-
-    public static User getBlankUserWithError(UserCreationError userCreationError) {
-        User user = NONE;
-        user.setUserCreationError(userCreationError);
-        return user;
-    }
-
-    public static User getBlankUserWithError(LoginError loginError) {
-        User user = NONE;
-        user.setLoginError(loginError);
-        return user;
-    }
 
     public void addField(Field field) {
         if (!field.getUser().equals(this)) {

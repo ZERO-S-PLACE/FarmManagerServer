@@ -1,22 +1,22 @@
 package org.zeros.farm_manager_server.Services.Default.Data;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCause;
-import org.zeros.farm_manager_server.CustomException.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.CustomException.IllegalArgumentExceptionCustom;
-import org.zeros.farm_manager_server.Domain.DTO.AgriculturalOperations.Data.SprayDTO;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Spray;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Enum.SprayType;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.SprayApplicationRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SprayRepository;
@@ -41,47 +41,62 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     @Override
-    public Page<Spray> getAllSprays(int pageNumber) {
-        return sprayRepository.findAllByCreatedByIn(config.allRows(), getPageRequest(pageNumber));
+    @Transactional(readOnly = true)
+    public Page<SprayDTO> getAllSprays(int pageNumber) {
+        return sprayRepository.findAllByCreatedByIn(config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.sprayMapper::entityToDto);
     }
 
     @Override
-    public Page<Spray> getDefaultSprays(int pageNumber) {
-        return sprayRepository.findAllByCreatedByIn(config.defaultRows(), getPageRequest(pageNumber));
+    @Transactional(readOnly = true)
+    public Page<SprayDTO> getDefaultSprays(int pageNumber) {
+        return sprayRepository.findAllByCreatedByIn(config.defaultRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.sprayMapper::entityToDto);
     }
 
     @Override
-    public Page<Spray> getUserSprays(int pageNumber) {
-        return sprayRepository.findAllByCreatedByIn(config.userRows(), getPageRequest(pageNumber));
+    @Transactional(readOnly = true)
+    public Page<SprayDTO> getUserSprays(int pageNumber) {
+        return sprayRepository.findAllByCreatedByIn(config.userRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.sprayMapper::entityToDto);
     }
 
     @Override
-    public Page<Spray> getSpraysByNameAs(@NotNull String name, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<SprayDTO> getSpraysByNameAs(String name, int pageNumber) {
         return sprayRepository.findAllByNameContainingIgnoreCaseAndCreatedByIn(name,
-                config.allRows(), getPageRequest(pageNumber));
+                        config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.sprayMapper::entityToDto);
     }
 
     @Override
-    public Page<Spray> getSpraysByProducerAs(@NotNull String producer, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<SprayDTO> getSpraysByProducerAs(String producer, int pageNumber) {
         return sprayRepository.findAllByProducerContainingIgnoreCaseAndCreatedByIn(producer,
-                config.allRows(), getPageRequest(pageNumber));
+                        config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.sprayMapper::entityToDto);
     }
 
     @Override
-    public Page<Spray> getSpraysBySprayType(@NotNull SprayType sprayType, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<SprayDTO> getSpraysBySprayType(SprayType sprayType, int pageNumber) {
         return sprayRepository.findAllBySprayTypeAndCreatedByIn(sprayType,
-                config.allRows(), getPageRequest(pageNumber));
+                        config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.sprayMapper::entityToDto);
     }
 
     @Override
-    public Page<Spray> getSpraysByActiveSubstance(@NotNull String activeSubstance, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<SprayDTO> getSpraysByActiveSubstance(String activeSubstance, int pageNumber) {
         return sprayRepository.findAllByActiveSubstancesContainsAndCreatedByIn(activeSubstance,
-                config.allRows(), getPageRequest(pageNumber));
+                        config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.sprayMapper::entityToDto);
     }
 
     @Override
-    public Page<Spray> getSpraysCriteria(String name, String producer, SprayType sprayType,
-                                         String activeSubstance, Integer pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<SprayDTO> getSpraysCriteria(String name, String producer, SprayType sprayType,
+                                            String activeSubstance, Integer pageNumber) {
         boolean nameNotPresent = name == null || name.isBlank();
         boolean producerNotPresent = producer == null || producer.isBlank();
         boolean sprayTypeNotPresent = sprayType == null || sprayType.equals(SprayType.NONE);
@@ -102,15 +117,21 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     @Override
-    public Spray getSprayById(@NotNull UUID uuid) {
-        return sprayRepository.findById(uuid).orElse(Spray.NONE);
+    @Transactional(readOnly = true)
+    public SprayDTO getSprayById(UUID uuid) {
+        Spray spray = sprayRepository.findById(uuid).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Spray.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.sprayMapper.entityToDto(spray);
+
     }
 
     @Override
-    public Spray addSpray(@NotNull SprayDTO sprayDTO) {
+    @Transactional
+    public SprayDTO addSpray(SprayDTO sprayDTO) {
         checkIfRequiredFieldsPresent(sprayDTO);
         checkIfUnique(sprayDTO);
-        return sprayRepository.saveAndFlush(rewriteValuesToEntity(sprayDTO, Spray.NONE));
+        Spray saved = sprayRepository.saveAndFlush(rewriteValuesToEntity(sprayDTO, Spray.NONE));
+        return DefaultMappers.sprayMapper.entityToDto(saved);
     }
 
     private void checkIfRequiredFieldsPresent(SprayDTO sprayDTO) {
@@ -122,7 +143,7 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     private void checkIfUnique(SprayDTO sprayDTO) {
-        if (sprayDTO.getId()==null&&sprayRepository.findByNameAndSprayTypeAndCreatedByIn(
+        if (sprayDTO.getId() == null && sprayRepository.findByNameAndSprayTypeAndCreatedByIn(
                 sprayDTO.getName(), sprayDTO.getSprayType(), config.allRows()).isPresent()) {
             throw new IllegalArgumentExceptionCustom(Spray.class,
                     IllegalArgumentExceptionCause.OBJECT_EXISTS);
@@ -139,27 +160,13 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     @Override
-    public Spray updateSpray(@NotNull SprayDTO sprayDTO) {
-        Spray originalSpray = getSprayIfExists(sprayDTO);
+    @Transactional
+    public SprayDTO updateSpray(SprayDTO sprayDTO) {
+        Spray originalSpray = getSprayIfExists(sprayDTO.getId());
         checkAccess(originalSpray);
         checkIfRequiredFieldsPresent(sprayDTO);
-        return sprayRepository.saveAndFlush(rewriteValuesToEntity(sprayDTO, originalSpray));
-    }
-
-    private Spray getSprayIfExists(SprayDTO sprayDTO) {
-        if (sprayDTO.getId() == null) {
-            throw new IllegalArgumentExceptionCustom(
-                    Spray.class,
-                    Set.of("Id"),
-                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
-        }
-        Spray originalSpray = getSprayById(sprayDTO.getId());
-        if (originalSpray.equals(Spray.NONE)) {
-            throw new IllegalArgumentExceptionCustom(
-                    Spray.class,
-                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return originalSpray;
+        Spray updated = sprayRepository.saveAndFlush(rewriteValuesToEntity(sprayDTO, originalSpray));
+        return DefaultMappers.sprayMapper.entityToDto(updated);
     }
 
     private void checkAccess(Spray spray) {
@@ -171,8 +178,9 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     @Override
-    public void deleteSpraySafe(@NotNull UUID sprayId) {
-        Spray originalSpray = getSprayById(sprayId);
+    @Transactional
+    public void deleteSpraySafe(UUID sprayId) {
+        Spray originalSpray = sprayRepository.findById(sprayId).orElse(Spray.NONE);
         if (originalSpray == Spray.NONE) {
             return;
         }
@@ -190,8 +198,22 @@ public class SprayManagerDefault implements SprayManager {
     }
 
     @Override
+    @Transactional
     public Spray getUndefinedSpray() {
         return sprayRepository.findByNameAndSprayTypeAndCreatedByIn(
                 "UNDEFINED", SprayType.OTHER, config.defaultRows()).orElse(Spray.NONE);
+    }
+
+    @Override
+    @Transactional
+    public Spray getSprayIfExists(UUID sprayId) {
+        if (sprayId == null) {
+            throw new IllegalArgumentExceptionCustom(
+                    Spray.class,
+                    Set.of("Id"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        }
+        return sprayRepository.findById(sprayId).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Spray.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
 }
