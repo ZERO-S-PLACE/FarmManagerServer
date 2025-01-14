@@ -10,30 +10,29 @@ import java.util.UUID;
 
 public interface PlantManager {
 
-    Page<Plant> getAllPlants(int pageNumber);
+    Page<PlantDTO> getAllPlants(int pageNumber);
 
-    Page<Plant> getDefaultPlants(int pageNumber);
+    Page<PlantDTO> getDefaultPlants(int pageNumber);
 
-    Page<Plant> getUserPlants(int pageNumber);
+    Page<PlantDTO> getUserPlants(int pageNumber);
 
-    Page<Plant> getPlantsByVarietyAs(@NotNull String variety, int pageNumber);
+    Page<PlantDTO> getPlantsByVarietyAs(@NotNull String variety, int pageNumber);
 
-    Page<Plant> getPlantsBySpecies(@NotNull Species species, int pageNumber);
+    Page<PlantDTO> getPlantsBySpecies(@NotNull Species species, int pageNumber);
 
-    Page<Plant> getPlantsByVarietyAndSpecies(@NotNull String variety, @NotNull Species species, int pageNumber);
+    Page<PlantDTO> getPlantsByVarietyAndSpecies(@NotNull String variety, @NotNull Species species, int pageNumber);
 
-    Page<Plant> getPlantsCriteria(String variety, UUID speciesId, int pageNumber);
+    Page<PlantDTO> getPlantsCriteria(String variety, UUID speciesId, int pageNumber);
 
-    Plant getPlantById(@NotNull UUID uuid);
+    PlantDTO getPlantById(@NotNull UUID uuid);
 
-    Plant addPlant(@NotNull PlantDTO plantDTO);
+    PlantDTO addPlant(@NotNull PlantDTO plantDTO);
 
-    Plant updatePlant(@NotNull PlantDTO plantDTO);
+    PlantDTO updatePlant(@NotNull PlantDTO plantDTO);
 
     void deletePlantSafe(@NotNull UUID plantId);
 
     Plant getPlantIfExists(UUID uuid);
-
 
 
 }

@@ -2,7 +2,6 @@ package org.zeros.farm_manager_server.IntegrationTests.Controller.Data;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,37 +9,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
 import org.zeros.farm_manager_server.Controllers.Data.PlantController;
 import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
+import org.zeros.farm_manager_server.JWT_Authentication;
 import org.zeros.farm_manager_server.Services.Interface.Data.PlantManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest
+@Transactional
+@Rollback
 public class PlantControllerTest {
     @Autowired
-    PlantController plantController;
-    @Autowired
     PlantManager plantManager;
-    @Autowired
-    UserManager userManager;
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
@@ -55,16 +52,16 @@ public class PlantControllerTest {
 
     @Test
     void getById() throws Exception {
-        Plant plant = findDefaultPlant();
+        PlantDTO plant = findDefaultPlant();
         MvcResult result = mockMvc.perform(
-                        get(PlantController.ID_PATH,plant.getId())
+                        get(PlantController.ID_PATH, plant.getId())
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(plant.getId().toString())))
                 .andExpect(jsonPath("$.variety", is(plant.getVariety())))
-                .andExpect(jsonPath("$.species",is(plant.getSpecies().getId().toString())))
+                .andExpect(jsonPath("$.species", is(plant.getSpecies().toString())))
                 .andReturn();
 
         displayResponse(result);
@@ -73,7 +70,7 @@ public class PlantControllerTest {
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(PlantController.ID_PATH,UUID.randomUUID())
+                        get(PlantController.ID_PATH, UUID.randomUUID())
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -123,7 +120,7 @@ public class PlantControllerTest {
 
     @Test
     void getByVariety() throws Exception {
-        Plant plant =findDefaultPlant();
+        PlantDTO plant = findDefaultPlant();
         MvcResult result = mockMvc.perform(
                         get(PlantController.LIST_PARAM_PATH)
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -140,12 +137,12 @@ public class PlantControllerTest {
 
     @Test
     void getBySpecies() throws Exception {
-        Plant plant = findDefaultPlant();
+        PlantDTO plant = findDefaultPlant();
 
         MvcResult result = mockMvc.perform(
                         get(PlantController.LIST_PARAM_PATH)
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
-                                .param("speciesId", plant.getSpecies().getId().toString())
+                                .param("speciesId", plant.getSpecies().toString())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -157,11 +154,11 @@ public class PlantControllerTest {
 
     @Test
     void getByVarietyAndSpecies() throws Exception {
-        Plant plant = findDefaultPlant();
+        PlantDTO plant = findDefaultPlant();
         MvcResult result = mockMvc.perform(
                         get(PlantController.LIST_PARAM_PATH)
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
-                                .param("speciesId", plant.getSpecies().getId().toString())
+                                .param("speciesId", plant.getSpecies().toString())
                                 .param("variety", plant.getVariety().substring(1, 4))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -173,12 +170,11 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
     void addNew() throws Exception {
-        Plant plantWithSameSpecies = findDefaultPlant();
+        PlantDTO plantWithSameSpecies = findDefaultPlant();
         PlantDTO plantDTO = PlantDTO.builder()
                 .variety("Test")
-                .species(plantWithSameSpecies.getSpecies().getId())
+                .species(plantWithSameSpecies.getSpecies())
                 .countryOfOrigin("Poland")
                 .build();
 
@@ -197,16 +193,14 @@ public class PlantControllerTest {
                 .getFirst().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[4]);
 
-        assertThat(plantManager.getPlantById(savedUUID).equals(Plant.NONE)).isFalse();
+        assertThat(plantManager.getPlantById(savedUUID).getVariety()).isEqualTo(plantDTO.getVariety());
         displayResponse(result);
     }
 
     @Test
-    @Transactional
     void addNewErrorAlreadyExists() throws Exception {
 
-        PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(
-               findDefaultPlant());
+        PlantDTO plantDTO = findDefaultPlant();
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -217,11 +211,10 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
     void addNewMissingVariety() throws Exception {
-        Plant plantWithSameSpecies = findDefaultPlant();
+        PlantDTO plantWithSameSpecies = findDefaultPlant();
         PlantDTO plantDTO = PlantDTO.builder()
-                .species(plantWithSameSpecies.getSpecies().getId())
+                .species(plantWithSameSpecies.getSpecies())
                 .countryOfOrigin("Poland")
                 .build();
 
@@ -236,11 +229,8 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
     void update() throws Exception {
-        Plant plant = createNewPlant();
-
-        PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(plant);
+        PlantDTO plantDTO = createNewPlant();
         plantDTO.setDescription("TEST_UPDATED");
         plantDTO.setCountryOfOrigin("TEST_UPDATED");
         mockMvc.perform(patch(PlantController.BASE_PATH)
@@ -250,18 +240,18 @@ public class PlantControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(plantManager.getPlantById(plant.getId())).isNotNull();
-        assertThat(plantManager.getPlantById(plant.getId()).getDescription())
+        assertThat(plantManager.getPlantById(plantDTO.getId())).isNotNull();
+        assertThat(plantManager.getPlantById(plantDTO.getId()).getDescription())
                 .isEqualTo("TEST_UPDATED");
-        assertThat(plantManager.getPlantById(plant.getId()).getCountryOfOrigin())
+        assertThat(plantManager.getPlantById(plantDTO.getId()).getCountryOfOrigin())
                 .isEqualTo("TEST_UPDATED");
     }
 
-    private Plant createNewPlant() throws Exception {
-        Plant plantWithSameSpecies = findDefaultPlant();
+    private PlantDTO createNewPlant() throws Exception {
+        PlantDTO plantWithSameSpecies = findDefaultPlant();
         PlantDTO plantDTO = PlantDTO.builder()
                 .variety("Test")
-                .species(plantWithSameSpecies.getSpecies().getId())
+                .species(plantWithSameSpecies.getSpecies())
                 .countryOfOrigin("Poland")
                 .build();
 
@@ -283,10 +273,8 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
     void updateAccessDenied() throws Exception {
-        PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(
-              findDefaultPlant());
+        PlantDTO plantDTO = findDefaultPlant();
         plantDTO.setProductionCompany("TEST_UPDATED");
         mockMvc.perform(patch(PlantController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -298,11 +286,8 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
     void updateVarietyBlank() throws Exception {
-        Plant plant = createNewPlant();
-
-        PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(plant);
+        PlantDTO plantDTO = createNewPlant();
         plantDTO.setVariety("");
         mockMvc.perform(patch(PlantController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -314,10 +299,8 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
     void deletePlant() throws Exception {
-        Plant plant = createNewPlant();
-
+        PlantDTO plant = createNewPlant();
         mockMvc.perform(delete(PlantController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", plant.getId().toString())
@@ -325,12 +308,12 @@ public class PlantControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(plantManager.getPlantById(plant.getId())).isEqualTo(Plant.NONE);
+        assertThrows(IllegalArgumentException.class, () -> plantManager.getPlantById(plant.getId()));
     }
 
     @Test
     void deleteFailed() throws Exception {
-        Plant plant = findDefaultPlant();
+        PlantDTO plant = findDefaultPlant();
 
         mockMvc.perform(delete(PlantController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -339,11 +322,9 @@ public class PlantControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
-        assertThat(plantManager.getPlantById(plant.getId()).equals(Plant.NONE)).isFalse();
-
     }
 
-    private Plant findDefaultPlant() {
+    private PlantDTO findDefaultPlant() {
         return plantManager.getDefaultPlants(0).getContent().getFirst();
     }
 

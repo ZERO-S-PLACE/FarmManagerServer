@@ -5,25 +5,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.*;
 import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
-import org.zeros.farm_manager_server.Domain.Enum.OperationType;
-import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Enum.SprayType;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
 import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Default.User.UserManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.*;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -63,16 +57,17 @@ public class DefaultSetup {
     @Transactional
     protected void createAdminUser() {
         if (userRepository.findUserByUsername("ADMIN").isEmpty()) {
-            User user = userManagerDefault.registerNewUser(UserDTO.builder().email("admin@zeros.org")
+            userManagerDefault.registerNewUser(UserDTO.builder().email("admin@zeros.org")
                     .username("ADMIN")
-                            .email("admin@zeros.org")
-                            .password("DEFAULT")
+                    .email("admin@zeros.org")
+                    .password("DEFAULT")
                     .firstName("ADMIN")
                     .lastName("ADMIN").build());
-            userRepository.saveAndFlush(user);
+
         }
 
     }
+
     @Transactional
     protected void createTestPlants() {
 
@@ -81,37 +76,37 @@ public class DefaultSetup {
                     .variety("Reform")
                     .productionCompany("RAGT")
                     .species(speciesManager.getSpeciesByNameAs("Wheat", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("Bilanz")
                     .productionCompany("RAGT")
                     .species(speciesManager.getSpeciesByNameAs("Wheat", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("Avenue")
                     .productionCompany("Limagrain")
                     .species(speciesManager.getSpeciesByNameAs("Wheat", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("Derrick")
                     .productionCompany("RAGT")
                     .species(speciesManager.getSpeciesByNameAs("Rape seed", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("PT 30122")
                     .productionCompany("Pioneer")
                     .species(speciesManager.getSpeciesByNameAs("Corn", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
             plantManager.addPlant(PlantDTO.builder()
                     .variety("PT 3121 122")
                     .productionCompany("Pioneer")
                     .species(speciesManager.getSpeciesByNameAs("Corn", 0)
-                            .stream().findFirst().orElse(Species.NONE).getId())
+                            .stream().findFirst().orElse(SpeciesDTO.NONE).getId())
                     .build());
         }
     }
@@ -136,6 +131,7 @@ public class DefaultSetup {
         }
 
     }
+
     @Transactional
     protected void createTestSubsides() {
         if (subsideManager.getDefaultSubsides(0).isEmpty()) {
@@ -161,6 +157,7 @@ public class DefaultSetup {
                     .build());
         }
     }
+
     @Transactional
     protected void createTestFarmingMachines() {
         if (farmingMachineManager.getDefaultFarmingMachines(0).isEmpty()) {
@@ -202,6 +199,7 @@ public class DefaultSetup {
                     .build());
         }
     }
+
     @Transactional
     protected void createTestSprays() {
         if (sprayManager.getDefaultSprays(0).isEmpty()) {
@@ -240,6 +238,7 @@ public class DefaultSetup {
                     .build());
         }
     }
+
     @Transactional
     protected void createTestFertilizers() {
         if (fertilizerManager.getDefaultFertilizers(0).isEmpty()) {
@@ -270,6 +269,7 @@ public class DefaultSetup {
                     .build());
         }
     }
+
     @Transactional
     protected void createTestCropParameters() {
         if (cropParametersManager.getUndefinedCropParameters().equals(CropParameters.NONE)) {

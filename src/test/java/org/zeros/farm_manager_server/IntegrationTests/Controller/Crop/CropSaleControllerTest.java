@@ -2,19 +2,18 @@ package org.zeros.farm_manager_server.IntegrationTests.Controller.Crop;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Controllers.Crop.CropSaleController;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
@@ -25,16 +24,10 @@ import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
+import org.zeros.farm_manager_server.JWT_Authentication;
 import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Default.Crop.CropParametersManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropSaleManager;
-import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserDataReader;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -43,64 +36,47 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest
+@Transactional
+@Rollback
 public class CropSaleControllerTest {
-    @Autowired
-    CropSaleController cropSaleController;
+
     @Autowired
     CropSaleManager cropSaleManager;
-    @Autowired
-    UserManager userManager;
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
     WebApplicationContext wac;
     MockMvc mockMvc;
-
     @Autowired
-    FieldPartManager fieldPartManager;
-    @Autowired
-    FieldRepository fieldRepository;
-    @Autowired
-    FieldGroupRepository fieldGroupRepositoryRepository;
-    @Autowired
-    FieldPartRepository fieldPartRepository;
-    @Autowired
-    LoggedUserConfiguration loggedUserConfiguration;
-    @Autowired
-    EntityManager entityManager;
+    UserRepository userRepository;
     Crop unsoldCrop;
     Crop archivedCrop;
-    @Autowired
-    private UserDataReader userDataReader;
-    @Autowired
-    private UserRepository userRepository;
     @Autowired
     private CropParametersManagerDefault cropParametersManagerDefault;
 
     @BeforeEach
-    @Transactional
     public void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .apply(SecurityMockMvcConfigurers.springSecurity()).build();
-        User user =userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
+        User user = userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
         Field field = user.getFields().stream().findFirst().orElse(Field.NONE);
         FieldPart fieldPart = field.getFieldParts().stream().filter(fieldPart1 -> !fieldPart1.getIsArchived()).findFirst().orElse(FieldPart.NONE);
-        unsoldCrop =fieldPart.getCrops().stream().filter(crop ->
-                        (crop instanceof MainCrop && !((MainCrop) crop).getIsFullySold() && crop
-                                .getWorkFinished())).findAny().orElse(null);
+        unsoldCrop = fieldPart.getCrops().stream().filter(crop ->
+                (crop instanceof MainCrop && !((MainCrop) crop).getIsFullySold() && crop
+                        .getWorkFinished())).findAny().orElse(null);
         archivedCrop = fieldPart.getArchivedCrops().stream().findFirst().orElse(MainCrop.NONE);
     }
 
     @Test
-    @Transactional
     void getById() throws Exception {
-        CropSale cropSale = saveNewCropSale();
+        CropSaleDTO cropSale = saveNewCropSale();
         MvcResult result = mockMvc.perform(
                         get(CropSaleController.ID_PATH, cropSale.getId())
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -114,7 +90,6 @@ public class CropSaleControllerTest {
     }
 
     @Test
-    @Transactional
     void getByIdNotFound() throws Exception {
         mockMvc.perform(get(CropSaleController.ID_PATH, UUID.randomUUID().toString())
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -125,7 +100,6 @@ public class CropSaleControllerTest {
 
 
     @Test
-    @Transactional
     void addNew() throws Exception {
         CropSaleDTO cropSaleDTO = CropSaleDTO.builder()
                 .cropParameters(cropParametersManagerDefault.getUndefinedCropParameters().getId())
@@ -152,7 +126,7 @@ public class CropSaleControllerTest {
         UUID savedUUID = UUID.fromString(locationUUID[5]);
 
 
-        CropSale cropSale = cropSaleManager.getCropSaleById(savedUUID);
+        CropSaleDTO cropSale = cropSaleManager.getCropSaleById(savedUUID);
         assertThat(cropSale).isNotEqualTo(CropSale.NONE);
         assertThat(cropSale.getSoldTo()).isEqualTo(cropSaleDTO.getSoldTo());
         assertThat(cropSale.getResourceType()).isEqualTo(cropSaleDTO.getResourceType());
@@ -160,7 +134,6 @@ public class CropSaleControllerTest {
     }
 
     @Test
-    @Transactional
     void addNewErrorAlreadyExists() throws Exception {
         CropSaleDTO cropSaleDTO = DefaultMappers.cropSaleMapper.entityToDto(((MainCrop) archivedCrop).getCropSales().stream().findFirst().get());
 
@@ -175,10 +148,8 @@ public class CropSaleControllerTest {
 
 
     @Test
-    @Transactional
     void update() throws Exception {
-        CropSale cropSale = saveNewCropSale();
-        CropSaleDTO cropSaleDTO = DefaultMappers.cropSaleMapper.entityToDto(cropSale);
+        CropSaleDTO cropSaleDTO = saveNewCropSale();
         cropSaleDTO.setAmountSold(cropSaleDTO.getAmountSold().multiply(BigDecimal.TWO));
         mockMvc.perform(patch(CropSaleController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -188,14 +159,14 @@ public class CropSaleControllerTest {
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
-        CropSale cropSaleUpdated = cropSaleManager.getCropSaleById(cropSale.getId());
+        CropSaleDTO cropSaleUpdated = cropSaleManager.getCropSaleById(cropSaleDTO.getId());
         assertThat(cropSaleUpdated).isNotNull();
         assertThat(cropSaleUpdated.getAmountSold().floatValue()).isEqualTo(cropSaleDTO.getAmountSold().floatValue());
 
     }
 
-    private CropSale saveNewCropSale() throws Exception {
-        CropSaleDTO cropSaleDTO=CropSaleDTO.builder()
+    private CropSaleDTO saveNewCropSale() throws Exception {
+        CropSaleDTO cropSaleDTO = CropSaleDTO.builder()
                 .cropParameters(cropParametersManagerDefault.getUndefinedCropParameters().getId())
                 .resourceType(ResourceType.GRAIN)
                 .amountSold(BigDecimal.valueOf(1))
@@ -220,14 +191,13 @@ public class CropSaleControllerTest {
                 .getFirst().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[5]);
 
-       return cropSaleManager.getCropSaleById(savedUUID);
+        return cropSaleManager.getCropSaleById(savedUUID);
     }
 
 
     @Test
-    @Transactional
     void deleteCropSale() throws Exception {
-        CropSale cropSale = saveNewCropSale();
+        CropSaleDTO cropSale = saveNewCropSale();
         mockMvc.perform(delete(CropSaleController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
                         .param("id", cropSale.getId().toString())
@@ -235,7 +205,7 @@ public class CropSaleControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(cropSaleManager.getCropSaleById(cropSale.getId())).isEqualTo(CropSale.NONE);
+        assertThrows(IllegalArgumentException.class, () -> cropSaleManager.getCropSaleById(cropSale.getId()));
     }
 
     private void displayResponse(MvcResult result) throws UnsupportedEncodingException, JsonProcessingException {

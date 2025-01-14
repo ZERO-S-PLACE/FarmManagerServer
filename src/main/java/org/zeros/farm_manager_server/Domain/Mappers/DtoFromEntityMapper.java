@@ -3,21 +3,16 @@ package org.zeros.farm_manager_server.Domain.Mappers;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
 import org.zeros.farm_manager_server.Domain.DTO.BaseEntityDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Operations.*;
-import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Subside;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Data.*;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
+import org.zeros.farm_manager_server.Domain.Entities.Operations.*;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 
 import java.math.BigDecimal;
@@ -35,19 +30,9 @@ public interface DtoFromEntityMapper<D extends BaseEntityDTO, E extends BaseEnti
 
     E dtoToEntitySimpleProperties(@NotNull D dto);
 
-
-    default float mapBigDecimalToFloat(BigDecimal value) {
-        return value != null ? value.floatValue() : 0.00f;
-    }
-
-    default BigDecimal mapFloatToBigDecimal(float value) {
-        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
-    }
-
     default Set<UUID> mapEntitiesToIds(Set<? extends BaseEntity> value) {
         return value.stream().map(BaseEntity::getId).collect(Collectors.toSet());
     }
-
     default UUID mapEntityToId(BaseEntity value) {
         return value.getId();
     }
@@ -96,7 +81,6 @@ public interface DtoFromEntityMapper<D extends BaseEntityDTO, E extends BaseEnti
         return new HashSet<>();
     }
 
-
     default User mapUUIDtoUser(UUID value) {
         return User.NONE;
     }
@@ -140,6 +124,5 @@ public interface DtoFromEntityMapper<D extends BaseEntityDTO, E extends BaseEnti
     default Species mapUUIDtoSpecies(UUID value) {
         return Species.NONE;
     }
-
 
 }

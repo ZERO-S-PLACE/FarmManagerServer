@@ -16,17 +16,15 @@ public interface SubsideRepository extends JpaRepository<Subside, UUID> {
 
     Page<Subside> findAllBySpeciesAllowedContainsAndCreatedByIn(Species species, Set<String> createdBy, Pageable pageable);
 
-    Optional<Subside> getSubsideById(UUID id);
-
-
     Page<Subside> findAllByCreatedByIn(Set<String> createdBy, Pageable pageable);
-
-    List<Subside> findAllBySpeciesAllowedContains(Species species);
-
-
-    void deleteAllByCreatedBy(String username);
 
     Page<Subside> findByNameAndYearOfSubsideAndCreatedByIn(String name, LocalDate yearOfSubside, Collection<String> createdBy, Pageable pageable);
 
-    Page<Subside> findAllByNameContainingIgnoreCaseAndSpeciesAllowedContainsAndCreatedByIn(String name, Species species, Set<String> strings, PageRequest pageRequest);
+    Page<Subside> findAllByNameContainingIgnoreCaseAndSpeciesAllowedContainsAndCreatedByIn(String name, Species species, Set<String> strings, Pageable pageable);
+
+    List<Subside> findAllBySpeciesAllowedContains(Species species);
+
+    void deleteAllByCreatedBy(String username);
+
+
 }

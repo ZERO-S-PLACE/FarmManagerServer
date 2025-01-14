@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
@@ -17,10 +18,10 @@ import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
 import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -33,16 +34,17 @@ public class FieldManagerDefault implements FieldManager {
     private final EntityManager entityManager;
     private final LoggedUserConfiguration loggedUserConfiguration;
     private final FieldGroupManagerDefault fieldGroupManager;
-    private final UserManager userManager;
 
 
     @Override
-    public Field createFieldDefault(FieldDTO fieldDTO) {
+    @Transactional
+    public FieldDTO createFieldDefault(FieldDTO fieldDTO) {
         return createFieldInGroup(fieldDTO, fieldGroupManager.getOrCreateDefaultFieldGroup().getId());
     }
 
     @Override
-    public Field createFieldInGroup(FieldDTO fieldDTO, UUID groupId) {
+    @Transactional
+    public FieldDTO createFieldInGroup(FieldDTO fieldDTO, UUID groupId) {
         FieldGroup fieldGroup = fieldGroupManager.getFieldGroupIfExists(groupId);
         Field field = rewriteToEntity(fieldDTO, Field.NONE);
         field.setFieldName(validateNewFieldName(fieldDTO.getFieldName()));
@@ -69,42 +71,48 @@ public class FieldManagerDefault implements FieldManager {
 
 
     @Override
-    public Field getFieldById(UUID id) {
-        return fieldRepository.findById(id).orElse(Field.NONE);
+    @Transactional
+    public FieldDTO getFieldById(UUID id) {
+        Field field = fieldRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Field.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.fieldMapper.entityToDto(field);
     }
 
     @Override
-    public Set<Field> getAllFields() {
-        return userRepository.findUserById(loggedUserConfiguration.getLoggedUser().getId())
-                .orElse(User.NONE).getFields();
+    @Transactional
+    public Set<FieldDTO> getAllFields() {
+        User user = userRepository.findUserById(loggedUserConfiguration.getLoggedUser().getId()).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(User.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return user.getFields().stream().map(DefaultMappers.fieldMapper::entityToDto).collect(Collectors.toSet());
     }
 
     @Override
-    public Field updateField(FieldDTO fieldDTO) {
+    @Transactional
+    public FieldDTO updateField(FieldDTO fieldDTO) {
         Field originalField = getFieldIfExists(fieldDTO.getId());
         if (!originalField.getFieldName().equals(fieldDTO.getFieldName())) {
             fieldDTO.setFieldName(validateNewFieldName(fieldDTO.getFieldName()));
         }
         Field field = rewriteToEntity(fieldDTO, originalField);
         field.setArea(originalField.getArea());
-
-        return fieldRepository.saveAndFlush(field);
+        Field saved = fieldRepository.saveAndFlush(field);
+        return DefaultMappers.fieldMapper.entityToDto(saved);
     }
 
-    private Field getFieldIfExists(UUID fieldId) {
+    @Transactional(readOnly = true)
+    @Override
+    public Field getFieldIfExists(UUID fieldId) {
         if (fieldId == null) {
             throw new IllegalArgumentExceptionCustom(Field.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        Field originalField = getFieldById(fieldId);
-        if (originalField.equals(Field.NONE)) {
-            throw new IllegalArgumentExceptionCustom(Field.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return originalField;
+        return fieldRepository.findById(fieldId).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Field.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
 
     @Override
+    @Transactional
     public void deleteFieldWithData(UUID fieldId) {
-        Field field = getFieldById(fieldId);
+        Field field = fieldRepository.findById(fieldId).orElse(Field.NONE);
         if (field == Field.NONE) {
             return;
         }
@@ -112,20 +120,24 @@ public class FieldManagerDefault implements FieldManager {
     }
 
     @Override
+    @Transactional
     public void archiveField(UUID fieldId) {
-        Field field = getFieldById(fieldId);
+        Field field = getFieldIfExists(fieldId);
         field.setIsArchived(true);
         flushChanges();
     }
 
     @Override
+    @Transactional
     public void deArchiveField(UUID fieldId) {
-        Field field = getFieldById(fieldId);
+        Field field = getFieldIfExists(fieldId);
         field.setIsArchived(false);
         flushChanges();
     }
+
     private String validateNewFieldName(String name) {
-        User user = userManager.getUserById(loggedUserConfiguration.getLoggedUser().getId());
+        User user = userRepository.findById(loggedUserConfiguration.getLoggedUser().getId()).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(User.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
         if (name.isBlank()) {
             name = "NewField" + fieldRepository.findAllByUser(user).size();
         }

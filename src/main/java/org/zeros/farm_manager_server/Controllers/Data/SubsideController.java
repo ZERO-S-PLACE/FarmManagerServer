@@ -8,11 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Subside;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
 
 import java.rmi.NoSuchObjectException;
@@ -32,31 +28,23 @@ public class SubsideController {
 
     @GetMapping(ID_PATH)
     public SubsideDTO getById(@PathVariable("id") UUID id) throws NoSuchObjectException {
-        Subside subside = subsideManager.getSubsideById(id);
-        if (subside == Subside.NONE) {
-            throw new IllegalArgumentExceptionCustom(Subside.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.subsideMapper.entityToDto(subside);
-
+        return subsideManager.getSubsideById(id);
     }
 
     @GetMapping(LIST_ALL_PATH)
-    public Page<SubsideDTO> getAll(
-            @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return subsideManager.getAllSubsides(pageNumber).map(DefaultMappers.subsideMapper::entityToDto);
+    public Page<SubsideDTO> getAll(@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
+        return subsideManager.getAllSubsides(pageNumber);
 
     }
 
     @GetMapping(LIST_DEFAULT_PATH)
-    public Page<SubsideDTO> getDefault(
-            @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return subsideManager.getDefaultSubsides(pageNumber).map(DefaultMappers.subsideMapper::entityToDto);
+    public Page<SubsideDTO> getDefault(@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
+        return subsideManager.getDefaultSubsides(pageNumber);
     }
 
     @GetMapping(LIST_USER_PATH)
-    public Page<SubsideDTO> getUserCreated
-            (@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return subsideManager.getUserSubsides(pageNumber).map(DefaultMappers.subsideMapper::entityToDto);
+    public Page<SubsideDTO> getUserCreated(@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
+        return subsideManager.getUserSubsides(pageNumber);
 
     }
 
@@ -64,13 +52,13 @@ public class SubsideController {
     public Page<SubsideDTO> getCriteria(@RequestParam(required = false, defaultValue = "0") Integer pageNumber,
                                         @RequestParam(required = false) String name,
                                         @RequestParam(required = false) UUID speciesId) {
-        return subsideManager.getSubsidesCriteria(name, speciesId, pageNumber).map(DefaultMappers.subsideMapper::entityToDto);
+        return subsideManager.getSubsidesCriteria(name, speciesId, pageNumber);
 
     }
 
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody SubsideDTO subsideDTO) {
-        Subside saved = subsideManager.addSubside(subsideDTO);
+        SubsideDTO saved = subsideManager.addSubside(subsideDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);

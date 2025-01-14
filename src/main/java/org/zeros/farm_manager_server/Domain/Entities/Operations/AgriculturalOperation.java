@@ -5,11 +5,11 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Transient;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
+import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 
 import java.math.BigDecimal;

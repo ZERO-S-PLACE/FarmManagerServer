@@ -6,15 +6,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
-import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.HarvestRepository;
 import org.zeros.farm_manager_server.Repositories.Crop.CropParameters.CropParametersRepository;
@@ -38,38 +39,41 @@ public class CropParametersManagerDefault implements CropParametersManager {
     }
 
     @Override
-    public Page<CropParameters> getAllCropParameters(int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<CropParametersDTO> getAllCropParameters(int pageNumber) {
         return cropParametersRepository.findAllByCreatedByIn(config.userRows(),
-                getPageRequest(pageNumber));
+                        getPageRequest(pageNumber))
+                .map(DefaultMappers.cropParametersMapper::entityToDto);
     }
 
     @Override
-    public Page<CropParameters> getParametersByResourceType(ResourceType resourceType, int pageNumber) {
-        return cropParametersRepository.findAllByResourceTypeAndCreatedByIn(
-                resourceType,
-                config.userRows(),
-                getPageRequest(pageNumber));
+    @Transactional(readOnly = true)
+    public Page<CropParametersDTO> getParametersByResourceType(ResourceType resourceType, int pageNumber) {
+        return cropParametersRepository.findAllByResourceTypeAndCreatedByIn(resourceType,
+                        config.userRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.cropParametersMapper::entityToDto);
     }
 
     @Override
-    public Page<CropParameters> getParametersByName(String name, int pageNumber) {
-        return cropParametersRepository.findAllByNameContainingIgnoreCaseAndCreatedByIn(
-                name,
-                config.userRows(),
-                getPageRequest(pageNumber));
+    @Transactional(readOnly = true)
+    public Page<CropParametersDTO> getParametersByName(String name, int pageNumber) {
+        return cropParametersRepository.findAllByNameContainingIgnoreCaseAndCreatedByIn(name,
+                        config.userRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.cropParametersMapper::entityToDto);
     }
 
     @Override
-    public Page<CropParameters> getParametersByNameAndResourceType(String name, ResourceType resourceType, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<CropParametersDTO> getParametersByNameAndResourceType(String name, ResourceType resourceType, int pageNumber) {
         return cropParametersRepository.findAllByNameContainingIgnoreCaseAndResourceTypeAndCreatedByIn(
-                name,
-                resourceType,
-                config.userRows(),
-                getPageRequest(pageNumber));
+                        name, resourceType,
+                        config.userRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.cropParametersMapper::entityToDto);
     }
 
     @Override
-    public Page<CropParameters> getCropParametersCriteria(String name, ResourceType resourceType, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<CropParametersDTO> getCropParametersCriteria(String name, ResourceType resourceType, int pageNumber) {
         boolean nameNotPresent = name == null || name.isEmpty();
         boolean resourceTypeNotPresent = resourceType == null || resourceType.equals(ResourceType.ANY);
         if (nameNotPresent && resourceTypeNotPresent) {
@@ -85,15 +89,21 @@ public class CropParametersManagerDefault implements CropParametersManager {
     }
 
     @Override
-    public CropParameters getCropParametersById(UUID id) {
-        return cropParametersRepository.findById(id).orElse(CropParameters.NONE);
+    @Transactional(readOnly = true)
+    public CropParametersDTO getCropParametersById(UUID id) {
+        CropParameters cropParameters = cropParametersRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(CropParameters.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.cropParametersMapper.entityToDto(cropParameters);
+
     }
 
     @Override
-    public CropParameters addCropParameters(CropParametersDTO cropParametersDTO) {
+    @Transactional
+    public CropParametersDTO addCropParameters(CropParametersDTO cropParametersDTO) {
         checkIfRequiredFieldsPresent(cropParametersDTO);
         checkIfUniqueObject(cropParametersDTO);
-        return cropParametersRepository.saveAndFlush(rewriteToEntity(cropParametersDTO, CropParameters.NONE));
+        CropParameters saved = cropParametersRepository.saveAndFlush(rewriteToEntity(cropParametersDTO, CropParameters.NONE));
+        return DefaultMappers.cropParametersMapper.entityToDto(saved);
     }
 
     private void checkIfRequiredFieldsPresent(CropParametersDTO cropParametersDTO) {
@@ -126,11 +136,13 @@ public class CropParametersManagerDefault implements CropParametersManager {
     }
 
     @Override
-    public CropParameters updateCropParameters(CropParametersDTO cropParametersDTO) {
+    @Transactional
+    public CropParametersDTO updateCropParameters(CropParametersDTO cropParametersDTO) {
         CropParameters originalParameters = getCropParametersIfExist(cropParametersDTO.getId());
         checkAccess(originalParameters);
         checkIfRequiredFieldsPresent(cropParametersDTO);
-        return cropParametersRepository.saveAndFlush(rewriteToEntity(cropParametersDTO, originalParameters));
+        CropParameters updated = cropParametersRepository.saveAndFlush(rewriteToEntity(cropParametersDTO, originalParameters));
+        return DefaultMappers.cropParametersMapper.entityToDto(updated);
     }
 
     private void checkAccess(CropParameters cropParameters) {
@@ -140,26 +152,25 @@ public class CropParametersManagerDefault implements CropParametersManager {
         throw new IllegalAccessErrorCustom(CropParameters.class,
                 IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
     }
-@Override
+
+    @Override
+    @Transactional
     public CropParameters getCropParametersIfExist(UUID cropParametersId) {
         if (cropParametersId == null) {
             throw new IllegalArgumentExceptionCustom(
-                    CropParameters.class,
-                    Set.of("Id"),
-                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+                    CropParameters.class, Set.of("Id"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        CropParameters originalParameters = getCropParametersById(cropParametersId);
-        if (originalParameters.equals(CropParameters.NONE)) {
-            throw new IllegalArgumentExceptionCustom(CropParameters.class,
-                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return originalParameters;
+        return cropParametersRepository.findById(cropParametersId).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(CropParameters.class,
+                        IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+
     }
 
 
     @Override
+    @Transactional
     public void deleteCropParametersSafe(UUID cropParametersId) {
-        CropParameters cropParameters = getCropParametersById(cropParametersId);
+        CropParameters cropParameters = cropParametersRepository.findById(cropParametersId).orElse(CropParameters.NONE);
         if (cropParameters == CropParameters.NONE) {
             return;
         }
@@ -180,6 +191,7 @@ public class CropParametersManagerDefault implements CropParametersManager {
     }
 
     @Override
+    @Transactional
     public CropParameters getUndefinedCropParameters() {
         return cropParametersRepository.findAllByNameAndCreatedBy("UNDEFINED", "ADMIN")
                 .orElse(CropParameters.NONE);

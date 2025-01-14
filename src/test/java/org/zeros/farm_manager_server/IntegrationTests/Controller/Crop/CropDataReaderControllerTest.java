@@ -2,75 +2,46 @@ package org.zeros.farm_manager_server.IntegrationTests.Controller.Crop;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Controllers.Crop.CropDataReaderController;
-import org.zeros.farm_manager_server.Controllers.Crop.CropParametersController;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
-import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
-import org.zeros.farm_manager_server.Services.Default.User.UserDataReaderDefault;
-import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
-import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
+import org.zeros.farm_manager_server.JWT_Authentication;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
 import java.util.UUID;
 
 import static org.hamcrest.core.Is.is;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
 @SpringBootTest
+@Transactional
+@Rollback
 public class CropDataReaderControllerTest {
-    @Autowired
-    CropParametersController cropParametersController;
-    @Autowired
-    CropParametersManager cropParametersManager;
-    @Autowired
-    UserManager userManager;
 
-
-    @Autowired
-    FieldPartManager fieldPartManager;
-    @Autowired
-    FieldRepository fieldRepository;
-    @Autowired
-    FieldGroupRepository fieldGroupRepositoryRepository;
-    @Autowired
-    FieldPartRepository fieldPartRepository;
-    @Autowired
-    LoggedUserConfiguration loggedUserConfiguration;
-    @Autowired
-    EntityManager entityManager;
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
+    UserRepository userRepository;
+    @Autowired
     WebApplicationContext wac;
-
     MockMvc mockMvc;
 
     Crop unsoldCrop;
@@ -78,27 +49,24 @@ public class CropDataReaderControllerTest {
     Crop archivedCrop;
 
 
-
-
-
     @BeforeEach
     public void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .apply(SecurityMockMvcConfigurers.springSecurity()).build();
-        User user = userManager.getUserByUsername("DEMO_USER");
-        Field field = user.getFields().stream().findAny().orElse(Field.NONE);
+        User user = userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
+
+        Field field = user.getFields().stream().findAny().orElseThrow();
         FieldPart fieldPart = field.getFieldParts().stream().filter(fieldPart1 -> !fieldPart1.getIsArchived()).findAny().orElse(FieldPart.NONE);
-        unsoldCrop = fieldPart.getCrops().stream().filter(crop ->
-            (crop instanceof MainCrop && !((MainCrop) crop).getIsFullySold() && crop
-                    .getWorkFinished())
-        ).findAny().orElse(null);
+        unsoldCrop = fieldPart.getCrops().stream()
+                .filter(crop -> (crop instanceof MainCrop && !((MainCrop) crop).getIsFullySold()
+                        && crop.getWorkFinished()))
+                .findAny().orElse(null);
         activeCrop = fieldPart.getActiveCrop();
         archivedCrop = fieldPart.getArchivedCrops().stream().findFirst().orElse(MainCrop.NONE);
 
     }
 
     @Test
-    @Transactional
     void getCropSummaryActive() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -113,7 +81,6 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
     void getCropSummaryUnsold() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -128,7 +95,6 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
     void getCropSummaryArchived() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -144,7 +110,6 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
     void getCropSummaryDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
@@ -156,7 +121,6 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
     void testGetCropResourcesSummary() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
@@ -171,9 +135,8 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
     void getCropResourcesDoesNotExist() throws Exception {
-         mockMvc.perform(
+        mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .queryParam("cropId", UUID.randomUUID().toString())
@@ -183,7 +146,6 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
     void testGetCropPlannedResourcesSummary() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_PLANNED_RESOURCES_PATH)
@@ -198,7 +160,6 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
     void getCropResourcesPlannedDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_PLANNED_RESOURCES_PATH)
@@ -211,7 +172,6 @@ public class CropDataReaderControllerTest {
 
 
     @Test
-    @Transactional
     void getMeanCropParameters() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_MEAN_PARAMETERS)
@@ -225,7 +185,6 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
     void getCropMeanParametersDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_MEAN_PARAMETERS)

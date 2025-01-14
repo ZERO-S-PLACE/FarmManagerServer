@@ -14,5 +14,4 @@ import org.zeros.farm_manager_server.Domain.Mappers.DtoFromEntityMapper;
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
         typeConversionPolicy = ReportingPolicy.ERROR)
 public interface SeedingMapper extends DtoFromEntityMapper<SeedingDTO, Seeding> {
-
 }

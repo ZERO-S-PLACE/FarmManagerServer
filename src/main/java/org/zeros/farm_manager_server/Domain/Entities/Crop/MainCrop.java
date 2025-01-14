@@ -3,9 +3,9 @@ package org.zeros.farm_manager_server.Domain.Entities.Crop;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.AgriculturalOperation;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.Harvest;
-import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +24,7 @@ public class MainCrop extends Crop {
     public static final MainCrop NONE = MainCrop.builder()
             .fieldPart(FieldPart.NONE)
             .build();
-    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE,orphanRemoval = true)
+    @OneToMany(mappedBy = "crop", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @NonNull
     @Builder.Default
     private Set<Harvest> harvest = new HashSet<>();

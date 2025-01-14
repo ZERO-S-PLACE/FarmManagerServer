@@ -8,6 +8,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface FieldRepository extends JpaRepository<Field, UUID> {
-
     List<Field> findAllByUser(User user);
 }

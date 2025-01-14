@@ -7,11 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.AgriculturalOperationDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Operations.AgriculturalOperation;
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Services.Interface.Operations.AgriculturalOperationsManager;
 
 import java.util.UUID;
@@ -30,16 +26,12 @@ public class AgriculturalOperationsController {
 
     @GetMapping(ID_PATH)
     public AgriculturalOperationDTO getOperationById(@PathVariable("id") UUID id, @RequestParam OperationType type) {
-        AgriculturalOperation operation = operationsManager.getOperationById(id, type);
-        if (operation.getId() == null) {
-            throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.agriculturalOperationMapper.entityToDto(operation);
+        return operationsManager.getOperationById(id, type);
     }
 
     @PostMapping(PLAN_OPERATION_PATH)
     ResponseEntity<String> planOperation(@RequestParam UUID cropId, @RequestBody AgriculturalOperationDTO operationDTO) {
-        AgriculturalOperation saved = operationsManager.planOperation(cropId, operationDTO);
+        AgriculturalOperationDTO saved = operationsManager.planOperation(cropId, operationDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
@@ -47,7 +39,7 @@ public class AgriculturalOperationsController {
 
     @PostMapping(ADD_OPERATION_PATH)
     ResponseEntity<String> addOperation(@RequestParam UUID cropId, @RequestBody AgriculturalOperationDTO operationDTO) {
-        AgriculturalOperation saved = operationsManager.addOperation(cropId, operationDTO);
+        AgriculturalOperationDTO saved = operationsManager.addOperation(cropId, operationDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);

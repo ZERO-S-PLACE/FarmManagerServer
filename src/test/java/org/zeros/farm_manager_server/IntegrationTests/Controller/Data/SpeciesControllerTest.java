@@ -2,7 +2,6 @@ package org.zeros.farm_manager_server.IntegrationTests.Controller.Data;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,37 +9,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
 import org.zeros.farm_manager_server.Controllers.Data.SpeciesController;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
+import org.zeros.farm_manager_server.JWT_Authentication;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest
+@Transactional
+@Rollback
 public class SpeciesControllerTest {
     @Autowired
-    SpeciesController speciesController;
-    @Autowired
     SpeciesManager speciesManager;
-    @Autowired
-    UserManager userManager;
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
@@ -55,9 +52,9 @@ public class SpeciesControllerTest {
 
     @Test
     void getById() throws Exception {
-        Species species = findDefaultSpecies();
+        SpeciesDTO species = findDefaultSpecies();
         MvcResult result = mockMvc.perform(
-                        get(SpeciesController.ID_PATH,species.getId())
+                        get(SpeciesController.ID_PATH, species.getId())
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -69,14 +66,14 @@ public class SpeciesControllerTest {
         displayResponse(result);
     }
 
-    private Species findDefaultSpecies() {
+    private SpeciesDTO findDefaultSpecies() {
         return speciesManager.getDefaultSpecies(0).getContent().getFirst();
     }
 
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(SpeciesController.ID_PATH,UUID.randomUUID())
+                        get(SpeciesController.ID_PATH, UUID.randomUUID())
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -126,7 +123,7 @@ public class SpeciesControllerTest {
 
     @Test
     void getByNameAs() throws Exception {
-        Species species = findDefaultSpecies();
+        SpeciesDTO species = findDefaultSpecies();
         MvcResult result = mockMvc.perform(
                         get(SpeciesController.LIST_PARAM_PATH)
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -142,7 +139,7 @@ public class SpeciesControllerTest {
 
     @Test
     void getByFamily() throws Exception {
-        Species species = findDefaultSpecies();
+        SpeciesDTO species = findDefaultSpecies();
         MvcResult result = mockMvc.perform(
                         get(SpeciesController.LIST_PARAM_PATH)
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -158,7 +155,6 @@ public class SpeciesControllerTest {
 
 
     @Test
-    @Transactional
     void addNew() throws Exception {
         SpeciesDTO speciesDTO = SpeciesDTO.builder()
                 .family("TEST")
@@ -180,16 +176,14 @@ public class SpeciesControllerTest {
                 .getFirst().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[4]);
 
-        assertThat(speciesManager.getSpeciesById(savedUUID).equals(Species.NONE)).isFalse();
+        assertThat(speciesManager.getSpeciesById(savedUUID).getFamily()).isEqualTo(speciesDTO.getFamily());
         displayResponse(result);
     }
 
     @Test
-    @Transactional
     void addNewErrorAlreadyExists() throws Exception {
 
-        SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(
-                findDefaultSpecies());
+        SpeciesDTO speciesDTO = findDefaultSpecies();
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -200,7 +194,6 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
     void addNewMissingName() throws Exception {
         SpeciesDTO speciesDTO = SpeciesDTO.builder()
                 .family("TEST")
@@ -218,10 +211,8 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
     void update() throws Exception {
-        Species species = saveNewSpecies();
-        SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(species);
+        SpeciesDTO speciesDTO = saveNewSpecies();
         speciesDTO.setName("TEST_UPDATED");
         speciesDTO.setDescription("DESCRIPTION_UPDATED");
         mockMvc.perform(patch(SpeciesController.BASE_PATH)
@@ -232,13 +223,13 @@ public class SpeciesControllerTest {
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
-        Species speciesUpdated = speciesManager.getSpeciesById(species.getId());
+        SpeciesDTO speciesUpdated = speciesManager.getSpeciesById(speciesDTO.getId());
         assertThat(speciesUpdated).isNotNull();
         assertThat(speciesUpdated.getName()).isEqualTo("TEST_UPDATED");
         assertThat(speciesUpdated.getDescription()).isEqualTo("DESCRIPTION_UPDATED");
     }
 
-    private Species saveNewSpecies() throws Exception {
+    private SpeciesDTO saveNewSpecies() throws Exception {
         SpeciesDTO speciesDTO = SpeciesDTO.builder()
                 .family("TEST")
                 .name("TEST")
@@ -262,10 +253,8 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
     void updateAccessDenied() throws Exception {
-        SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(
-               findDefaultSpecies());
+        SpeciesDTO speciesDTO = findDefaultSpecies();
         speciesDTO.setName("TEST_UPDATED");
         mockMvc.perform(patch(SpeciesController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -277,10 +266,8 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
     void updateModelBlank() throws Exception {
-        Species species = saveNewSpecies();
-        SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(species);
+        SpeciesDTO speciesDTO = saveNewSpecies();
         speciesDTO.setName("");
         mockMvc.perform(patch(SpeciesController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -292,9 +279,8 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
     void deleteSpecies() throws Exception {
-        Species species = saveNewSpecies();
+        SpeciesDTO species = saveNewSpecies();
 
         mockMvc.perform(delete(SpeciesController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -303,12 +289,12 @@ public class SpeciesControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(speciesManager.getSpeciesById(species.getId())).isEqualTo(Species.NONE);
+        assertThrows(IllegalArgumentException.class, () -> speciesManager.getSpeciesById(species.getId()));
     }
 
     @Test
     void deleteFailed() throws Exception {
-        Species species = findDefaultSpecies();
+        SpeciesDTO species = findDefaultSpecies();
 
         mockMvc.perform(delete(SpeciesController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -317,8 +303,6 @@ public class SpeciesControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
-        assertThat(speciesManager.getSpeciesById(species.getId()).equals(Species.NONE)).isFalse();
-
     }
 
 

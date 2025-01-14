@@ -7,15 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldGroupDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldGroupManager;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,33 +26,24 @@ public class FieldGroupController {
 
     @GetMapping(ID_PATH)
     public FieldGroupDTO getFieldGroupById(@PathVariable("id") UUID id) {
-        FieldGroup fieldGroup = fieldGroupManager.getFieldGroupById(id);
-        if (fieldGroup.equals(FieldGroup.NONE)) {
-            throw new IllegalArgumentExceptionCustom(FieldGroup.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.fieldGroupMapper.entityToDto(fieldGroup);
+        return fieldGroupManager.getFieldGroupById(id);
     }
 
 
     @GetMapping(LIST_ALL_PATH)
     public Set<FieldGroupDTO> getAllFieldGroups() {
-        return fieldGroupManager.getAllFieldGroups().stream()
-                .map(DefaultMappers.fieldGroupMapper::entityToDto).collect(Collectors.toSet());
+        return fieldGroupManager.getAllFieldGroups();
     }
 
     @GetMapping(LIST_PARAM_PATH)
     public FieldGroupDTO getFieldGroupByName(@RequestParam String name) {
-        FieldGroup fieldGroup = fieldGroupManager.getFieldGroupByName(name);
-        if (fieldGroup.equals(FieldGroup.NONE)) {
-            throw new IllegalArgumentExceptionCustom(FieldGroup.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.fieldGroupMapper.entityToDto(fieldGroup);
+        return fieldGroupManager.getFieldGroupByName(name);
     }
 
     @PostMapping(BASE_PATH)
     ResponseEntity<String> createEmptyFieldGroup(@RequestParam String name
             , @RequestParam(required = false, defaultValue = "") String description) {
-        FieldGroup saved = fieldGroupManager.createEmptyFieldGroup(name, description);
+        FieldGroupDTO saved = fieldGroupManager.createEmptyFieldGroup(name, description);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);

@@ -8,12 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.FertilizerManager;
 
 import java.rmi.NoSuchObjectException;
@@ -33,34 +28,26 @@ public class FertilizerController {
 
     @GetMapping(ID_PATH)
     public FertilizerDTO getById(@PathVariable("id") UUID id) throws NoSuchObjectException {
-        Fertilizer fertilizer = fertilizerManager.getFertilizerById(id);
-        if (fertilizer == Fertilizer.NONE) {
-            throw new IllegalArgumentExceptionCustom(Plant.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
-
+        return fertilizerManager.getFertilizerById(id);
     }
 
     @GetMapping(LIST_ALL_PATH)
     public Page<FertilizerDTO> getAll(
             @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return fertilizerManager.getAllFertilizers(pageNumber)
-                .map(DefaultMappers.fertilizerMapper::entityToDto);
+        return fertilizerManager.getAllFertilizers(pageNumber);
 
     }
 
     @GetMapping(LIST_DEFAULT_PATH)
     public Page<FertilizerDTO> getDefault(
             @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return fertilizerManager.getDefaultFertilizers(pageNumber)
-                .map(DefaultMappers.fertilizerMapper::entityToDto);
+        return fertilizerManager.getDefaultFertilizers(pageNumber);
     }
 
     @GetMapping(LIST_USER_PATH)
     public Page<FertilizerDTO> getUserCreated
             (@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return fertilizerManager.getUserFertilizers(pageNumber)
-                .map(DefaultMappers.fertilizerMapper::entityToDto);
+        return fertilizerManager.getUserFertilizers(pageNumber);
 
     }
 
@@ -69,15 +56,14 @@ public class FertilizerController {
                                            @RequestParam(required = false) String name,
                                            @RequestParam(required = false) Boolean isNatural
     ) {
-        return fertilizerManager.getFertilizersCriteria(name, isNatural, pageNumber)
-                .map(DefaultMappers.fertilizerMapper::entityToDto);
+        return fertilizerManager.getFertilizersCriteria(name, isNatural, pageNumber);
 
     }
 
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody FertilizerDTO fertilizerDTO) {
 
-        Fertilizer saved = fertilizerManager.addFertilizer(fertilizerDTO);
+        FertilizerDTO saved = fertilizerManager.addFertilizer(fertilizerDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);

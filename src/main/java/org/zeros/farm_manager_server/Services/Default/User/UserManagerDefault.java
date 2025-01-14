@@ -1,6 +1,7 @@
 package org.zeros.farm_manager_server.Services.Default.User;
 
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -40,34 +41,35 @@ public class UserManagerDefault implements UserManager {
 
 
     @Override
-    public User registerNewUser(UserDTO userDTO) {
-        if (userDTO.getFirstName()==null||userDTO.getFirstName().isBlank()) {
-            throw new IllegalArgumentExceptionCustom(User.class, Set.of("firstName") ,IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+    @Transactional
+    public UserDTO registerNewUser(UserDTO userDTO) {
+        if (userDTO.getFirstName() == null || userDTO.getFirstName().isBlank()) {
+            throw new IllegalArgumentExceptionCustom(User.class, Set.of("firstName"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        if (userDTO.getLastName()==null||userDTO.getLastName().isBlank()) {
-            throw new IllegalArgumentExceptionCustom(User.class, Set.of("lastName") ,IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        if (userDTO.getLastName() == null || userDTO.getLastName().isBlank()) {
+            throw new IllegalArgumentExceptionCustom(User.class, Set.of("lastName"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        if (userDTO.getEmail()==null||userDTO.getEmail().isBlank()) {
-            throw new IllegalArgumentExceptionCustom(User.class, Set.of("email") ,IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        if (userDTO.getEmail() == null || userDTO.getEmail().isBlank()) {
+            throw new IllegalArgumentExceptionCustom(User.class, Set.of("email"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        if (userDTO.getPassword()==null||userDTO.getPassword().isBlank()) {
-            throw new IllegalArgumentExceptionCustom(User.class, Set.of("password") ,IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        if (userDTO.getPassword() == null || userDTO.getPassword().isBlank()) {
+            throw new IllegalArgumentExceptionCustom(User.class, Set.of("password"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        if (userDTO.getUsername()==null||userDTO.getUsername().isBlank()) {
-            throw new IllegalArgumentExceptionCustom(User.class, Set.of("username") ,IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        if (userDTO.getUsername() == null || userDTO.getUsername().isBlank()) {
+            throw new IllegalArgumentExceptionCustom(User.class, Set.of("username"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
         if (userRepository.findUserByEmail(userDTO.getEmail()).isPresent()) {
-            throw new IllegalArgumentExceptionCustom(User.class, Set.of("email") ,IllegalArgumentExceptionCause.OBJECT_EXISTS);
+            throw new IllegalArgumentExceptionCustom(User.class, Set.of("email"), IllegalArgumentExceptionCause.OBJECT_EXISTS);
         }
         if (userRepository.findUserByUsername(userDTO.getUsername()).isPresent()) {
-            throw new IllegalArgumentExceptionCustom(User.class, Set.of("username") ,IllegalArgumentExceptionCause.OBJECT_EXISTS);
+            throw new IllegalArgumentExceptionCustom(User.class, Set.of("username"), IllegalArgumentExceptionCause.OBJECT_EXISTS);
         }
 
-            User userSaved = userRepository.saveAndFlush(rewriteToEntity(userDTO, User.NONE));
-            FieldGroup defaultFieldGroup = FieldGroup.getDefaultFieldGroup(userSaved);
-            userSaved.addFieldGroup(defaultFieldGroup);
-            fieldGroupRepository.saveAndFlush(defaultFieldGroup);
-            return userRepository.saveAndFlush(userSaved);
+        User userSaved = userRepository.saveAndFlush(rewriteToEntity(userDTO, User.NONE));
+        FieldGroup defaultFieldGroup = FieldGroup.getDefaultFieldGroup(userSaved);
+        userSaved.addFieldGroup(defaultFieldGroup);
+        fieldGroupRepository.saveAndFlush(defaultFieldGroup);
+        return DefaultMappers.userMapper.entityToDto(userRepository.saveAndFlush(userSaved));
 
     }
 
@@ -80,49 +82,55 @@ public class UserManagerDefault implements UserManager {
     }
 
     @Override
-    public User getUserById(UUID id) {
-        return userRepository.findUserById(id).orElse(User.NONE);
+    public UserDTO getUserById(UUID id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentExceptionCustom(User.class,
+                IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.userMapper.entityToDto(user);
     }
 
     @Override
-    public User getUserByEmail(String email) {
-        return userRepository.findUserByEmail(email).orElse(User.NONE);
+    public UserDTO getUserByEmail(String email) {
+        User user = userRepository.findUserByEmail(email).orElseThrow(() -> new IllegalArgumentExceptionCustom(User.class,
+                IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.userMapper.entityToDto(user);
     }
 
     @Override
-    public User getUserByUsername(String username) {
-        return userRepository.findUserByUsername(username).orElse(User.NONE);
+    public UserDTO getUserByUsername(String username) {
+        User user = userRepository.findUserByUsername(username).orElseThrow(() -> new IllegalArgumentExceptionCustom(User.class,
+                IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.userMapper.entityToDto(user);
     }
 
     @Override
-    public Page<User> getAllUsers(int pageNumber) {
-        return userRepository.findAll(
-                PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("username")));
+    public Page<UserDTO> getAllUsers(int pageNumber) {
+        return userRepository.findAll(PageRequest.of(pageNumber, ApplicationDefaults.pageSize,
+                Sort.by("username"))).map(DefaultMappers.userMapper::entityToDto);
     }
 
 
     @Override
-    public User updateUserInfo(UserDTO userDTO) {
+    public UserDTO updateUserInfo(UserDTO userDTO) {
         User savedUser = userRepository.findUserById(userDTO.getId()).orElse(User.NONE);
         if (savedUser.equals(User.NONE)) {
-           throw new IllegalArgumentExceptionCustom(User.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+            throw new IllegalArgumentExceptionCustom(User.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        if (!(userDTO.getFirstName()==null||userDTO.getFirstName().isBlank())) {
+        if (!(userDTO.getFirstName() == null || userDTO.getFirstName().isBlank())) {
             savedUser.setFirstName(userDTO.getFirstName());
         }
-        if (!(userDTO.getSecondName()==null||userDTO.getSecondName().isBlank())) {
+        if (!(userDTO.getSecondName() == null || userDTO.getSecondName().isBlank())) {
             savedUser.setSecondName(userDTO.getSecondName());
         }
-        if (!(userDTO.getLastName()==null||userDTO.getLastName().isBlank())) {
+        if (!(userDTO.getLastName() == null || userDTO.getLastName().isBlank())) {
             savedUser.setLastName(userDTO.getLastName());
         }
 
-        return userRepository.saveAndFlush(savedUser);
+        return getUserById(savedUser.getId());
     }
 
     @Override
     public void deleteAllUserData(UUID userId) {
-        User user = getUserById(userId);
+        User user = userRepository.findById(userId).orElse(User.NONE);
         if (user == User.NONE) {
             return;
         }

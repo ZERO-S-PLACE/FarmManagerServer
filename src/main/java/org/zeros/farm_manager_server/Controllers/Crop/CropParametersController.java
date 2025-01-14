@@ -8,15 +8,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
 
-import java.rmi.NoSuchObjectException;
 import java.util.UUID;
 
 @Slf4j
@@ -32,32 +27,25 @@ public class CropParametersController {
     private final CropParametersManager cropParametersManager;
 
     @GetMapping(ID_PATH)
-    public CropParametersDTO getById(@PathVariable UUID id){
-        CropParameters cropParameters = cropParametersManager.getCropParametersById(id);
-        if (cropParameters == CropParameters.NONE) {
-            throw new IllegalArgumentExceptionCustom(CropParameters.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.cropParametersMapper.entityToDto(cropParameters);
-
+    public CropParametersDTO getById(@PathVariable UUID id) {
+        return cropParametersManager.getCropParametersById(id);
     }
 
     @GetMapping(LIST_ALL_PATH)
-    public Page<CropParametersDTO> getAll(
-            @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return cropParametersManager.getAllCropParameters(pageNumber).map(DefaultMappers.cropParametersMapper::entityToDto);
-
+    public Page<CropParametersDTO> getAll(@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
+        return cropParametersManager.getAllCropParameters(pageNumber);
     }
 
     @GetMapping(LIST_PARAM_PATH)
     public Page<CropParametersDTO> getCriteria(@RequestParam(required = false, defaultValue = "0") Integer pageNumber,
                                                @RequestParam(required = false) String name,
                                                @RequestParam(required = false) ResourceType resourceType) {
-        return cropParametersManager.getCropParametersCriteria(name, resourceType, pageNumber).map(DefaultMappers.cropParametersMapper::entityToDto);
+        return cropParametersManager.getCropParametersCriteria(name, resourceType, pageNumber);
     }
 
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody CropParametersDTO cropParametersDTO) {
-        CropParameters saved = cropParametersManager.addCropParameters(cropParametersDTO);
+        CropParametersDTO saved = cropParametersManager.addCropParameters(cropParametersDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);

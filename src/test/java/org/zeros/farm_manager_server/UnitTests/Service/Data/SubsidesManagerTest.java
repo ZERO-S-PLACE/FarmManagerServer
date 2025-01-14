@@ -1,7 +1,6 @@
 package org.zeros.farm_manager_server.UnitTests.Service.Data;
 
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +11,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationService;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationForServiceTest;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Subside;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.JWT_Authentication;
 import org.zeros.farm_manager_server.Repositories.Data.SubsideRepository;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Default.Data.SpeciesManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,11 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ActiveProfiles("local")
 @DataJpaTest
 @ComponentScan("org.zeros.farm_manager_server.Services")
-@Import(LoggedUserConfigurationService.class)
+@Import(LoggedUserConfigurationForServiceTest.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class SubsidesManagerTest {
-    @Autowired
-    UserManager userManager;
     @Autowired
     SubsideManager subsideManager;
     @Autowired
@@ -44,29 +40,26 @@ public class SubsidesManagerTest {
     @Autowired
     LoggedUserConfiguration loggedUserConfiguration;
     @Autowired
-    EntityManager entityManager;
-    private User user;
+    UserRepository userRepository;
     @Autowired
     private SpeciesManagerDefault speciesManagerDefault;
 
 
     @BeforeEach
     public void setUp() {
-        user = userManager.getUserByUsername("DEMO_USER");
+        User user = userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
         loggedUserConfiguration.replaceUser(user);
     }
 
     @Test
     void testCreateSubside() {
-        Subside subside = saveNewSubside();
+        SubsideDTO subside = saveNewSubside();
         assertThat(subside.getId()).isNotNull();
         assertThat(subside.getName()).isEqualTo("test1");
-        assertThat(subside.getCreatedBy()).isEqualTo(user.getUsername());
         assertThat(subside.getSubsideValuePerAreaUnit().floatValue()).isEqualTo(10);
-        assertThat(subsideRepository.findById(subside.getId()).get()).isEqualTo(subside);
     }
 
-    private Subside saveNewSubside() {
+    private SubsideDTO saveNewSubside() {
         return subsideManager.addSubside(SubsideDTO.builder()
                 .name("test1")
                 .subsideValuePerAreaUnit(BigDecimal.valueOf(10))
@@ -77,40 +70,39 @@ public class SubsidesManagerTest {
 
     @Test
     void testGetAllSubsides() {
-        Subside subside = saveNewSubside();
-        Page<Subside> subsides = subsideManager.getAllSubsides(0);
+        SubsideDTO subside = saveNewSubside();
+        Page<SubsideDTO> subsides = subsideManager.getAllSubsides(0);
         assertThat(subside.getId()).isNotNull();
         assertThat(subsides.getTotalElements()).isGreaterThan(4);
     }
 
     @Test
     void testGetDefaultSubsides() {
-        Page<Subside> subsides = subsideManager.getDefaultSubsides(0);
+        Page<SubsideDTO> subsides = subsideManager.getDefaultSubsides(0);
         assertThat(subsides.getTotalElements()).isEqualTo(3);
     }
 
     @Test
     void testGetUserSubsides() {
-        Subside subside = saveNewSubside();
-        Page<Subside> subsides = subsideManager.getUserSubsides(0);
+        SubsideDTO subside = saveNewSubside();
+        Page<SubsideDTO> subsides = subsideManager.getUserSubsides(0);
         assertThat(subside.getId()).isNotNull();
         assertThat(subsides.getTotalElements()).isGreaterThan(1);
     }
 
     @Test
     void testUpdateSubside() {
-        Subside subside = saveNewSubside();
-        SubsideDTO subsideToUpdate = DefaultMappers.subsideMapper.entityToDto(subside);
+        SubsideDTO subsideToUpdate = saveNewSubside();
         subsideToUpdate.setName("TEST_UPDATE");
-        Subside subsideUpdated = subsideManager.updateSubside(subsideToUpdate);
-        assertThat(subsideUpdated.getId()).isEqualTo(subside.getId());
+        SubsideDTO subsideUpdated = subsideManager.updateSubside(subsideToUpdate);
+        assertThat(subsideUpdated.getId()).isEqualTo(subsideToUpdate.getId());
         assertThat(subsideUpdated.getName()).isEqualTo("TEST_UPDATE");
     }
 
     @Test
     void testUpdateFailedAccessDenied() {
-        SubsideDTO subsideToUpdate = DefaultMappers.subsideMapper.entityToDto(
-                subsideManager.getDefaultSubsides(0).stream().findFirst().orElse(Subside.NONE));
+        SubsideDTO subsideToUpdate =
+                subsideManager.getDefaultSubsides(0).stream().findFirst().orElseThrow();
         subsideToUpdate.setName("TEST_UPDATE");
         assertThrows(IllegalAccessError.class, () -> subsideManager.updateSubside(subsideToUpdate));
         assertThat(subsideManager.getSubsideById(subsideToUpdate.getId()).getName()).isNotEqualTo("TEST_UPDATE");
@@ -119,14 +111,14 @@ public class SubsidesManagerTest {
 
     @Test
     void testDeleteSubside() {
-        Subside subside = saveNewSubside();
+        SubsideDTO subside = saveNewSubside();
         subsideManager.deleteSubsideSafe(subside.getId());
-        assertThat(subsideManager.getSubsideById(subside.getId())).isEqualTo(Subside.NONE);
+        assertThrows(IllegalArgumentException.class, () -> subsideManager.getSubsideById(subside.getId()));
     }
 
     @Test
     void testDeleteFailedAccessDenied() {
-        Subside subsideToDelete = subsideManager.getDefaultSubsides(0).stream().findFirst().orElse(Subside.NONE);
+        SubsideDTO subsideToDelete = subsideManager.getDefaultSubsides(0).stream().findFirst().orElseThrow();
         assertThrows(IllegalAccessError.class, () -> subsideManager.deleteSubsideSafe(subsideToDelete.getId()));
         assertThat(subsideManager.getSubsideById(subsideToDelete.getId())).isEqualTo(subsideToDelete);
     }

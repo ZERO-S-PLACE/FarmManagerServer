@@ -8,11 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.PlantManager;
 
 import java.rmi.NoSuchObjectException;
@@ -32,50 +28,38 @@ public class PlantController {
 
     @GetMapping(ID_PATH)
     public PlantDTO getById(@PathVariable("id") UUID id) throws NoSuchObjectException {
-        Plant plant = plantManager.getPlantById(id);
-        if (plant == Plant.NONE) {
-            throw new IllegalArgumentExceptionCustom(Plant.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.plantMapper.entityToDto(plant);
-
+        return plantManager.getPlantById(id);
     }
 
     @GetMapping(LIST_ALL_PATH)
     public Page<PlantDTO> getAll(
             @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return plantManager.getAllPlants(pageNumber)
-                .map(DefaultMappers.plantMapper::entityToDto);
-
+        return plantManager.getAllPlants(pageNumber);
     }
 
     @GetMapping(LIST_DEFAULT_PATH)
     public Page<PlantDTO> getDefault(
             @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return plantManager.getDefaultPlants(pageNumber)
-                .map(DefaultMappers.plantMapper::entityToDto);
+        return plantManager.getDefaultPlants(pageNumber);
     }
 
     @GetMapping(LIST_USER_PATH)
     public Page<PlantDTO> getUserCreated
             (@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return plantManager.getUserPlants(pageNumber)
-                .map(DefaultMappers.plantMapper::entityToDto);
-
+        return plantManager.getUserPlants(pageNumber);
     }
 
     @GetMapping(LIST_PARAM_PATH)
     public Page<PlantDTO> getCriteria(@RequestParam(required = false, defaultValue = "0") Integer pageNumber,
                                       @RequestParam(required = false) String variety,
                                       @RequestParam(required = false) UUID speciesId) {
-        return plantManager.getPlantsCriteria(variety, speciesId, pageNumber)
-                .map(DefaultMappers.plantMapper::entityToDto);
-
+        return plantManager.getPlantsCriteria(variety, speciesId, pageNumber);
     }
 
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody PlantDTO plantDTO) {
 
-        Plant saved = plantManager.addPlant(plantDTO);
+        PlantDTO saved = plantManager.addPlant(plantDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);

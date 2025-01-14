@@ -4,6 +4,10 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.InterCropDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.MainCropDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.InterCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
@@ -11,9 +15,10 @@ import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Subside;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.AgriculturalOperation;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Repositories.Crop.CropRepository;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
@@ -38,44 +43,42 @@ public class CropManagerDefault implements CropManager {
 
 
     @Override
-    public Crop getCropById(UUID cropId) {
-        return cropRepository.findById(cropId).orElse(MainCrop.NONE);
+    @Transactional(readOnly = true)
+    public CropDTO getCropById(UUID cropId) {
+        Crop crop = cropRepository.findById(cropId).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Crop.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.cropMapper.entityToDto(crop);
     }
 
     @Override
-    public MainCrop createNewMainCrop(UUID fieldPartId, Set<UUID> cultivatedPlantsIds) {
-        FieldPart fieldPart = getFieldPartIfExists(fieldPartId);
+    @Transactional
+    public MainCropDTO createNewMainCrop(UUID fieldPartId, Set<UUID> cultivatedPlantsIds) {
+        FieldPart fieldPart = fieldPartManager.getFieldPartIfExists(fieldPartId);
         Set<Plant> cultivatedPlants = getPlantsIfExist(cultivatedPlantsIds);
         Crop crop = MainCrop.builder().cultivatedPlants(cultivatedPlants).fieldPart(fieldPart).build();
         Crop cropSaved = cropRepository.saveAndFlush(crop);
         fieldPart.getCrops().add(cropSaved);
         flushChanges();
-        return (MainCrop) getCropById(cropSaved.getId());
+        return (MainCropDTO) getCropById(cropSaved.getId());
     }
 
-    private FieldPart getFieldPartIfExists(UUID fieldPartId) {
-        FieldPart fieldPart = fieldPartManager.getFieldPartById(fieldPartId);
-        if (fieldPart == FieldPart.NONE) {
-            throw new IllegalArgumentExceptionCustom(MainCrop.class, Set.of("fieldPart"),
-                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
-        }
-        return fieldPart;
-    }
 
     @Override
-    public InterCrop createNewInterCrop(UUID fieldPartId, Set<UUID> cultivatedPlantsIds) {
-        FieldPart fieldPart = getFieldPartIfExists(fieldPartId);
+    @Transactional
+    public InterCropDTO createNewInterCrop(UUID fieldPartId, Set<UUID> cultivatedPlantsIds) {
+        FieldPart fieldPart = fieldPartManager.getFieldPartIfExists(fieldPartId);
         Set<Plant> cultivatedPlants = getPlantsIfExist(cultivatedPlantsIds);
         Crop crop = InterCrop.builder().cultivatedPlants(cultivatedPlants).fieldPart(fieldPart).build();
         Crop cropSaved = cropRepository.saveAndFlush(crop);
         fieldPart.getCrops().add(cropSaved);
         flushChanges();
-        return (InterCrop) getCropById(cropSaved.getId());
+        return (InterCropDTO) getCropById(cropSaved.getId());
     }
 
     @Override
+    @Transactional
     public void deleteCropAndItsData(UUID cropId) {
-        Crop crop = getCropById(cropId);
+        Crop crop = cropRepository.findById(cropId).orElse(MainCrop.NONE);
         if (crop == MainCrop.NONE) {
             return;
         }
@@ -84,6 +87,7 @@ public class CropManagerDefault implements CropManager {
     }
 
     @Override
+    @Transactional
     public void updateCultivatedPlants(UUID cropId, Set<UUID> cultivatedPlantsIds) {
         Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
@@ -104,6 +108,7 @@ public class CropManagerDefault implements CropManager {
     }
 
     @Override
+    @Transactional
     public void setDateDestroyed(UUID interCropId, LocalDate dateDestroyed) {
         Crop crop = getCropIfExists(interCropId);
         if (crop instanceof InterCrop) {
@@ -114,6 +119,7 @@ public class CropManagerDefault implements CropManager {
     }
 
     @Override
+    @Transactional
     public void setWorkFinished(UUID cropId) {
         Crop crop = getCropIfExists(cropId);
         removePlannedOperations(crop);
@@ -122,7 +128,7 @@ public class CropManagerDefault implements CropManager {
         getCropIfExists(crop.getId());
     }
 
-    private  void removePlannedOperations(Crop crop) {
+    private void removePlannedOperations(Crop crop) {
         crop.getSeeding().removeIf(AgriculturalOperation::getIsPlannedOperation);
         crop.getCultivations().removeIf(AgriculturalOperation::getIsPlannedOperation);
         crop.getFertilizerApplications().removeIf(AgriculturalOperation::getIsPlannedOperation);
@@ -133,6 +139,7 @@ public class CropManagerDefault implements CropManager {
     }
 
     @Override
+    @Transactional
     public void setFullySold(UUID mainCropId) {
         Crop crop = getCropIfExists(mainCropId);
         if (crop instanceof MainCrop) {
@@ -146,10 +153,11 @@ public class CropManagerDefault implements CropManager {
 
 
     @Override
+    @Transactional
     public void addSubside(UUID cropId, UUID subsideId) {
         Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
-        Subside subside = subsideManager.getSubsideById(subsideId);
+        Subside subside = subsideManager.getSubsideIfExists(subsideId);
         if (crop.getSubsides().contains(subside)) {
             return;
         }
@@ -158,10 +166,11 @@ public class CropManagerDefault implements CropManager {
     }
 
     @Override
+    @Transactional
     public void removeSubside(UUID cropId, UUID subsideId) {
         Crop crop = getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
-        Subside subside = subsideManager.getSubsideById(subsideId);
+        Subside subside = subsideManager.getSubsideIfExists(subsideId);
         crop.getSubsides().remove(subside);
         flushChanges();
     }
@@ -172,10 +181,11 @@ public class CropManagerDefault implements CropManager {
     }
 
     @Override
+    @Transactional
     public Crop getCropIfExists(UUID cropId) {
-        if(cropId==null){
-            throw new IllegalArgumentExceptionCustom(Crop.class,
-                    IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+        if (cropId == null) {
+            throw new IllegalArgumentExceptionCustom(Crop.class, Set.of("id"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
         return cropRepository.findById(cropId).orElseThrow(() ->
                 new IllegalArgumentExceptionCustom(Crop.class,
