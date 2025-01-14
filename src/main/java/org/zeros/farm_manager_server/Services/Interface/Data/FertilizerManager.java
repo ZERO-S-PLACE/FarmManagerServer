@@ -1,34 +1,37 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Range;
-import org.zeros.farm_manager_server.Domain.Entities.AgriculturalOperations.Data.Fertilizer;
+import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
 
 import java.util.UUID;
 
 public interface FertilizerManager {
 
-    Page<Fertilizer> getAllFertilizers(int pageNumber);
+    Page<FertilizerDTO> getAllFertilizers(int pageNumber);
 
-    Page<Fertilizer> getDefaultFertilizers(int pageNumber);
+    Page<FertilizerDTO> getDefaultFertilizers(int pageNumber);
 
-    Page<Fertilizer> getUserFertilizers(int pageNumber);
+    Page<FertilizerDTO> getUserFertilizers(int pageNumber);
 
-    Page<Fertilizer> getFertilizerByNameAs(String name, int pageNumber);
+    Page<FertilizerDTO> getFertilizerByNameAs(@NotNull String name, int pageNumber);
 
-    Page<Fertilizer> getNaturalFertilizers(int pageNumber);
+    Page<FertilizerDTO> getNaturalFertilizers(int pageNumber);
 
-    Page<Fertilizer> getSyntheticFertilizers(int pageNumber);
+    Page<FertilizerDTO> getSyntheticFertilizers(int pageNumber);
 
-    Fertilizer getFertilizerById(UUID id);
+    Page<FertilizerDTO> getFertilizersCriteria(@NotNull String name, Boolean isNatural, int pageNumber);
 
-    Fertilizer addFertilizer(Fertilizer fertilizer);
+    FertilizerDTO getFertilizerById(@NotNull UUID id);
 
-    Fertilizer updateFertilizer(Fertilizer fertilizer);
+    FertilizerDTO addFertilizer(@NotNull FertilizerDTO fertilizerDTO);
 
-    void deleteFertilizerSafe(Fertilizer fertilizer);
+    FertilizerDTO updateFertilizer(@NotNull FertilizerDTO fertilizerDTO);
+
+    void deleteFertilizerSafe(@NotNull UUID fertilizerId);
+
+    Fertilizer getFertilizerIfExists(UUID fertilizerId);
 
     Fertilizer getUndefinedFertilizer();
-
-    Page<Fertilizer> getFertilizersCriteria(String name, Boolean isNatural, Integer pageNumber);
 }

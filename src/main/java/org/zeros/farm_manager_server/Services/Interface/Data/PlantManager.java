@@ -1,35 +1,38 @@
 package org.zeros.farm_manager_server.Services.Interface.Data;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Range;
-import org.springframework.security.core.parameters.P;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Plant;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Plant.Species;
+import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 
-import java.rmi.NoSuchObjectException;
 import java.util.UUID;
 
 public interface PlantManager {
 
-    Page<Plant> getAllPlants(int pageNumber);
+    Page<PlantDTO> getAllPlants(int pageNumber);
 
-    Page<Plant> getDefaultPlants(int pageNumber);
+    Page<PlantDTO> getDefaultPlants(int pageNumber);
 
-    Page<Plant> getUserPlants(int pageNumber);
+    Page<PlantDTO> getUserPlants(int pageNumber);
 
-    Page<Plant> getPlantsByVarietyAs(String variety, int pageNumber);
+    Page<PlantDTO> getPlantsByVarietyAs(@NotNull String variety, int pageNumber);
 
-    Page<Plant> getPlantsBySpecies(Species species, int pageNumber);
+    Page<PlantDTO> getPlantsBySpecies(@NotNull Species species, int pageNumber);
 
-    Page<Plant> getPlantsByVarietyAndSpecies(String variety, Species species, int pageNumber);
+    Page<PlantDTO> getPlantsByVarietyAndSpecies(@NotNull String variety, @NotNull Species species, int pageNumber);
 
-    Plant getPlantById(UUID uuid);
+    Page<PlantDTO> getPlantsCriteria(String variety, UUID speciesId, int pageNumber);
 
-    Plant addPlant(Plant plant);
+    PlantDTO getPlantById(@NotNull UUID uuid);
 
-    Plant updatePlant(Plant plant);
+    PlantDTO addPlant(@NotNull PlantDTO plantDTO);
 
-    void deletePlantSafe(Plant plant);
+    PlantDTO updatePlant(@NotNull PlantDTO plantDTO);
 
-    Page<Plant> getPlantsCriteria(String variety, UUID speciesId, Integer pageNumber);
+    void deletePlantSafe(@NotNull UUID plantId);
+
+    Plant getPlantIfExists(UUID uuid);
+
+
 }

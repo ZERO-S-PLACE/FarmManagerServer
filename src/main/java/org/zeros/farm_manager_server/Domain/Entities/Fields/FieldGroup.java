@@ -1,6 +1,9 @@
 package org.zeros.farm_manager_server.Domain.Entities.Fields;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -21,25 +24,22 @@ import java.util.Set;
 public class FieldGroup extends BaseEntity {
 
 
+    @Transient
+    public static final FieldGroup NONE = FieldGroup.builder().fieldGroupName("NONE").user(User.NONE).build();
     @NotNull
     @NotBlank
     private String fieldGroupName;
-
     @NonNull
     @Builder.Default
     private String description = "";
-
+    @Getter
     @NotNull
-    @OneToMany(mappedBy = "fieldGroup", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "fieldGroup")
     @Builder.Default
     private Set<Field> fields = new HashSet<>();
-
     @NotNull
     @ManyToOne
     private User user;
-
-    @Transient
-    public static final FieldGroup NONE = FieldGroup.builder().fieldGroupName("NONE").user(User.NONE).build();
 
     @Transient
     public static FieldGroup getDefaultFieldGroup(User user) {
@@ -62,5 +62,6 @@ public class FieldGroup extends BaseEntity {
     public void removeField(Field field) {
         this.fields.remove(field);
     }
+
 
 }
