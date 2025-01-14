@@ -8,8 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.SprayApplicationDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.Operations.Cultivation;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.SprayApplication;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
@@ -36,7 +37,8 @@ public class SprayApplicationManagerDefault implements OperationManager<SprayApp
     @Override
     @Transactional(readOnly = true)
     public SprayApplication getOperationById(UUID id) {
-        return sprayApplicationRepository.findById(id).orElse(SprayApplication.NONE);
+        return sprayApplicationRepository.findById(id).orElseThrow(()->new IllegalArgumentExceptionCustom(
+                SprayApplication.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
 
     @Override

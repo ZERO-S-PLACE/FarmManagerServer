@@ -8,8 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.CultivationDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.Cultivation;
+import org.zeros.farm_manager_server.Domain.Entities.Operations.Seeding;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
@@ -32,7 +33,9 @@ public class CultivationManagerDefault implements OperationManager<Cultivation, 
     @Override
     @Transactional(readOnly = true)
     public Cultivation getOperationById(UUID id) {
-        return cultivationRepository.findById(id).orElse(Cultivation.NONE);
+
+        return cultivationRepository.findById(id).orElseThrow(()->new IllegalArgumentExceptionCustom(
+                Cultivation.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
 
     @Override
@@ -75,7 +78,8 @@ public class CultivationManagerDefault implements OperationManager<Cultivation, 
         checkOperationModificationAccess(cultivation.getCrop());
         cultivationRepository.delete(cultivation);
     }
-@Transactional
+
+    @Transactional
     protected Cultivation createNewCultivation(UUID cropId, CultivationDTO operationDTO, boolean planned) {
         Crop crop = cropManager.getCropIfExists(cropId);
         checkOperationModificationAccess(crop);

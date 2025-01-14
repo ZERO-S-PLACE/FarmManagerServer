@@ -33,20 +33,26 @@ public class LoggedUserConfigurationDefault implements LoggedUserConfiguration {
         return userRepository.findUserById(UUID.fromString(getUserId())).orElse(User.NONE);
     }
 
-    public void replaceUser(User newUser) {}
+    @Override
+    public void replaceUser(User newUser) {
+    }
 
+    @Override
     public Set<String> allRows() {
         return Set.copyOf(List.of("ADMIN", getLoggedUser().getUsername()));
     }
 
+    @Override
     public Set<String> userRows() {
         return Set.of(getLoggedUser().getUsername());
     }
 
+    @Override
     public Set<String> defaultRows() {
         return Set.of("ADMIN");
     }
 
+    @Override
     public String username() {
         return getLoggedUser().getUsername();
     }

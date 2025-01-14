@@ -1,6 +1,5 @@
 package org.zeros.farm_manager_server.UnitTests.Service.Crop;
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,19 +17,15 @@ import org.zeros.farm_manager_server.Domain.DTO.Operations.SeedingDTO;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
-import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
-import org.zeros.farm_manager_server.Services.Default.Data.*;
-import org.zeros.farm_manager_server.Services.Default.User.UserDataReaderDefault;
+import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
+import org.zeros.farm_manager_server.JWT_Authentication;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
+import org.zeros.farm_manager_server.Services.Default.Data.FarmingMachineManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropDataReader;
-import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
 import org.zeros.farm_manager_server.Services.Interface.Operations.AgriculturalOperationsManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -48,42 +43,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CropDataReaderTest {
 
     @Autowired
-    FieldPartManager fieldPartManager;
-    @Autowired
-    FieldRepository fieldRepository;
-    @Autowired
-    FieldGroupRepository fieldGroupRepositoryRepository;
-    @Autowired
-    FieldPartRepository fieldPartRepository;
-    @Autowired
-    UserManager userManager;
+    UserRepository userRepository;
     @Autowired
     LoggedUserConfiguration loggedUserConfiguration;
-    @Autowired
-    EntityManager entityManager;
     Crop unsoldCrop;
     Crop activeCrop;
     Crop archivedCrop;
-
     @Autowired
     private CropDataReader cropDataReader;
-    @Autowired
-    private UserDataReaderDefault userDataReaderDefault;
     @Autowired
     private FarmingMachineManagerDefault farmingMachineManager;
     @Autowired
     private AgriculturalOperationsManager agriculturalOperationsManager;
 
-
     @BeforeEach
     public void setUp() {
-        User user = userManager.getUserByUsername("DEMO_USER");
+        User user = userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
         loggedUserConfiguration.replaceUser(user);
         Field field = user.getFields().stream().findAny().orElse(Field.NONE);
         FieldPart fieldPart = field.getFieldParts().stream().findAny().orElse(FieldPart.NONE);
-        unsoldCrop = userDataReaderDefault.getAllUnsoldCrops().stream().findAny().orElse(null);
+        unsoldCrop = fieldPart.getCrops().stream().filter(crop ->
+                (crop instanceof MainCrop && !((MainCrop) crop).getIsFullySold() && crop
+                        .getWorkFinished())
+        ).findAny().orElse(null);
         activeCrop = fieldPart.getActiveCrop();
-        archivedCrop = fieldPart.getArchivedCrops().stream().findAny().orElse(null);
+        archivedCrop = fieldPart.getArchivedCrops().stream().findFirst().orElse(MainCrop.NONE);
 
     }
 

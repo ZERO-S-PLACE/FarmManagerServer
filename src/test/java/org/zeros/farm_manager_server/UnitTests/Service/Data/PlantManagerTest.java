@@ -1,7 +1,6 @@
 package org.zeros.farm_manager_server.UnitTests.Service.Data;
 
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +13,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationForServiceTest;
 import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.JWT_Authentication;
 import org.zeros.farm_manager_server.Repositories.Data.PlantRepository;
-import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.Data.PlantManager;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,17 +32,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 
 public class PlantManagerTest {
-    @Autowired
-    UserManager userManager;
+
     @Autowired
     PlantRepository plantRepository;
     @Autowired
-    SpeciesRepository speciesRepository;
+    UserRepository userRepository;
     @Autowired
     LoggedUserConfiguration loggedUserConfiguration;
-    @Autowired
-    EntityManager entityManager;
-    private User user;
     @Autowired
     private PlantManager plantManager;
     @Autowired
@@ -52,22 +46,20 @@ public class PlantManagerTest {
 
     @BeforeEach
     public void setUp() {
-        user = userManager.getUserByUsername("DEMO_USER");
+        User user = userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
         loggedUserConfiguration.replaceUser(user);
     }
 
     @Test
     void testCreatePlant() {
-        Species species = speciesManager.getSpeciesByNameAs("Wheat", 0).getContent().getFirst();
-        Plant plant = addNewPlant(species);
+        SpeciesDTO species = speciesManager.getSpeciesByNameAs("Wheat", 0).getContent().getFirst();
+        PlantDTO plant = addNewPlant(species);
         assertThat(plant.getId()).isNotNull();
         assertThat(plant.getVariety()).isEqualTo("test1");
-        assertThat(plant.getSpecies()).isEqualTo(species);
-        assertThat(plant.getCreatedBy()).isEqualTo(user.getUsername());
-        assertThat(plantRepository.findById(plant.getId()).get()).isEqualTo(plant);
+        assertThat(plant.getSpecies()).isEqualTo(species.getId());
     }
 
-    private Plant addNewPlant(Species species) {
+    private PlantDTO addNewPlant(SpeciesDTO species) {
 
         return plantManager.addPlant(PlantDTO.builder()
                 .variety("test1")
@@ -79,42 +71,40 @@ public class PlantManagerTest {
 
     @Test
     void testGetAllPlants() {
-        Species species = speciesManager.getSpeciesByNameAs("Wheat", 0).getContent().getFirst();
+        SpeciesDTO species = speciesManager.getSpeciesByNameAs("Wheat", 0).getContent().getFirst();
         addNewPlant(species);
-        Page<Plant> plants = plantManager.getAllPlants(0);
+        Page<PlantDTO> plants = plantManager.getAllPlants(0);
         assertThat(plants.getTotalElements()).isEqualTo(7);
     }
 
     @Test
     void testGetDefaultPlants() {
-        Page<Plant> plants = plantManager.getDefaultPlants(0);
+        Page<PlantDTO> plants = plantManager.getDefaultPlants(0);
         assertThat(plants.getTotalElements()).isEqualTo(6);
     }
 
     @Test
     void testGetUserPlants() {
-        Species species = speciesManager.getSpeciesByNameAs("Wheat", 0).getContent().getFirst();
-        Plant plant = addNewPlant(species);
-        Page<Plant> plants = plantManager.getUserPlants(0);
+        SpeciesDTO species = speciesManager.getSpeciesByNameAs("Wheat", 0).getContent().getFirst();
+        PlantDTO plant = addNewPlant(species);
+        Page<PlantDTO> plants = plantManager.getUserPlants(0);
         assertThat(plants.getTotalElements()).isEqualTo(1);
         assertThat(plants.getContent()).contains(plant);
     }
 
     @Test
     void testUpdatePlant() {
-        Species species = speciesManager.getSpeciesByNameAs("Wheat", 0).stream().findFirst().get();
-        Plant plant = addNewPlant(species);
-        PlantDTO plantToUpdate = DefaultMappers.plantMapper.entityToDto(plantManager.getPlantById(plant.getId()));
+        SpeciesDTO species = speciesManager.getSpeciesByNameAs("Wheat", 0).stream().findFirst().get();
+        PlantDTO plantToUpdate = addNewPlant(species);
         plantToUpdate.setVariety("TEST_UPDATE");
-        Plant plantUpdated = plantManager.updatePlant(plantToUpdate);
+        PlantDTO plantUpdated = plantManager.updatePlant(plantToUpdate);
         assertThat(plantUpdated.getId()).isEqualTo(plantToUpdate.getId());
         assertThat(plantUpdated.getVariety()).isEqualTo("TEST_UPDATE");
     }
 
     @Test
     void testUpdateFailedAccessDenied() {
-        PlantDTO plantToUpdate = DefaultMappers.plantMapper.entityToDto(
-                plantManager.getDefaultPlants(0).getContent().getFirst());
+        PlantDTO plantToUpdate = plantManager.getDefaultPlants(0).getContent().getFirst();
         plantToUpdate.setVariety("TEST_UPDATE");
         assertThrows(IllegalAccessError.class, () -> plantManager.updatePlant(plantToUpdate));
         assertThat(plantManager.getPlantById(plantToUpdate.getId()).getVariety()).isNotEqualTo("TEST_UPDATE");
@@ -123,15 +113,15 @@ public class PlantManagerTest {
 
     @Test
     void testDeletePlant() {
-        Species species = speciesManager.getSpeciesByNameAs("Wheat", 0).stream().findFirst().get();
-        Plant plant = addNewPlant(species);
+        SpeciesDTO species = speciesManager.getSpeciesByNameAs("Wheat", 0).stream().findFirst().get();
+        PlantDTO plant = addNewPlant(species);
         plantManager.deletePlantSafe(plant.getId());
-        assertThat(plantManager.getPlantById(plant.getId())).isEqualTo(Plant.NONE);
+        assertThrows(IllegalArgumentException.class, () -> plantManager.getPlantById(plant.getId()));
     }
 
     @Test
     void testDeleteFailedAccessDenied() {
-        Plant plantToDelete = plantManager.getDefaultPlants(0).getContent().getFirst();
+        PlantDTO plantToDelete = plantManager.getDefaultPlants(0).getContent().getFirst();
         assertThrows(IllegalAccessError.class, () -> plantManager.deletePlantSafe(plantToDelete.getId()));
         assertThat(plantManager.getPlantById(plantToDelete.getId())).isNotEqualTo(Plant.NONE);
     }

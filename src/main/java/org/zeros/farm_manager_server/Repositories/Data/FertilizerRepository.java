@@ -20,5 +20,5 @@ public interface FertilizerRepository extends JpaRepository<Fertilizer, UUID> {
 
     Page<Fertilizer> findAllByNameContainingAndCreatedByIn(String name, Set<String> admin, Pageable pageable);
 
-    void deleteAllByCreatedBy(String username);
+    void deleteAllByCreatedBy(String createdBy);
 }

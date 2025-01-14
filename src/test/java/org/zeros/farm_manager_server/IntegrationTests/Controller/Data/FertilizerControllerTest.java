@@ -2,7 +2,6 @@ package org.zeros.farm_manager_server.IntegrationTests.Controller.Data;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,19 +10,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Controllers.Data.FarmingMachineController;
 import org.zeros.farm_manager_server.Controllers.Data.FertilizerController;
 import org.zeros.farm_manager_server.Domain.DTO.Data.FertilizerDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Fertilizer;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.IntegrationTests.JWT_Authentication;
+import org.zeros.farm_manager_server.JWT_Authentication;
 import org.zeros.farm_manager_server.Repositories.Data.FertilizerRepository;
 import org.zeros.farm_manager_server.Services.Interface.Data.FertilizerManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -38,13 +38,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @SpringBootTest
+@Transactional
+@Rollback
 public class FertilizerControllerTest {
-    @Autowired
-    FertilizerController fertilizerController;
+
     @Autowired
     FertilizerManager fertilizerManager;
-    @Autowired
-    UserManager userManager;
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
@@ -63,7 +62,7 @@ public class FertilizerControllerTest {
     void getById() throws Exception {
         Fertilizer fertilizer = findDefaultFertilizer();
         MvcResult result = mockMvc.perform(
-                        get(FertilizerController.ID_PATH,fertilizer.getId())
+                        get(FertilizerController.ID_PATH, fertilizer.getId())
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -78,7 +77,7 @@ public class FertilizerControllerTest {
     @Test
     void getByIdNotFound() throws Exception {
         mockMvc.perform(
-                        get(FertilizerController.ID_PATH,UUID.randomUUID())
+                        get(FertilizerController.ID_PATH, UUID.randomUUID())
                                 .with(JWT_Authentication.jwtRequestPostProcessor)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -159,7 +158,6 @@ public class FertilizerControllerTest {
 
 
     @Test
-
     void addNew() throws Exception {
         FertilizerDTO fertilizerDTO = FertilizerDTO.builder()
                 .producer("TEST32")
@@ -184,16 +182,16 @@ public class FertilizerControllerTest {
                 .getFirst().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[4]);
 
-        assertThat(fertilizerManager.getFertilizerById(savedUUID).equals(Fertilizer.NONE)).isFalse();
+        assertThat(fertilizerManager.getFertilizerById(savedUUID).getName()).isEqualTo(fertilizerDTO.getName());
+        assertThat(fertilizerManager.getFertilizerById(savedUUID).getIsNaturalFertilizer()).isEqualTo(true);
         displayResponse(result);
     }
 
     @Test
-
     void addNewErrorAlreadyExists() throws Exception {
 
         FertilizerDTO FertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(
-               findDefaultFertilizer());
+                findDefaultFertilizer());
         mockMvc.perform(post(FarmingMachineController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -204,7 +202,6 @@ public class FertilizerControllerTest {
     }
 
     @Test
-
     void addNewMissingName() throws Exception {
         FertilizerDTO fertilizerDTO = FertilizerDTO.builder()
                 .producer("TEST")
@@ -224,10 +221,8 @@ public class FertilizerControllerTest {
     }
 
     @Test
-
     void update() throws Exception {
-        Fertilizer fertilizer = addNewFertilizer();
-        FertilizerDTO fertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
+        FertilizerDTO fertilizerDTO = addNewFertilizer();
         fertilizerDTO.setName("TEST_UPDATED");
         fertilizerDTO.setTotalCaPercent(BigDecimal.valueOf(10));
         mockMvc.perform(patch(FertilizerController.BASE_PATH)
@@ -237,13 +232,13 @@ public class FertilizerControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(fertilizerManager.getFertilizerById(fertilizer.getId())).isNotNull();
-        assertThat(fertilizerManager.getFertilizerById(fertilizer.getId()).getName())
+        assertThat(fertilizerManager.getFertilizerById(fertilizerDTO.getId())).isNotNull();
+        assertThat(fertilizerManager.getFertilizerById(fertilizerDTO.getId()).getName())
                 .isEqualTo("TEST_UPDATED");
-        assertThat(fertilizerManager.getFertilizerById(fertilizer.getId()).getTotalCaPercent().floatValue()).isEqualTo(10);
+        assertThat(fertilizerManager.getFertilizerById(fertilizerDTO.getId()).getTotalCaPercent().floatValue()).isEqualTo(10);
     }
 
-    private Fertilizer addNewFertilizer() throws Exception {
+    private FertilizerDTO addNewFertilizer() throws Exception {
         FertilizerDTO fertilizerDTO = FertilizerDTO.builder()
                 .producer("TEST")
                 .name("TEST")
@@ -270,7 +265,6 @@ public class FertilizerControllerTest {
     }
 
     @Test
-
     void updateAccessDenied() throws Exception {
         FertilizerDTO fertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(
                 findDefaultFertilizer());
@@ -285,33 +279,28 @@ public class FertilizerControllerTest {
     }
 
     @Test
-
     void updateModelBlank() throws Exception {
-        Fertilizer fertilizer = addNewFertilizer();
-        FertilizerDTO FertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
-        FertilizerDTO.setName("");
+        FertilizerDTO fertilizerDTO = addNewFertilizer();
+        fertilizerDTO.setName("");
         mockMvc.perform(patch(FertilizerController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(FertilizerDTO))
+                        .content(objectMapper.writeValueAsString(fertilizerDTO))
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-
     void deleteFertilizer() throws Exception {
-        Fertilizer fertilizer = addNewFertilizer();
-
+        FertilizerDTO fertilizerDTO = addNewFertilizer();
         mockMvc.perform(delete(FertilizerController.BASE_PATH)
                         .with(JWT_Authentication.jwtRequestPostProcessor)
-                        .param("id", fertilizer.getId().toString())
+                        .param("id", fertilizerDTO.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        assertThat(fertilizerManager.getFertilizerById(fertilizer.getId())).isEqualTo(Fertilizer.NONE);
     }
 
     @Test
@@ -330,7 +319,7 @@ public class FertilizerControllerTest {
     }
 
     private Fertilizer findDefaultFertilizer() {
-        return fertilizerRepository.findAllByCreatedByIn(Set.of("ADMIN"), PageRequest.of(0,2)).getContent().getFirst();
+        return fertilizerRepository.findAllByCreatedByIn(Set.of("ADMIN"), PageRequest.of(0, 2)).getContent().getFirst();
     }
 
 

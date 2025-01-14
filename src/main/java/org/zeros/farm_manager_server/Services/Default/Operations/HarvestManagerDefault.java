@@ -9,6 +9,7 @@ import org.zeros.farm_manager_server.Domain.DTO.Operations.HarvestDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
+import org.zeros.farm_manager_server.Domain.Entities.Operations.Cultivation;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.Harvest;
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
@@ -35,7 +36,9 @@ public class HarvestManagerDefault implements OperationManager<Harvest, HarvestD
     @Override
     @Transactional(readOnly = true)
     public Harvest getOperationById(UUID id) {
-        return harvestRepository.findById(id).orElse(Harvest.NONE);
+
+        return harvestRepository.findById(id).orElseThrow(()->new IllegalArgumentExceptionCustom(
+                Harvest.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
 
     @Override

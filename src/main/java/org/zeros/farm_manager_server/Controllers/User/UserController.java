@@ -37,14 +37,13 @@ public class UserController {
         if (user.getId() == null) {
             throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        return DefaultMappers.userMapper.entityToDto(user);
+        return userManager.getUserById(user.getId());
     }
 
     @GetMapping(ADMIN_USER_PATH_ID)
     public UserDTO getUserDataById(@PathVariable("id") UUID id) {
         return userManager.getUserById(id);
     }
-
 
     @GetMapping(ADMIN_GET_USER_PATH)
     public UserDTO getUserCriteria(@RequestParam(required = false, defaultValue = "") String email,
@@ -83,8 +82,9 @@ public class UserController {
     }
 
     @DeleteMapping(USER_DATA_PATH)
-    ResponseEntity<String> deleteById(@RequestParam UUID id) {
-        userManager.deleteAllUserData(id);
+    ResponseEntity<String> deleteById() {
+        User user = loggedUserConfiguration.getLoggedUser();
+        userManager.deleteAllUserData(user.getId());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

@@ -1,7 +1,6 @@
 package org.zeros.farm_manager_server.UnitTests.Service.Data;
 
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +15,10 @@ import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationForSer
 import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Repositories.Data.PlantRepository;
+import org.zeros.farm_manager_server.JWT_Authentication;
 import org.zeros.farm_manager_server.Repositories.Data.SpeciesRepository;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,36 +30,29 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class SpeciesManagerTest {
     @Autowired
-    UserManager userManager;
-    @Autowired
-    PlantRepository plantRepository;
-    @Autowired
     SpeciesRepository speciesRepository;
     @Autowired
     LoggedUserConfiguration loggedUserConfiguration;
     @Autowired
-    EntityManager entityManager;
-    private User user;
+    UserRepository userRepository;
     @Autowired
     private SpeciesManager speciesManager;
 
     @BeforeEach
     public void setUp() {
-        user = userManager.getUserByUsername("DEMO_USER");
+        User user = userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
         loggedUserConfiguration.replaceUser(user);
     }
 
     @Test
     void testCreateSpecies() {
-        Species species = saveNewTestSpecies();
+        SpeciesDTO species = saveNewTestSpecies();
         assertThat(species.getId()).isNotNull();
         assertThat(species.getName()).isEqualTo("TEST");
         assertThat(species.getFamily()).isEqualTo("TEST");
-        assertThat(species.getCreatedBy()).isEqualTo(user.getUsername());
-        assertThat(speciesRepository.findById(species.getId()).get()).isEqualTo(species);
     }
 
-    private Species saveNewTestSpecies() {
+    private SpeciesDTO saveNewTestSpecies() {
         return speciesManager.addSpecies(SpeciesDTO.builder()
                 .name("TEST")
                 .family("TEST")
@@ -71,37 +62,35 @@ public class SpeciesManagerTest {
     @Test
     void testGetAllSpecies() {
         saveNewTestSpecies();
-        Page<Species> speciesAll = speciesManager.getAllSpecies(0);
+        Page<SpeciesDTO> speciesAll = speciesManager.getAllSpecies(0);
         assertThat(speciesAll.getTotalElements()).isEqualTo(6);
     }
 
     @Test
     void testGetDefaultSpecies() {
-        Page<Species> species = speciesManager.getDefaultSpecies(0);
+        Page<SpeciesDTO> species = speciesManager.getDefaultSpecies(0);
         assertThat(species.getTotalElements()).isEqualTo(5);
     }
 
     @Test
     void testGetUserSpecies() {
         saveNewTestSpecies();
-        Page<Species> speciesUser = speciesManager.getUserSpecies(0);
+        Page<SpeciesDTO> speciesUser = speciesManager.getUserSpecies(0);
         assertThat(speciesUser.getTotalElements()).isEqualTo(1);
     }
 
     @Test
     void testUpdateSpecies() {
-        Species species = saveNewTestSpecies();
-        SpeciesDTO speciesToUpdate = DefaultMappers.speciesMapper.entityToDto(species);
+        SpeciesDTO speciesToUpdate = saveNewTestSpecies();
         speciesToUpdate.setName("TEST_UPDATE");
-        Species speciesUpdated = speciesManager.updateSpecies(speciesToUpdate);
-        assertThat(speciesUpdated.getId()).isEqualTo(species.getId());
+        SpeciesDTO speciesUpdated = speciesManager.updateSpecies(speciesToUpdate);
+        assertThat(speciesUpdated.getId()).isEqualTo(speciesToUpdate.getId());
         assertThat(speciesUpdated.getName()).isEqualTo("TEST_UPDATE");
     }
 
     @Test
     void testUpdateFailedAccessDenied() {
-        Species species = speciesManager.getDefaultSpecies(0).stream().findFirst().orElse(Species.NONE);
-        SpeciesDTO speciesToUpdate = DefaultMappers.speciesMapper.entityToDto(species);
+        SpeciesDTO speciesToUpdate = speciesManager.getDefaultSpecies(0).stream().findFirst().orElseThrow();
         speciesToUpdate.setName("TEST_UPDATE");
         assertThrows(IllegalAccessError.class, () -> speciesManager.updateSpecies(speciesToUpdate));
         assertThat(speciesManager.getSpeciesById(speciesToUpdate.getId()).getName()).isNotEqualTo("TEST_UPDATE");
@@ -110,14 +99,14 @@ public class SpeciesManagerTest {
 
     @Test
     void testDeleteSpecies() {
-        Species species = saveNewTestSpecies();
+        SpeciesDTO species = saveNewTestSpecies();
         speciesManager.deleteSpeciesSafe(species.getId());
-        assertThat(speciesManager.getSpeciesById(species.getId())).isEqualTo(Species.NONE);
+        assertThrows(IllegalArgumentException.class, () -> speciesManager.getSpeciesById(species.getId()));
     }
 
     @Test
     void testDeleteFailedAccessDenied() {
-        Species species = speciesManager.getDefaultSpecies(0).stream().findFirst().orElse(Species.NONE);
+        SpeciesDTO species = speciesManager.getDefaultSpecies(0).stream().findFirst().orElseThrow();
         assertThrows(IllegalAccessError.class, () -> speciesManager.deleteSpeciesSafe(species.getId()));
         assertThat(speciesManager.getSpeciesById(species.getId())).isNotEqualTo(Species.NONE);
         assertThat(speciesManager.getSpeciesById(species.getId())).isEqualTo(species);

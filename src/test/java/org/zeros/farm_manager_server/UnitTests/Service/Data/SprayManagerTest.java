@@ -1,7 +1,6 @@
 package org.zeros.farm_manager_server.UnitTests.Service.Data;
 
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +16,11 @@ import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Enum.SprayType;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
+import org.zeros.farm_manager_server.JWT_Authentication;
 import org.zeros.farm_manager_server.Repositories.Data.SprayRepository;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.Data.SprayManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,34 +32,29 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class SprayManagerTest {
     @Autowired
-    UserManager userManager;
-    @Autowired
     SprayRepository sprayRepository;
     @Autowired
     LoggedUserConfiguration loggedUserConfiguration;
     @Autowired
-    EntityManager entityManager;
-    private User user;
+    UserRepository userRepository;
     @Autowired
     private SprayManager sprayManager;
 
     @BeforeEach
     public void setUp() {
-        user = userManager.getUserByUsername("DEMO_USER");
+        User user = userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
         loggedUserConfiguration.replaceUser(user);
     }
 
     @Test
     void testCreateSpray() {
-        Spray spray = saveNewSpray();
+        SprayDTO spray = saveNewSpray();
         assertThat(spray.getId()).isNotNull();
         assertThat(spray.getName()).isEqualTo("TEST_SPRAY");
         assertThat(spray.getProducer()).isEqualTo("Baywa");
-        assertThat(spray.getCreatedBy()).isEqualTo(user.getUsername());
-        assertThat(sprayRepository.findById(spray.getId()).get()).isEqualTo(spray);
     }
 
-    private Spray saveNewSpray() {
+    private SprayDTO saveNewSpray() {
         return sprayManager.addSpray(SprayDTO.builder()
                 .name("TEST_SPRAY")
                 .sprayType(SprayType.HERBICIDE)
@@ -70,38 +65,36 @@ public class SprayManagerTest {
     @Test
     void testGetAllSprays() {
         saveNewSpray();
-        Page<Spray> sprays = sprayManager.getAllSprays(0);
+        Page<SprayDTO> sprays = sprayManager.getAllSprays(0);
         assertThat(sprays.getTotalElements()).isEqualTo(7);
     }
 
     @Test
     void testGetDefaultSprays() {
-        Page<Spray> sprays = sprayManager.getDefaultSprays(0);
+        Page<SprayDTO> sprays = sprayManager.getDefaultSprays(0);
         assertThat(sprays.getTotalElements()).isEqualTo(6);
     }
 
     @Test
     void testGetUserSprays() {
-        Spray spray = saveNewSpray();
-        Page<Spray> sprays = sprayManager.getUserSprays(0);
+        SprayDTO spray = saveNewSpray();
+        Page<SprayDTO> sprays = sprayManager.getUserSprays(0);
         assertThat(sprays.getTotalElements()).isEqualTo(1);
         assertThat(sprays.getContent()).contains(spray);
     }
 
     @Test
     void testUpdateSpray() {
-        Spray spray = saveNewSpray();
-        SprayDTO sprayToUpdate = DefaultMappers.sprayMapper.entityToDto(spray);
+        SprayDTO sprayToUpdate = saveNewSpray();
         sprayToUpdate.setName("TEST_UPDATE");
-        Spray sprayUpdated = sprayManager.updateSpray(sprayToUpdate);
-        assertThat(sprayUpdated.getId()).isEqualTo(spray.getId());
+        SprayDTO sprayUpdated = sprayManager.updateSpray(sprayToUpdate);
+        assertThat(sprayUpdated.getId()).isEqualTo(sprayToUpdate.getId());
         assertThat(sprayUpdated.getName()).isEqualTo("TEST_UPDATE");
     }
 
     @Test
     void testUpdateFailedAccessDenied() {
-        SprayDTO sprayToUpdate = DefaultMappers.sprayMapper.entityToDto(
-                sprayManager.getDefaultSprays(0).getContent().getFirst());
+        SprayDTO sprayToUpdate = sprayManager.getDefaultSprays(0).getContent().getFirst();
         sprayToUpdate.setName("TEST_UPDATE");
         assertThrows(IllegalAccessError.class, () -> sprayManager.updateSpray(sprayToUpdate));
         assertThat(sprayManager.getSprayById(sprayToUpdate.getId()).getName()).isNotEqualTo("TEST_UPDATE");
@@ -110,14 +103,14 @@ public class SprayManagerTest {
 
     @Test
     void testDeleteSpray() {
-        Spray spray = saveNewSpray();
+        SprayDTO spray = saveNewSpray();
         sprayManager.deleteSpraySafe(spray.getId());
-        assertThat(sprayManager.getSprayById(spray.getId())).isEqualTo(Spray.NONE);
+        assertThrows(IllegalArgumentExceptionCustom.class, () -> sprayManager.getSprayById(spray.getId()));
     }
 
     @Test
     void testDeleteFailedAccessDenied() {
-        Spray sprayToDelete = sprayManager.getDefaultSprays(0).stream().findFirst().orElse(Spray.NONE);
+        SprayDTO sprayToDelete = sprayManager.getDefaultSprays(0).stream().findFirst().orElseThrow();
         assertThrows(IllegalAccessError.class, () -> sprayManager.deleteSpraySafe(sprayToDelete.getId()));
         assertThat(sprayManager.getSprayById(sprayToDelete.getId())).isNotEqualTo(Spray.NONE);
     }

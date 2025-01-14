@@ -9,6 +9,5 @@ import java.util.UUID;
 
 public interface CropSaleRepository extends JpaRepository<CropSale, UUID> {
 
-
     Optional<Object> findByCropParameters(CropParameters cropParameters);
 }

@@ -8,8 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.FertilizerApplicationDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Enum.OperationType;
+import org.zeros.farm_manager_server.Domain.Entities.Operations.Cultivation;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.FertilizerApplication;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
@@ -34,7 +35,8 @@ public class FertilizerApplicationManagerDefault implements OperationManager<Fer
     @Override
     @Transactional(readOnly = true)
     public FertilizerApplication getOperationById(UUID id) {
-        return fertilizerApplicationRepository.findById(id).orElse(FertilizerApplication.NONE);
+        return fertilizerApplicationRepository.findById(id).orElseThrow(()->new IllegalArgumentExceptionCustom(
+                FertilizerApplication.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
 
     @Override
@@ -77,6 +79,7 @@ public class FertilizerApplicationManagerDefault implements OperationManager<Fer
         checkOperationModificationAccess(fertilizerApplication.getCrop());
         fertilizerApplicationRepository.delete(fertilizerApplication);
     }
+
     @Transactional
     protected FertilizerApplication createNewFertilizerApplication(UUID cropId, FertilizerApplicationDTO operationDTO, boolean planned) {
         Crop crop = cropManager.getCropIfExists(cropId);

@@ -22,5 +22,5 @@ public interface PlantRepository extends JpaRepository<Plant, UUID> {
 
     Page<Plant> findAllByCreatedByIn(Set<String> createdBy, Pageable pageable);
 
-    void deleteAllByCreatedBy(String username);
+    void deleteAllByCreatedBy(String createdBy);
 }

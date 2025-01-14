@@ -1,4 +1,4 @@
-package org.zeros.farm_manager_server.IntegrationTests;
+package org.zeros.farm_manager_server;
 
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 
@@ -10,17 +10,17 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 public class JWT_Authentication {
 
-    public static final UUID USER_ID=UUID.fromString("22179626-d06b-4b8b-9d71-507a63b59890");
+    public static final UUID USER_ID = UUID.fromString("b5078c06-fa9b-4b28-b4c4-7529bd126663");
     public static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRequestPostProcessor =
             jwt().jwt(
                     jwt -> jwt.claims(
-                            claims -> {
-                                claims.put("sub", USER_ID.toString());
-                                claims.put("roles", List.of("ROLE_USER"));
-                            })
-                    .subject(USER_ID.toString())
+                                    claims -> {
+                                        claims.put("sub", USER_ID.toString());
+                                        claims.put("roles", List.of("ROLE_USER"));
+                                    })
+                            .subject(USER_ID.toString())
 
-                    .notBefore(Instant.now().minusSeconds(5L)));
+                            .notBefore(Instant.now().minusSeconds(5L)));
 
     public static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRequestPostProcessorAdmin =
             jwt().jwt(

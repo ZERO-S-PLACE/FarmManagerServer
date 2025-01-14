@@ -16,5 +16,4 @@ public interface FieldGroupRepository extends JpaRepository<FieldGroup, UUID> {
 
     Optional<FieldGroup> findByUserAndFieldGroupName(@NotNull User user, @NotNull @NotBlank String fieldGroupName);
 
-
 }

@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.SeedingDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
-import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.Seeding;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
@@ -35,7 +35,8 @@ public class SeedingManagerDefault implements OperationManager<Seeding, SeedingD
     @Override
     @Transactional(readOnly = true)
     public Seeding getOperationById(UUID id) {
-        return seedingRepository.findById(id).orElse(Seeding.NONE);
+        return seedingRepository.findById(id).orElseThrow(()->new IllegalArgumentExceptionCustom(
+                Seeding.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
 
     @Override

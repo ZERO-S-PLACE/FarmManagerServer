@@ -34,7 +34,6 @@ public class UserManagerTest {
         assertThat(savedUser).isNotNull();
         assertThat(savedUser.getId()).isNotNull();
         assertThat(savedUser.getVersion()).isNotNull();
-        assertThat(userRepository.findById(savedUser.getId()).get()).isEqualTo(savedUser);
     }
 
     @Test
@@ -42,8 +41,6 @@ public class UserManagerTest {
         UserDTO userDTO = createTestUser(3);
         userDTO.setEmail("");
         assertThrows(IllegalArgumentExceptionCustom.class, () -> userManager.registerNewUser(userDTO));
-
-
     }
 
     @Test
@@ -53,7 +50,6 @@ public class UserManagerTest {
         UserDTO userNotUniqueDTO = createTestUser(3);
         userNotUniqueDTO.setUsername("USER_NOT_UNIQUE");
         assertThrows(IllegalArgumentExceptionCustom.class, () -> userManager.registerNewUser(userNotUniqueDTO));
-
     }
 
     @Test

@@ -25,52 +25,45 @@ public class CropController {
     public static final String WORK_FINISHED_PATH = BASE_PATH + "/SET_FINISHED";
     public static final String ADD_SUBSIDE_PATH = BASE_PATH + "/subside/ADD";
     public static final String REMOVE_SUBSIDE_PATH = BASE_PATH + "/subside/REMOVE";
-    public static final String CROP_PLANTS_PATH = BASE_PATH + "/subside/plants";
+    public static final String CROP_PLANTS_PATH = BASE_PATH + "/plants";
 
     private final CropManager cropManager;
 
     @GetMapping(ID_PATH)
-    @Transactional
     public CropDTO getById(@PathVariable("cropId") UUID cropId) {
         return cropManager.getCropById(cropId);
     }
 
     @PostMapping(MAIN_CROP_PATH)
-    @Transactional
     ResponseEntity<String> createNewMainCrop(@RequestParam UUID fieldPartId, @RequestParam Set<UUID> cultivatedPlantsIds) {
         CropDTO saved = cropManager.createNewMainCrop(fieldPartId, cultivatedPlantsIds);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", MAIN_CROP_PATH + "/" + saved.getId().toString());
+        headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
 
     @PostMapping(INTER_CROP_PATH)
-    @Transactional
     ResponseEntity<String> createNewInterCrop(@RequestParam UUID fieldPartId, @RequestParam Set<UUID> cultivatedPlantsIds) {
         CropDTO saved = cropManager.createNewInterCrop(fieldPartId, cultivatedPlantsIds);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", INTER_CROP_PATH + "/" + saved.getId().toString());
+        headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
-
-
+    
     @PatchMapping(CROP_PLANTS_PATH)
-    @Transactional
     ResponseEntity<String> updateCultivatedPlants(@RequestParam UUID cropId, @RequestParam Set<UUID> cultivatedPlantsIds) {
         cropManager.updateCultivatedPlants(cropId, cultivatedPlantsIds);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping(ADD_SUBSIDE_PATH)
-    @Transactional
     ResponseEntity<String> addSubside(@RequestParam UUID cropId, @RequestParam UUID subsideId) {
         cropManager.addSubside(cropId, subsideId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping(REMOVE_SUBSIDE_PATH)
-    @Transactional
     ResponseEntity<String> removeSubside(@RequestParam UUID cropId, @RequestParam UUID subsideId) {
         cropManager.removeSubside(cropId, subsideId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -78,28 +71,24 @@ public class CropController {
 
 
     @PatchMapping(INTER_CROP_PATH)
-    @Transactional
     ResponseEntity<String> setDateDestroyed(@RequestParam UUID interCropId, @RequestParam LocalDate dateDestroyed) {
         cropManager.setDateDestroyed(interCropId, dateDestroyed);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping(WORK_FINISHED_PATH)
-    @Transactional
     ResponseEntity<String> setWorkFinished(@RequestParam UUID finishedCropId) {
         cropManager.setWorkFinished(finishedCropId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping(MAIN_CROP_PATH)
-    @Transactional
     ResponseEntity<String> setFullySold(@RequestParam UUID fullySoldCropId) {
         cropManager.setFullySold(fullySoldCropId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(BASE_PATH)
-    @Transactional
     ResponseEntity<String> deleteCrop(@RequestParam UUID cropId) {
         cropManager.deleteCropAndItsData(cropId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

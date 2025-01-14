@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CropRepository extends JpaRepository<Crop, UUID> {
+
     List<Crop> findAllBySubsidesContains(Subside subside);
 
     List<Crop> findAllByCultivatedPlantsContains(Plant plant);

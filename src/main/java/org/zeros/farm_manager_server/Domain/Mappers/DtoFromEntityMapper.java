@@ -30,19 +30,9 @@ public interface DtoFromEntityMapper<D extends BaseEntityDTO, E extends BaseEnti
 
     E dtoToEntitySimpleProperties(@NotNull D dto);
 
-
-    default float mapBigDecimalToFloat(BigDecimal value) {
-        return value != null ? value.floatValue() : 0.00f;
-    }
-
-    default BigDecimal mapFloatToBigDecimal(float value) {
-        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
-    }
-
     default Set<UUID> mapEntitiesToIds(Set<? extends BaseEntity> value) {
         return value.stream().map(BaseEntity::getId).collect(Collectors.toSet());
     }
-
     default UUID mapEntityToId(BaseEntity value) {
         return value.getId();
     }
@@ -91,7 +81,6 @@ public interface DtoFromEntityMapper<D extends BaseEntityDTO, E extends BaseEnti
         return new HashSet<>();
     }
 
-
     default User mapUUIDtoUser(UUID value) {
         return User.NONE;
     }
@@ -135,6 +124,5 @@ public interface DtoFromEntityMapper<D extends BaseEntityDTO, E extends BaseEnti
     default Species mapUUIDtoSpecies(UUID value) {
         return Species.NONE;
     }
-
 
 }

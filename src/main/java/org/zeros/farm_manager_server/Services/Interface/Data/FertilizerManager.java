@@ -23,15 +23,15 @@ public interface FertilizerManager {
 
     Page<FertilizerDTO> getFertilizersCriteria(@NotNull String name, Boolean isNatural, int pageNumber);
 
-    FertilizerDTO  getFertilizerById(@NotNull UUID id);
+    FertilizerDTO getFertilizerById(@NotNull UUID id);
 
-    FertilizerDTO  addFertilizer(@NotNull FertilizerDTO fertilizerDTO);
+    FertilizerDTO addFertilizer(@NotNull FertilizerDTO fertilizerDTO);
 
-    FertilizerDTO  updateFertilizer(@NotNull FertilizerDTO fertilizerDTO);
+    FertilizerDTO updateFertilizer(@NotNull FertilizerDTO fertilizerDTO);
 
     void deleteFertilizerSafe(@NotNull UUID fertilizerId);
 
-    Fertilizer  getFertilizerIfExists(UUID fertilizerId);
+    Fertilizer getFertilizerIfExists(UUID fertilizerId);
 
     Fertilizer getUndefinedFertilizer();
 }

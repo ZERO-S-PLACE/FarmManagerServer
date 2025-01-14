@@ -6,13 +6,13 @@ import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.AgriculturalOperation;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.Seeding;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 
 import java.util.UUID;
 
-public interface OperationManager<E extends AgriculturalOperation,D extends AgriculturalOperationDTO> {
+public interface OperationManager<E extends AgriculturalOperation, D extends AgriculturalOperationDTO> {
 
     E getOperationById(@NotNull UUID id);
 
@@ -39,13 +39,12 @@ public interface OperationManager<E extends AgriculturalOperation,D extends Agri
             throw new IllegalAccessErrorCustom(Crop.class, IllegalAccessErrorCause.UNMODIFIABLE_OBJECT);
         }
     }
+
     default void checkIfUUIDPresent(AgriculturalOperationDTO operationDTO) {
         if (operationDTO.getId() != null) {
             throw new IllegalArgumentExceptionCustom(Seeding.class, IllegalArgumentExceptionCause.OBJECT_EXISTS);
         }
     }
-
-
 
 
 }

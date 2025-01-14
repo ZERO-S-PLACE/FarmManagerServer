@@ -8,15 +8,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SprayDTO;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Spray;
 import org.zeros.farm_manager_server.Domain.Enum.SprayType;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.AgriculturalOperation.SprayApplicationRepository;
 import org.zeros.farm_manager_server.Repositories.Data.SprayRepository;
@@ -181,7 +181,9 @@ public class SprayManagerDefault implements SprayManager {
     @Transactional
     public void deleteSpraySafe(UUID sprayId) {
         Spray originalSpray = sprayRepository.findById(sprayId).orElse(Spray.NONE);
-        if (originalSpray == Spray.NONE) {return;}
+        if (originalSpray == Spray.NONE) {
+            return;
+        }
         checkAccess(originalSpray);
         checkUsages(originalSpray);
         sprayRepository.delete(originalSpray);

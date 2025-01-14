@@ -8,14 +8,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
+import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
+import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Model.ApplicationDefaults;
 import org.zeros.farm_manager_server.Repositories.Crop.CropRepository;
 import org.zeros.farm_manager_server.Repositories.Data.PlantRepository;
@@ -68,7 +68,7 @@ public class PlantManagerDefault implements PlantManager {
     @Transactional(readOnly = true)
     public Page<PlantDTO> getPlantsByVarietyAs(String variety, int pageNumber) {
         return plantRepository.findAllByVarietyContainingIgnoreCaseAndCreatedByIn(variety,
-                config.allRows(), getPageRequest(pageNumber))
+                        config.allRows(), getPageRequest(pageNumber))
                 .map(DefaultMappers.plantMapper::entityToDto);
     }
 
@@ -76,7 +76,7 @@ public class PlantManagerDefault implements PlantManager {
     @Transactional(readOnly = true)
     public Page<PlantDTO> getPlantsBySpecies(Species species, int pageNumber) {
         return plantRepository.findAllBySpeciesAndCreatedByIn(species,
-                config.allRows(), getPageRequest(pageNumber))
+                        config.allRows(), getPageRequest(pageNumber))
                 .map(DefaultMappers.plantMapper::entityToDto);
     }
 
@@ -84,7 +84,7 @@ public class PlantManagerDefault implements PlantManager {
     @Transactional(readOnly = true)
     public Page<PlantDTO> getPlantsByVarietyAndSpecies(String variety, Species species, int pageNumber) {
         return plantRepository.findAllBySpeciesAndVarietyContainingIgnoreCaseAndCreatedByIn(species, variety,
-                config.allRows(), getPageRequest(pageNumber))
+                        config.allRows(), getPageRequest(pageNumber))
                 .map(DefaultMappers.plantMapper::entityToDto);
     }
 
@@ -113,8 +113,8 @@ public class PlantManagerDefault implements PlantManager {
     @Override
     @Transactional(readOnly = true)
     public PlantDTO getPlantById(UUID uuid) {
-        Plant plant= plantRepository.findById(uuid).orElseThrow(()->
-               new IllegalArgumentExceptionCustom(Plant.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        Plant plant = plantRepository.findById(uuid).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Plant.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
         return DefaultMappers.plantMapper.entityToDto(plant);
     }
 
@@ -123,7 +123,7 @@ public class PlantManagerDefault implements PlantManager {
     public PlantDTO addPlant(PlantDTO plantDTO) {
         checkIfRequiredFieldsPresent(plantDTO);
         checkIfUnique(plantDTO);
-        Plant plant=plantRepository.saveAndFlush(rewriteValuesToEntity(plantDTO, Plant.NONE));
+        Plant plant = plantRepository.saveAndFlush(rewriteValuesToEntity(plantDTO, Plant.NONE));
         return DefaultMappers.plantMapper.entityToDto(plant);
     }
 
@@ -165,7 +165,7 @@ public class PlantManagerDefault implements PlantManager {
         Plant originalPlant = getPlantIfExists(plantDTO.getId());
         checkAccess(originalPlant);
         checkIfRequiredFieldsPresent(plantDTO);
-        Plant updated= plantRepository.saveAndFlush(rewriteValuesToEntity(plantDTO, originalPlant));
+        Plant updated = plantRepository.saveAndFlush(rewriteValuesToEntity(plantDTO, originalPlant));
         return DefaultMappers.plantMapper.entityToDto(updated);
     }
 
@@ -182,7 +182,9 @@ public class PlantManagerDefault implements PlantManager {
     @Transactional
     public void deletePlantSafe(UUID plantId) {
         Plant originalPlant = plantRepository.findById(plantId).orElse(Plant.NONE);
-        if (originalPlant.equals(Plant.NONE)) {return;}
+        if (originalPlant.equals(Plant.NONE)) {
+            return;
+        }
         checkAccess(originalPlant);
         checkUsages(originalPlant);
         plantRepository.delete(originalPlant);
@@ -196,13 +198,14 @@ public class PlantManagerDefault implements PlantManager {
         throw new IllegalAccessErrorCustom(Plant.class,
                 IllegalAccessErrorCause.USAGE_IN_OTHER_PLACES);
     }
+
     @Override
     @Transactional
     public Plant getPlantIfExists(UUID plantId) {
         if (plantId == null) {
             throw new IllegalArgumentExceptionCustom(Plant.class, Set.of("Id"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        return plantRepository.findById(plantId).orElseThrow(()->
+        return plantRepository.findById(plantId).orElseThrow(() ->
                 new IllegalArgumentExceptionCustom(Plant.class,
                         IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }

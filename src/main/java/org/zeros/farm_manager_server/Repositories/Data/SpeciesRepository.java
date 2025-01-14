@@ -15,16 +15,13 @@ public interface SpeciesRepository extends JpaRepository<Species, UUID> {
 
     Page<Species> findAllByFamilyContainsIgnoreCaseAndCreatedByIn(String name, Set<String> createdBy, Pageable pageable);
 
-    Optional<Species> findByNameAndFamilyAndCreatedByIn(String name, String family, Set<String> createdBy);
-
-    Optional<Species> getSpeciesByNameAndCreatedByIn(String name, Set<String> createdBy);
-
     Page<Species> findAllByCreatedByIn(Set<String> createdBy, Pageable pageable);
+
+    Optional<Species> findByNameAndFamilyAndCreatedByIn(String name, String family, Set<String> createdBy);
 
     Optional<Species> getSpeciesByName(String rapeSeed);
 
     void deleteAllByCreatedBy(String username);
 
-    Optional<Species> getSpeciesById(UUID uuid);
 }
 

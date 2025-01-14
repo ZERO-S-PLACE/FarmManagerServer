@@ -9,7 +9,6 @@ import java.util.UUID;
 public interface UserManager {
 
 
-
     UserDTO getUserById(@NotNull UUID id);
 
     UserDTO getUserByEmail(@NotNull String email);

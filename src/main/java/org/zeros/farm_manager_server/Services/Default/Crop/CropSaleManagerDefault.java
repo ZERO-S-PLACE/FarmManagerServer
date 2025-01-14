@@ -7,18 +7,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
+import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Repositories.Crop.CropSaleRepository;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
-import org.zeros.farm_manager_server.Services.Interface.Crop.CropSaleManager;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropParametersManager;
+import org.zeros.farm_manager_server.Services.Interface.Crop.CropSaleManager;
 
 import java.util.UUID;
 
@@ -90,7 +90,7 @@ public class CropSaleManagerDefault implements CropSaleManager {
         Crop crop = cropManager.getCropIfExists(cropSaleDTO.getCrop());
         checkSaleModificationAccess(crop);
         CropSale cropSaleOriginal = getCropSaleIfExist(cropSaleDTO);
-        CropSale updated= cropSaleRepository.saveAndFlush(rewriteToEntity(cropSaleDTO, cropSaleOriginal));
+        CropSale updated = cropSaleRepository.saveAndFlush(rewriteToEntity(cropSaleDTO, cropSaleOriginal));
         return DefaultMappers.cropSaleMapper.entityToDto(updated);
     }
 
@@ -98,7 +98,7 @@ public class CropSaleManagerDefault implements CropSaleManager {
         if (cropSaleDTO.getId() == null) {
             throw new IllegalArgumentExceptionCustom(CropSale.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        return cropSaleRepository.findById(cropSaleDTO.getId()).orElseThrow(()->
+        return cropSaleRepository.findById(cropSaleDTO.getId()).orElseThrow(() ->
                 new IllegalArgumentExceptionCustom(CropSale.class,
                         IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
@@ -120,7 +120,7 @@ public class CropSaleManagerDefault implements CropSaleManager {
     @Override
     @Transactional(readOnly = true)
     public CropSaleDTO getCropSaleById(UUID id) {
-        CropSale cropSale= cropSaleRepository.findById(id).orElseThrow(()->new IllegalArgumentExceptionCustom(
+        CropSale cropSale = cropSaleRepository.findById(id).orElseThrow(() -> new IllegalArgumentExceptionCustom(
                 CropSale.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
         return DefaultMappers.cropSaleMapper.entityToDto(cropSale);
     }

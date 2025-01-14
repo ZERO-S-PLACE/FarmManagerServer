@@ -1,37 +1,33 @@
 package org.zeros.farm_manager_server.UnitTests.Service.Operations;
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationForServiceTest;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.PlantDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.SeedingDTO;
-import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Subside;
-import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
-import org.zeros.farm_manager_server.Domain.Entities.Operations.Seeding;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Repositories.Crop.CropRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldPartRepository;
-import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
+import org.zeros.farm_manager_server.JWT_Authentication;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
-import org.zeros.farm_manager_server.Services.Interface.Data.*;
-import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
+import org.zeros.farm_manager_server.Services.Interface.Data.PlantManager;
+import org.zeros.farm_manager_server.Services.Interface.Data.SubsideManager;
 import org.zeros.farm_manager_server.Services.Interface.Operations.AgriculturalOperationsManager;
-import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -50,125 +46,108 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class OperationsManagerTest {
 
     @Autowired
-    FieldPartManager fieldPartManager;
-    @Autowired
-    FieldRepository fieldRepository;
-    @Autowired
-    FieldGroupRepository fieldGroupRepositoryRepository;
-    @Autowired
-    FieldPartRepository fieldPartRepository;
-    @Autowired
-    UserManager userManager;
-    @Autowired
     LoggedUserConfiguration loggedUserConfiguration;
     @Autowired
-    EntityManager entityManager;
+    UserRepository userRepository;
     @Autowired
     private CropManager cropManager;
     @Autowired
     private PlantManager plantManager;
 
-    private FieldPart fieldPart;
-    private Plant plant1;
-    private Plant plant2;
-    @Autowired
-    private CropRepository cropRepository;
     @Autowired
     private SubsideManager subsideManager;
     @Autowired
     private AgriculturalOperationsManager agriculturalOperationsManager;
 
 
+    private FieldPart fieldPart;
+    private Plant plant1;
+    private Plant plant2;
+    private Species plant1Species;
+    @Autowired
+    private TestEntityManager testEntityManager;
+
+
     @BeforeEach
+    @Transactional
     public void setUp() {
-        User user = userManager.getUserByUsername("DEMO_USER");
+        User user = userRepository.findUserById(JWT_Authentication.USER_ID).orElseThrow();
         loggedUserConfiguration.replaceUser(user);
         Field field = user.getFields().stream().findFirst().orElse(Field.NONE);
         fieldPart = field.getFieldParts().stream().findFirst().orElse(FieldPart.NONE);
-        ArrayList<Plant> plants = plantManager.getDefaultPlants(0).stream().collect(Collectors.toCollection(ArrayList::new));
-        plant1 = plants.getFirst();
-        plant2 = plants.getLast();
+        ArrayList<PlantDTO> plants = plantManager.getDefaultPlants(0).stream().collect(Collectors.toCollection(ArrayList::new));
+        plant1 = plantManager.getPlantIfExists(plants.getFirst().getId());
+        plant2 = plantManager.getPlantIfExists(plants.getLast().getId());
+        plant1Species = plant1.getSpecies();
     }
 
 
     @Test
     void testPlanSeeding() {
-        Crop crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
-        Seeding seedingSaved = saveNewSeeding(crop, true);
+        CropDTO crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        SeedingDTO seedingSaved = saveNewSeeding(crop, true);
         crop = cropManager.getCropById(crop.getId());
         assertThat(seedingSaved).isNotNull();
         assertThat(seedingSaved.getId()).isNotNull();
-        assertThat(seedingSaved.getCreatedDate()).isNotNull();
-        assertThat(seedingSaved.getLastModifiedDate()).isNotNull();
         assertThat(seedingSaved.getIsPlannedOperation()).isTrue();
         assertThat(seedingSaved.getOperationType()).isEqualTo(OperationType.SEEDING);
-        assertThat(seedingSaved.getCrop()).isEqualTo(crop);
-        assertThat(seedingSaved.getCrop().getCultivatedPlants()).isEqualTo(Set.of(plant1, plant2));
-        assertThat(seedingSaved.getCrop().getSeeding()).contains(seedingSaved);
-        assertThat(crop.getSeeding()).contains(seedingSaved);
+        assertThat(seedingSaved.getCrop()).isEqualTo(crop.getId());
+        assertThat(crop.getSeeding()).contains(seedingSaved.getId());
     }
 
-    private Seeding saveNewSeeding(Crop crop, boolean planned) {
+    private SeedingDTO saveNewSeeding(CropDTO crop, boolean planned) {
         SeedingDTO seedingDTO = SeedingDTO.builder()
-                .sownPlants(crop.getCultivatedPlants().stream().map(BaseEntity::getId).collect(Collectors.toSet()))
+                .sownPlants(crop.getCultivatedPlants())
                 .depth(BigDecimal.valueOf(10))
                 .quantityPerAreaUnit(BigDecimal.valueOf(120))
                 .build();
         if (planned) {
-            return (Seeding)agriculturalOperationsManager.planOperation(crop.getId(), seedingDTO);
+            return (SeedingDTO) agriculturalOperationsManager.planOperation(crop.getId(), seedingDTO);
         }
-        return (Seeding) agriculturalOperationsManager.addOperation(crop.getId(), seedingDTO);
+        return (SeedingDTO) agriculturalOperationsManager.addOperation(crop.getId(), seedingDTO);
 
     }
 
     @Test
     void testAddSeedingNew() {
-        Crop crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
-        Seeding seedingSaved = saveNewSeeding(crop, false);
+        CropDTO crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        SeedingDTO seedingSaved = saveNewSeeding(crop, false);
         crop = cropManager.getCropById(crop.getId());
         assertThat(seedingSaved).isNotNull();
         assertThat(seedingSaved.getId()).isNotNull();
-        assertThat(seedingSaved.getCreatedDate()).isNotNull();
-        assertThat(seedingSaved.getLastModifiedDate()).isNotNull();
         assertThat(seedingSaved.getIsPlannedOperation()).isFalse();
         assertThat(seedingSaved.getOperationType()).isEqualTo(OperationType.SEEDING);
-        assertThat(seedingSaved.getCrop()).isEqualTo(crop);
-        assertThat(seedingSaved.getCrop().getCultivatedPlants()).isEqualTo(Set.of(plant1, plant2));
-        assertThat(seedingSaved.getCrop().getSeeding()).contains(seedingSaved);
-        assertThat(crop.getSeeding()).contains(seedingSaved);
+        assertThat(seedingSaved.getCrop()).isEqualTo(crop.getId());
+        assertThat(crop.getSeeding()).contains(seedingSaved.getId());
     }
 
     @Test
     void testAddSeedingPlanned() {
-        Crop crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
-        Seeding seedingSaved = saveNewSeeding(crop, false);
+        CropDTO crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        SeedingDTO seedingSaved = saveNewSeeding(crop, false);
         crop = cropManager.getCropById(crop.getId());
         agriculturalOperationsManager.setPlannedOperationPerformed(seedingSaved.getId(), OperationType.SEEDING);
-        seedingSaved = (Seeding) agriculturalOperationsManager.getOperationById(seedingSaved.getId(), OperationType.SEEDING);
+        seedingSaved = (SeedingDTO) agriculturalOperationsManager.getOperationById(seedingSaved.getId(), OperationType.SEEDING);
+        testEntityManager.flush();
         crop = cropManager.getCropById(crop.getId());
         assertThat(seedingSaved).isNotNull();
         assertThat(seedingSaved.getId()).isNotNull();
-        assertThat(seedingSaved.getCreatedDate()).isNotNull();
-        assertThat(seedingSaved.getLastModifiedDate()).isNotNull();
         assertThat(seedingSaved.getIsPlannedOperation()).isFalse();
         assertThat(seedingSaved.getOperationType()).isEqualTo(OperationType.SEEDING);
-        assertThat(seedingSaved.getCrop()).isEqualTo(crop);
-        assertThat(seedingSaved.getCrop().getCultivatedPlants()).isEqualTo(Set.of(plant1, plant2));
-        assertThat(seedingSaved.getCrop().getSeeding()).contains(seedingSaved);
-        assertThat(crop.getSeeding()).contains(seedingSaved);
+        assertThat(seedingSaved.getCrop()).isEqualTo(crop.getId());
+        assertThat(crop.getSeeding()).contains(seedingSaved.getId());
+
     }
 
     @Test
     void testUpdateSeeding() {
-        Crop crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
-        Seeding seedingSaved = saveNewSeeding(crop, false);
+        CropDTO crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        SeedingDTO seedingDTO = saveNewSeeding(crop, false);
 
-        SeedingDTO seedingDTO = DefaultMappers.seedingMapper.entityToDto(seedingSaved);
         seedingDTO.setGerminationRate(BigDecimal.valueOf(0.95f));
         seedingDTO.setRowSpacing(BigDecimal.valueOf(30));
-
         agriculturalOperationsManager.updateOperationParameters(seedingDTO);
-        seedingSaved = (Seeding) agriculturalOperationsManager.getOperationById(seedingSaved.getId(), OperationType.SEEDING);
+        SeedingDTO seedingSaved = (SeedingDTO) agriculturalOperationsManager.getOperationById(seedingDTO.getId(), OperationType.SEEDING);
 
         assertThat(seedingSaved.getIsPlannedOperation()).isFalse();
         assertThat(seedingSaved.getGerminationRate()).isEqualTo(BigDecimal.valueOf(0.95));
@@ -178,35 +157,33 @@ public class OperationsManagerTest {
 
     @Test
     void testDeleteSeeding() {
-        Crop crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
-        Seeding seedingSaved = saveNewSeeding(crop, false);
+        CropDTO crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        SeedingDTO seedingSaved = saveNewSeeding(crop, false);
         crop = cropManager.getCropById(crop.getId());
         assertThat(seedingSaved).isNotNull();
         assertThat(seedingSaved.getId()).isNotNull();
 
         agriculturalOperationsManager.deleteOperation(seedingSaved.getId(), OperationType.SEEDING);
-
+        testEntityManager.flush();
         crop = cropManager.getCropById(crop.getId());
-        Seeding seeding1 = (Seeding) agriculturalOperationsManager.getOperationById(seedingSaved.getId(), OperationType.SEEDING);
+        assertThrows(IllegalArgumentException.class, () -> agriculturalOperationsManager.getOperationById(seedingSaved.getId(), OperationType.SEEDING));
 
-        assertThat(seeding1).isNotNull();
-        assertThat(seeding1).isEqualTo(Seeding.NONE);
-        assertThat(crop.getSeeding().contains(seedingSaved)).isFalse();
+
+        assertThat(crop.getSeeding().contains(seedingSaved.getId())).isFalse();
     }
 
     @Test
     void testAddSubside() {
-        Crop crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
-        Species species = crop.getCultivatedPlants().stream().findFirst().get().getSpecies();
-        List<Subside> subsides = subsideManager.getAllSubsides(0).stream()
-                .filter(subside -> subside.getSpeciesAllowed().contains(species)).toList();
+        CropDTO crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        List<SubsideDTO> subsides = subsideManager.getAllSubsides(0).stream()
+                .filter(subside -> subside.getSpeciesAllowed().contains(plant1Species.getId())).toList();
         cropManager.addSubside(crop.getId(), subsides.get(0).getId());
         cropManager.addSubside(crop.getId(), subsides.get(1).getId());
         cropManager.addSubside(crop.getId(), subsides.get(1).getId());
         cropManager.addSubside(crop.getId(), subsides.get(1).getId());
         crop = cropManager.getCropById(crop.getId());
-        assertThat(crop.getSubsides()).contains(subsides.get(0));
-        assertThat(crop.getSubsides()).contains(subsides.get(1));
+        assertThat(crop.getSubsides()).contains(subsides.get(0).getId());
+        assertThat(crop.getSubsides()).contains(subsides.get(1).getId());
         assertThat(crop.getSubsides().size()).isEqualTo(2);
         assertThrows(IllegalAccessError.class, () -> subsideManager.deleteSubsideSafe(subsides.getFirst().getId()));
 
@@ -214,20 +191,16 @@ public class OperationsManagerTest {
 
     @Test
     void testRemoveSubside() {
-        Crop crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
-        Species species = crop.getCultivatedPlants().stream().findFirst().get().getSpecies();
-        List<Subside> subsides = subsideManager.getAllSubsides(0).stream()
-                .filter(subside -> subside.getSpeciesAllowed().contains(species)).toList();
-        Subside subside = subsides.getFirst();
+        CropDTO crop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plant1.getId(), plant2.getId()));
+        List<SubsideDTO> subsides = subsideManager.getAllSubsides(0).stream()
+                .filter(subside -> subside.getSpeciesAllowed().contains(plant1Species.getId())).toList();
+        SubsideDTO subside = subsides.getFirst();
         cropManager.addSubside(crop.getId(), subside.getId());
         crop = cropManager.getCropById(crop.getId());
-        assertThat(crop.getSubsides()).contains(subside);
+        assertThat(crop.getSubsides()).contains(subside.getId());
         cropManager.removeSubside(crop.getId(), subside.getId());
         crop = cropManager.getCropById(crop.getId());
-        assertThat(crop.getSubsides().contains(subside)).isFalse();
-        List<Crop> cropsWithSubside = cropRepository.findAllBySubsidesContains(subside);
-        assertThat(cropsWithSubside).isEmpty();
-
+        assertThat(crop.getSubsides().contains(subside.getId())).isFalse();
     }
 
 }

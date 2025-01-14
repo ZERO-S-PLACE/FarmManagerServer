@@ -5,8 +5,6 @@ import org.zeros.farm_manager_server.Domain.DTO.Crop.CropDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.InterCropDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.MainCropDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.InterCrop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 
 import java.time.LocalDate;
 import java.util.Set;

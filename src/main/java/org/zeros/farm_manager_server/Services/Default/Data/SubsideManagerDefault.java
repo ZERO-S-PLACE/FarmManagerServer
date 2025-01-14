@@ -123,7 +123,7 @@ public class SubsideManagerDefault implements SubsideManager {
     @Override
     @Transactional(readOnly = true)
     public SubsideDTO getSubsideById(UUID id) {
-        Subside subside = subsideRepository.getSubsideById(id).orElseThrow(() ->
+        Subside subside = subsideRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentExceptionCustom(Subside.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
         return DefaultMappers.subsideMapper.entityToDto(subside);
     }
