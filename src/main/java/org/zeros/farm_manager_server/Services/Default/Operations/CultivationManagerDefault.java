@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.CultivationDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
@@ -29,21 +30,25 @@ public class CultivationManagerDefault implements OperationManager<Cultivation, 
     private final CropManager cropManager;
 
     @Override
+    @Transactional(readOnly = true)
     public Cultivation getOperationById(UUID id) {
         return cultivationRepository.findById(id).orElse(Cultivation.NONE);
     }
 
     @Override
+    @Transactional
     public Cultivation planOperation(UUID cropId, CultivationDTO cultivationDTO) {
         return createNewCultivation(cropId, cultivationDTO, true);
     }
 
     @Override
+    @Transactional
     public Cultivation addOperation(UUID cropId, CultivationDTO cultivationDTO) {
         return createNewCultivation(cropId, cultivationDTO, false);
     }
 
     @Override
+    @Transactional
     public Cultivation updateOperation(CultivationDTO cultivationDTO) {
         Crop crop = cropManager.getCropIfExists(cultivationDTO.getCrop());
         checkOperationModificationAccess(crop);
@@ -61,6 +66,7 @@ public class CultivationManagerDefault implements OperationManager<Cultivation, 
     }
 
     @Override
+    @Transactional
     public void deleteOperation(UUID operationId) {
         Cultivation cultivation = getOperationById(operationId);
         if (cultivation == Cultivation.NONE) {
@@ -69,8 +75,8 @@ public class CultivationManagerDefault implements OperationManager<Cultivation, 
         checkOperationModificationAccess(cultivation.getCrop());
         cultivationRepository.delete(cultivation);
     }
-
-    private Cultivation createNewCultivation(UUID cropId, CultivationDTO operationDTO, boolean planned) {
+@Transactional
+    protected Cultivation createNewCultivation(UUID cropId, CultivationDTO operationDTO, boolean planned) {
         Crop crop = cropManager.getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         checkIfUUIDPresent(operationDTO);

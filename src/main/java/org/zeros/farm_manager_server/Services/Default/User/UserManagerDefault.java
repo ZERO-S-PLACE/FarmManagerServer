@@ -82,32 +82,34 @@ public class UserManagerDefault implements UserManager {
     }
     @Override
     public UserDTO getUserById(UUID id) {
-        return DefaultMappers.userMapper.entityToDto(userRepository.findUserById(id).orElse(User.NONE));
-    }
-
-    public User getUserEntityById(UUID id) {
-        return userRepository.findUserById(id).orElse(User.NONE);
+        User user= userRepository.findById(id).orElseThrow(()-> new IllegalArgumentExceptionCustom(User.class,
+                IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.userMapper.entityToDto(user);
     }
 
     @Override
     public UserDTO getUserByEmail(String email) {
-        return DefaultMappers.userMapper.entityToDto(userRepository.findUserByEmail(email).orElse(User.NONE));
+        User user= userRepository.findUserByEmail(email).orElseThrow(()-> new IllegalArgumentExceptionCustom(User.class,
+                IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.userMapper.entityToDto(user);
     }
 
     @Override
     public UserDTO getUserByUsername(String username) {
-        return userRepository.findUserByUsername(username).orElse(User.NONE);
+        User user= userRepository.findUserByUsername(username).orElseThrow(()-> new IllegalArgumentExceptionCustom(User.class,
+                IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.userMapper.entityToDto(user);
     }
 
     @Override
-    public Page<User> getAllUsers(int pageNumber) {
-        return userRepository.findAll(
-                PageRequest.of(pageNumber, ApplicationDefaults.pageSize, Sort.by("username")));
+    public Page<UserDTO> getAllUsers(int pageNumber) {
+        return userRepository.findAll(PageRequest.of(pageNumber, ApplicationDefaults.pageSize,
+                Sort.by("username"))).map(DefaultMappers.userMapper::entityToDto);
     }
 
 
     @Override
-    public User updateUserInfo(UserDTO userDTO) {
+    public UserDTO updateUserInfo(UserDTO userDTO) {
         User savedUser = userRepository.findUserById(userDTO.getId()).orElse(User.NONE);
         if (savedUser.equals(User.NONE)) {
            throw new IllegalArgumentExceptionCustom(User.class,IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
@@ -122,12 +124,12 @@ public class UserManagerDefault implements UserManager {
             savedUser.setLastName(userDTO.getLastName());
         }
 
-        return userRepository.saveAndFlush(savedUser);
+        return getUserById(savedUser.getId());
     }
 
     @Override
     public void deleteAllUserData(UUID userId) {
-        User user = getUserEntityById(userId);
+        User user = userRepository.findById(userId).orElse(User.NONE);
         if (user == User.NONE) {
             return;
         }

@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationService;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationForServiceTest;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ComponentScan("org.zeros.farm_manager_server.Services")
-@Import(LoggedUserConfigurationService.class)
+@Import(LoggedUserConfigurationForServiceTest.class)
 public class UserDataReaderTest {
 
     @Autowired

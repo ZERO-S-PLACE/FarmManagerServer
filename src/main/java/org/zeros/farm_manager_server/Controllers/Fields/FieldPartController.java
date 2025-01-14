@@ -6,16 +6,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldPartDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
 
 import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,24 +28,18 @@ public class FieldPartController {
 
     @GetMapping(ID_PATH)
     public FieldPartDTO getByFieldId(@PathVariable("id") UUID id) {
-        FieldPart fieldPart = fieldPartManager.getFieldPartById(id);
-        if (fieldPart.equals(FieldPart.NONE)) {
-            throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.fieldPartMapper.entityToDto(fieldPart);
+        return fieldPartManager.getFieldPartById(id);
     }
 
 
     @GetMapping(LIST_ALL_PATH)
     public Set<FieldPartDTO> getAllFieldParts(@RequestParam UUID fieldId) {
-        return fieldPartManager.getAllFieldParts(fieldId).stream()
-                .map(DefaultMappers.fieldPartMapper::entityToDto).collect(Collectors.toSet());
+        return fieldPartManager.getAllFieldParts(fieldId);
     }
 
     @GetMapping(LIST_NON_ARCHIVED_PATH)
     public Set<FieldPartDTO> getAllNonArchivedFieldParts(@RequestParam UUID fieldId) {
-        return fieldPartManager.getAllNonArchivedFieldParts(fieldId).stream()
-                .map(DefaultMappers.fieldPartMapper::entityToDto).collect(Collectors.toSet());
+        return fieldPartManager.getAllNonArchivedFieldParts(fieldId);
     }
 
 
@@ -64,9 +53,9 @@ public class FieldPartController {
     ResponseEntity<String> updateFieldPartAreaTransfer(@RequestParam UUID changedPartId,
                                                        @RequestParam(required = false) UUID resizedPartId,
                                                        @RequestParam BigDecimal newArea) {
-        if(resizedPartId == null) {
+        if (resizedPartId == null) {
             fieldPartManager.updateFieldPartAreaResizeField(changedPartId, newArea);
-        }else {
+        } else {
             fieldPartManager.updateFieldPartAreaTransfer(changedPartId, resizedPartId, newArea);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

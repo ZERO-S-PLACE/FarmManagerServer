@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.SprayApplicationDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
@@ -33,21 +34,25 @@ public class SprayApplicationManagerDefault implements OperationManager<SprayApp
     private final FertilizerManager fertilizerManager;
 
     @Override
+    @Transactional(readOnly = true)
     public SprayApplication getOperationById(UUID id) {
         return sprayApplicationRepository.findById(id).orElse(SprayApplication.NONE);
     }
 
     @Override
+    @Transactional
     public SprayApplication planOperation(UUID cropId, SprayApplicationDTO sprayApplicationDTO) {
         return createNewSprayApplication(cropId, sprayApplicationDTO, true);
     }
 
     @Override
+    @Transactional
     public SprayApplication addOperation(UUID cropId, SprayApplicationDTO sprayApplicationDTO) {
         return createNewSprayApplication(cropId, sprayApplicationDTO, false);
     }
 
     @Override
+    @Transactional
     public SprayApplication updateOperation(SprayApplicationDTO sprayApplicationDTO) {
         Crop crop = cropManager.getCropIfExists(sprayApplicationDTO.getCrop());
         checkOperationModificationAccess(crop);
@@ -65,6 +70,7 @@ public class SprayApplicationManagerDefault implements OperationManager<SprayApp
     }
 
     @Override
+    @Transactional
     public void deleteOperation(UUID operationId) {
         SprayApplication sprayApplication = getOperationById(operationId);
         if (sprayApplication == SprayApplication.NONE) {
@@ -74,7 +80,8 @@ public class SprayApplicationManagerDefault implements OperationManager<SprayApp
         sprayApplicationRepository.delete(sprayApplication);
     }
 
-    private SprayApplication createNewSprayApplication(UUID cropId, SprayApplicationDTO operationDTO, boolean planned) {
+    @Transactional
+    protected SprayApplication createNewSprayApplication(UUID cropId, SprayApplicationDTO operationDTO, boolean planned) {
         Crop crop = cropManager.getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         checkIfUUIDPresent(operationDTO);

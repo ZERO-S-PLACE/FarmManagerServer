@@ -99,7 +99,7 @@ public class FieldPartControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryActive() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -113,7 +113,7 @@ public class FieldPartControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryUnsold() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -127,7 +127,7 @@ public class FieldPartControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryArchived() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -141,7 +141,7 @@ public class FieldPartControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)

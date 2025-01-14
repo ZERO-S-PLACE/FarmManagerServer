@@ -1,6 +1,7 @@
 package org.zeros.farm_manager_server.Services.Interface.Fields;
 
 import jakarta.validation.constraints.NotNull;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 
@@ -17,6 +18,9 @@ public interface FieldManager {
     Set<FieldDTO > getAllFields();
 
     FieldDTO  updateField(@NotNull FieldDTO fieldDTO);
+
+    @Transactional(readOnly = true)
+    Field getFieldIfExists(UUID fieldId);
 
     void deleteFieldWithData(@NotNull UUID fieldId);
 

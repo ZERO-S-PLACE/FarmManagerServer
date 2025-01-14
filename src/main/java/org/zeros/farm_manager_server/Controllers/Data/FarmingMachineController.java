@@ -9,11 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zeros.farm_manager_server.Domain.DTO.Data.FarmingMachineDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Services.Interface.Data.FarmingMachineManager;
 
 import java.util.UUID;
@@ -32,30 +28,22 @@ public class FarmingMachineController {
 
     @GetMapping(ID_PATH)
     public FarmingMachineDTO getById(@PathVariable("id") UUID id) {
-        FarmingMachine farmingMachine = farmingMachineManager.getFarmingMachineById(id);
-        if (farmingMachine == FarmingMachine.NONE) {
-            throw new IllegalArgumentExceptionCustom(FarmingMachine.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.farmingMachineMapper.entityToDto(farmingMachine);
+        return farmingMachineManager.getFarmingMachineById(id);
     }
 
     @GetMapping(LIST_ALL_PATH)
     public Page<FarmingMachineDTO> getAll(@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-
-        return farmingMachineManager.getAllFarmingMachines(pageNumber)
-                .map(DefaultMappers.farmingMachineMapper::entityToDto);
+        return farmingMachineManager.getAllFarmingMachines(pageNumber);
     }
 
     @GetMapping(LIST_DEFAULT_PATH)
     public Page<FarmingMachineDTO> getDefault(@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return farmingMachineManager.getDefaultFarmingMachines(pageNumber)
-                .map(DefaultMappers.farmingMachineMapper::entityToDto);
+        return farmingMachineManager.getDefaultFarmingMachines(pageNumber);
     }
 
     @GetMapping(LIST_USER_PATH)
     public Page<FarmingMachineDTO> getUserCreated(@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return farmingMachineManager.getUserFarmingMachines(pageNumber)
-                .map(DefaultMappers.farmingMachineMapper::entityToDto);
+        return farmingMachineManager.getUserFarmingMachines(pageNumber);
     }
 
     @GetMapping(LIST_PARAM_PATH)
@@ -63,14 +51,13 @@ public class FarmingMachineController {
                                                @RequestParam(required = false) String model,
                                                @RequestParam(required = false) String producer,
                                                @RequestParam(required = false) OperationType operationType) {
-        return farmingMachineManager.getFarmingMachineCriteria(model, producer, operationType, pageNumber)
-                .map(DefaultMappers.farmingMachineMapper::entityToDto);
+        return farmingMachineManager.getFarmingMachineCriteria(model, producer, operationType, pageNumber);
     }
 
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody FarmingMachineDTO farmingMachineDTO) {
 
-        FarmingMachine saved = farmingMachineManager.addFarmingMachine(farmingMachineDTO);
+        FarmingMachineDTO saved = farmingMachineManager.addFarmingMachine(farmingMachineDTO);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
@@ -81,7 +68,6 @@ public class FarmingMachineController {
     ResponseEntity<String> update(@RequestBody FarmingMachineDTO farmingMachineDTO) {
         farmingMachineManager.updateFarmingMachine(farmingMachineDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-
     }
 
     @DeleteMapping(BASE_PATH)
@@ -89,5 +75,4 @@ public class FarmingMachineController {
         farmingMachineManager.deleteFarmingMachineSafe(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
 }

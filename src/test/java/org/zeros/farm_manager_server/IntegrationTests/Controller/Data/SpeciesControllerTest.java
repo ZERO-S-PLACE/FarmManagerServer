@@ -158,7 +158,7 @@ public class SpeciesControllerTest {
 
 
     @Test
-    @Transactional
+
     void addNew() throws Exception {
         SpeciesDTO speciesDTO = SpeciesDTO.builder()
                 .family("TEST")
@@ -185,7 +185,7 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewErrorAlreadyExists() throws Exception {
 
         SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(
@@ -200,7 +200,7 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewMissingName() throws Exception {
         SpeciesDTO speciesDTO = SpeciesDTO.builder()
                 .family("TEST")
@@ -218,7 +218,7 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
+
     void update() throws Exception {
         Species species = saveNewSpecies();
         SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(species);
@@ -262,7 +262,7 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateAccessDenied() throws Exception {
         SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(
                findDefaultSpecies());
@@ -277,7 +277,7 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateModelBlank() throws Exception {
         Species species = saveNewSpecies();
         SpeciesDTO speciesDTO = DefaultMappers.speciesMapper.entityToDto(species);
@@ -292,7 +292,7 @@ public class SpeciesControllerTest {
     }
 
     @Test
-    @Transactional
+
     void deleteSpecies() throws Exception {
         Species species = saveNewSpecies();
 

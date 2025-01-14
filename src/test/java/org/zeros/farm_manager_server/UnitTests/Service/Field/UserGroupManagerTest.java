@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationService;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationForServiceTest;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldGroupDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("local")
 @DataJpaTest
 @ComponentScan("org.zeros.farm_manager_server.Services")
-@Import(LoggedUserConfigurationService.class)
+@Import(LoggedUserConfigurationForServiceTest.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class UserGroupManagerTest {
 

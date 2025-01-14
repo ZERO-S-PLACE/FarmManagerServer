@@ -1,32 +1,35 @@
 package org.zeros.farm_manager_server.Bootstrap;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.GrainParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.RapeSeedParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
-import org.zeros.farm_manager_server.Domain.DTO.Data.SubsideDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Crop.MainCropDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Data.*;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldDTO;
+import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldGroupDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldPartDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.*;
 import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Entities.BaseEntity;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropParameters.CropParameters;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
-import org.zeros.farm_manager_server.Domain.Entities.Data.*;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
-import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
 import org.zeros.farm_manager_server.Domain.Entities.Operations.Harvest;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Domain.Enum.CultivationType;
 import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Enum.ResourceType;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
+import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Default.Crop.CropSaleManagerDefault;
 import org.zeros.farm_manager_server.Services.Default.Operations.AgriculturalOperationsManagerDefault;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropManager;
@@ -64,22 +67,23 @@ public class DemoUserSetup {
     private final CropSaleManagerDefault cropSaleManagerDefault;
     private final AgriculturalOperationsManagerDefault agriculturalOperationsManagerDefault;
     private final LoggedUserConfiguration loggedUserConfiguration;
-    private Field field1;
-    private Field field2;
-    private Field field3;
-    private Field field4;
-    private Field field5;
-    private ArrayList<Plant> plants;
-    private ArrayList<Spray> sprays;
-    private ArrayList<FarmingMachine> farmingMachines;
-    private ArrayList<Fertilizer> fertilizers;
+    private final UserRepository userRepository;
+    private FieldDTO field1;
+    private FieldDTO field2;
+    private FieldDTO field3;
+    private FieldDTO field4;
+    private FieldDTO field5;
+    private ArrayList<PlantDTO> plants;
+    private ArrayList<SprayDTO> sprays;
+    private ArrayList<FarmingMachineDTO> farmingMachines;
+    private ArrayList<FertilizerDTO> fertilizers;
 
     @Transactional
     public void createDemoUser() {
-        if (userManager.getUserByUsername("DEMO_USER").equals(User.NONE)) {
+        if (!demoUserIsCreated()) {
             log.atInfo().log("Creating Demo User");
             createNewDemoUser();
-            loggedUserConfiguration.replaceUser(userManager.getUserByUsername("DEMO_USER"));
+            loggedUserConfiguration.replaceUser(getDemoUser());
             addDemoUserFields();
             log.atInfo().log("Created Demo User fields");
             loadDefaultData();
@@ -87,6 +91,20 @@ public class DemoUserSetup {
             loggedUserConfiguration.replaceUser(User.NONE);
             log.atInfo().log("Created Demo User operations");
         }
+    }
+
+    private boolean demoUserIsCreated() {
+        try {
+            userManager.getUserByUsername("DEMO_USER");
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private User getDemoUser() {
+        UserDTO userDTO = userManager.getUserByUsername("DEMO_USER");
+        return userRepository.findById(userDTO.getId()).orElseThrow();
     }
 
     @Transactional
@@ -114,8 +132,8 @@ public class DemoUserSetup {
 
     @Transactional
     protected void addDemoUserFields() {
-        FieldGroup group1 = fieldGroupManager.createEmptyFieldGroup("Kowary wschód", "");
-        FieldGroup group2 = fieldGroupManager.createEmptyFieldGroup("Kowary zachód", "");
+        FieldGroupDTO group1 = fieldGroupManager.createEmptyFieldGroup("Kowary wschód", "");
+        FieldGroupDTO group2 = fieldGroupManager.createEmptyFieldGroup("Kowary zachód", "");
         field1 = fieldManager.createFieldInGroup(FieldDTO.builder()
                         .fieldName("Koło stawu")
                         .isOwnField(true)
@@ -163,7 +181,7 @@ public class DemoUserSetup {
 
     @Transactional
     protected void divideFields() {
-        fieldPartManager.divideFieldPart(fieldManager.getFieldById(field3.getId()).getFieldParts().stream().findFirst().orElse(FieldPart.NONE).getId(),
+        fieldPartManager.divideFieldPart(fieldManager.getFieldById(field3.getId()).getFieldParts().stream().findFirst().orElseThrow(),
                 FieldPartDTO.builder()
                         .fieldPartName("Część wschodnia")
                         .area(BigDecimal.valueOf(0.5))
@@ -172,7 +190,7 @@ public class DemoUserSetup {
                         .fieldPartName("Część zachodnia")
                         .build()
         );
-        fieldPartManager.divideFieldPart(fieldManager.getFieldById(field5.getId()).getFieldParts().stream().findFirst().orElse(FieldPart.NONE).getId(),
+        fieldPartManager.divideFieldPart(fieldManager.getFieldById(field5.getId()).getFieldParts().stream().findFirst().orElseThrow(),
                 FieldPartDTO.builder()
                         .fieldPartName("Część wschodnia")
                         .area(BigDecimal.valueOf(15.11))
@@ -185,11 +203,12 @@ public class DemoUserSetup {
 
     @Transactional
     protected void addDemoUserCrops() {
-        Set<Field> fields = Set.of(fieldManager.getFieldById(field1.getId()),
+        Set<FieldDTO> fieldsDTOs = Set.of(fieldManager.getFieldById(field1.getId()),
                 fieldManager.getFieldById(field2.getId()),
                 fieldManager.getFieldById(field3.getId()),
                 fieldManager.getFieldById(field4.getId()),
                 fieldManager.getFieldById(field5.getId()));
+        Set<Field> fields = fieldsDTOs.stream().map(field -> fieldManager.getFieldIfExists(field.getId())).collect(Collectors.toSet());
         createActiveCrops(fields);
         createNotActiveCrops(fields);
     }
@@ -197,7 +216,7 @@ public class DemoUserSetup {
     @Transactional
     protected void createActiveCrops(Set<Field> fields) {
         for (Field f : fields) {
-            for (FieldPart fp : fieldManager.getFieldById(f.getId()).getFieldParts()) {
+            for (FieldPart fp : fieldManager.getFieldIfExists(f.getId()).getFieldParts()) {
                 if (!fp.getIsArchived()) {
                     createRandomCropWithOperations(fp, random.nextBoolean(), 0);
                 }
@@ -209,7 +228,7 @@ public class DemoUserSetup {
     protected void createNotActiveCrops(Set<Field> fields) {
         for (int i = 1; i < 10; i++) {
             for (Field f : fields) {
-                for (FieldPart fp : fieldManager.getFieldById(f.getId()).getFieldParts()) {
+                for (FieldPart fp : fieldManager.getFieldIfExists(f.getId()).getFieldParts()) {
                     if (!fp.getIsArchived()) {
                         MainCrop crop = createRandomCropWithOperations(fp, true, i);
                         cropManager.setWorkFinished(crop.getId());
@@ -242,12 +261,13 @@ public class DemoUserSetup {
                     .build());
             amountSoldSum += amountSold;
         }
-        return (MainCrop) cropManager.getCropById(crop.getId());
+        return (MainCrop) cropManager.getCropIfExists(crop.getId());
     }
 
     @Transactional
     protected MainCrop createRandomCropWithOperations(FieldPart fieldPart, boolean withHarvest, int yearsOffset) {
-        MainCrop mainCrop = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plants.get(random.nextInt(0, plants.size() - 1)).getId()));
+        MainCropDTO mainCropDTO = cropManager.createNewMainCrop(fieldPart.getId(), Set.of(plants.get(random.nextInt(0, plants.size() - 1)).getId()));
+        MainCrop mainCrop = (MainCrop) cropManager.getCropIfExists(mainCropDTO.getId());
         for (int i = 0; i < random.nextInt(7) + 1; i++) {
             LocalDate subsideYear = LocalDate.now().minusYears(yearsOffset);
             cropManager.addSubside(mainCrop.getId(), createRandomSubside(mainCrop.getCultivatedPlants(), subsideYear).getId());
@@ -295,10 +315,10 @@ public class DemoUserSetup {
             }
         }
 
-        return (MainCrop) cropManager.getCropById(mainCrop.getId());
+        return (MainCrop) cropManager.getCropIfExists(mainCrop.getId());
     }
 
-    private Subside createRandomSubside(Set<Plant> plants, LocalDate subsideYear) {
+    private SubsideDTO createRandomSubside(Set<Plant> plants, LocalDate subsideYear) {
         return subsideManager.addSubside(SubsideDTO.builder()
                 .name("Subside" + Math.round(random.nextFloat() * 100000))
                 .subsideValuePerAreaUnit(BigDecimal.valueOf(500 * random.nextFloat()))
@@ -311,7 +331,7 @@ public class DemoUserSetup {
         return HarvestDTO.builder()
                 .farmingMachine(farmingMachines.stream()
                         .filter(machine -> machine.getSupportedOperationTypes().contains(OperationType.HARVEST))
-                        .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
+                        .findFirst().orElse(getUndefinedFarmingMachine()).getId())
                 .quantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat() * 15))
                 .cropParameters(getRandomCropParameters(mainCrop).getId())
                 .fuelConsumptionPerUnit(BigDecimal.valueOf(random.nextFloat() * 21))
@@ -325,7 +345,7 @@ public class DemoUserSetup {
         return SprayApplicationDTO.builder()
                 .farmingMachine(farmingMachines.stream()
                         .filter(machine -> machine.getSupportedOperationTypes().contains(OperationType.SPRAY_APPLICATION))
-                        .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
+                        .findFirst().orElse(getUndefinedFarmingMachine()).getId())
                 .fertilizer(fertilizers.get(random.nextInt(fertilizers.size() - 1)).getId())
                 .spray(sprays.get(random.nextInt(sprays.size() - 1)).getId())
                 .quantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat()))
@@ -343,7 +363,7 @@ public class DemoUserSetup {
         return FertilizerApplicationDTO.builder()
                 .farmingMachine(farmingMachines.stream()
                         .filter(machine -> machine.getSupportedOperationTypes().contains(OperationType.FERTILIZER_APPLICATION))
-                        .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
+                        .findFirst().orElse(getUndefinedFarmingMachine()).getId())
                 .fertilizer(fertilizers.get(random.nextInt(fertilizers.size() - 1)).getId())
                 .quantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat()))
                 .pricePerUnit(BigDecimal.valueOf(random.nextInt(100, 2000)))
@@ -358,7 +378,7 @@ public class DemoUserSetup {
         return CultivationDTO.builder()
                 .farmingMachine(farmingMachines.stream()
                         .filter(machine -> machine.getSupportedOperationTypes().contains(OperationType.CULTIVATION))
-                        .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
+                        .findFirst().orElse(getUndefinedFarmingMachine()).getId())
                 .depth(BigDecimal.valueOf(depth))
                 .cultivationType(cultivationTypeAccordingToDepth(depth))
                 .fuelConsumptionPerUnit(BigDecimal.valueOf(random.nextFloat() * 30))
@@ -373,7 +393,7 @@ public class DemoUserSetup {
                 .sownPlants(crop.getCultivatedPlants().stream().map(BaseEntity::getId).collect(Collectors.toSet()))
                 .farmingMachine(farmingMachines.stream()
                         .filter(machine -> machine.getSupportedOperationTypes().contains(OperationType.SEEDING))
-                        .findFirst().orElse(FarmingMachine.UNDEFINED).getId())
+                        .findFirst().orElse(getUndefinedFarmingMachine()).getId())
                 .quantityPerAreaUnit(BigDecimal.valueOf(random.nextFloat() * 100))
                 .thousandSeedsMass(BigDecimal.valueOf(random.nextFloat() * 50))
                 .depth(BigDecimal.valueOf(random.nextFloat() * 10))
@@ -385,6 +405,11 @@ public class DemoUserSetup {
                 .build();
     }
 
+    private FarmingMachineDTO getUndefinedFarmingMachine() {
+        return DefaultMappers.farmingMachineMapper.entityToDto(
+                farmingMachineManager.getUndefinedFarmingMachine());
+    }
+
     private CultivationType cultivationTypeAccordingToDepth(float depth) {
         if (depth < 1) return CultivationType.MULCHING;
         if (depth < 3) return CultivationType.VERY_SHALLOW;
@@ -394,8 +419,8 @@ public class DemoUserSetup {
         return CultivationType.DEEP_LOOSENING;
     }
 
-    protected CropParameters getRandomCropParameters(MainCrop mainCrop) {
-        if (cropManager.getCropById(mainCrop.getId()).getCultivatedPlants().stream().findFirst().orElse(Plant.NONE).getSpecies().getName().equals("Rape seed")) {
+    protected CropParametersDTO getRandomCropParameters(MainCrop mainCrop) {
+        if (cropManager.getCropIfExists(mainCrop.getId()).getCultivatedPlants().stream().findFirst().orElseThrow().getSpecies().getName().equals("Rape seed")) {
             return cropParametersManager.addCropParameters(RapeSeedParametersDTO.builder()
                     .name("Parameters" + Math.round(random.nextFloat() * 10000))
                     .density(BigDecimal.valueOf(600 + random.nextInt(100)))

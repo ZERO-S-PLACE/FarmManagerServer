@@ -6,7 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
+import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
 import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
@@ -40,34 +42,44 @@ public class SpeciesManagerDefault implements SpeciesManager {
     }
 
     @Override
-    public Page<Species> getAllSpecies(int pageNumber) {
-        return speciesRepository.findAllByCreatedByIn(config.allRows(), getPageRequest(pageNumber));
+    @Transactional(readOnly = true)
+    public Page<SpeciesDTO> getAllSpecies(int pageNumber) {
+        return speciesRepository.findAllByCreatedByIn(config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.speciesMapper::entityToDto);
     }
 
     @Override
-    public Page<Species> getDefaultSpecies(int pageNumber) {
-        return speciesRepository.findAllByCreatedByIn(config.defaultRows(), getPageRequest(pageNumber));
+    @Transactional(readOnly = true)
+    public Page<SpeciesDTO> getDefaultSpecies(int pageNumber) {
+        return speciesRepository.findAllByCreatedByIn(config.defaultRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.speciesMapper::entityToDto);
     }
 
     @Override
-    public Page<Species> getUserSpecies(int pageNumber) {
-        return speciesRepository.findAllByCreatedByIn(config.userRows(), getPageRequest(pageNumber));
+    @Transactional(readOnly = true)
+    public Page<SpeciesDTO> getUserSpecies(int pageNumber) {
+        return speciesRepository.findAllByCreatedByIn(config.userRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.speciesMapper::entityToDto);
     }
 
     @Override
-    public Page<Species> getSpeciesByNameAs(String name, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<SpeciesDTO> getSpeciesByNameAs(String name, int pageNumber) {
         return speciesRepository.findAllByNameContainsIgnoreCaseAndCreatedByIn(name,
-                config.allRows(), getPageRequest(pageNumber));
+                        config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.speciesMapper::entityToDto);
     }
 
     @Override
-    public Page<Species> getSpeciesByFamilyAs(String family, int pageNumber) {
+    public Page<SpeciesDTO> getSpeciesByFamilyAs(String family, int pageNumber) {
         return speciesRepository.findAllByFamilyContainsIgnoreCaseAndCreatedByIn(family,
-                config.allRows(), getPageRequest(pageNumber));
+                        config.allRows(), getPageRequest(pageNumber))
+                .map(DefaultMappers.speciesMapper::entityToDto);
     }
 
     @Override
-    public Page<Species> getSpeciesCriteria(String name, String family, int pageNumber) {
+    @Transactional(readOnly = true)
+    public Page<SpeciesDTO> getSpeciesCriteria(String name, String family, int pageNumber) {
         boolean nameNotPresent = name == null || name.isEmpty();
         boolean familyNotPresent = family == null || family.isEmpty();
 
@@ -81,15 +93,20 @@ public class SpeciesManagerDefault implements SpeciesManager {
     }
 
     @Override
-    public Species getSpeciesById(UUID id) {
-        return speciesRepository.findById(id).orElse(Species.NONE);
+    @Transactional(readOnly = true)
+    public SpeciesDTO getSpeciesById(UUID id) {
+        Species species = speciesRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Species.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.speciesMapper.entityToDto(species);
     }
 
     @Override
-    public Species addSpecies(SpeciesDTO speciesDTO) {
+    @Transactional
+    public SpeciesDTO addSpecies(SpeciesDTO speciesDTO) {
         checkIfRequiredFieldsPresent(speciesDTO);
         checkIfUnique(speciesDTO);
-        return speciesRepository.saveAndFlush(rewriteValuesToEntity(speciesDTO, Species.NONE));
+        Species species = speciesRepository.saveAndFlush(rewriteValuesToEntity(speciesDTO, Species.NONE));
+        return DefaultMappers.speciesMapper.entityToDto(species);
     }
 
     private void checkIfRequiredFieldsPresent(SpeciesDTO speciesDTO) {
@@ -119,11 +136,13 @@ public class SpeciesManagerDefault implements SpeciesManager {
     }
 
     @Override
-    public Species updateSpecies(SpeciesDTO speciesDTO) {
+    @Transactional
+    public SpeciesDTO updateSpecies(SpeciesDTO speciesDTO) {
         Species originalSpecies = getSpeciesIfExists(speciesDTO);
         checkAccess(originalSpecies);
         checkIfRequiredFieldsPresent(speciesDTO);
-        return speciesRepository.saveAndFlush(rewriteValuesToEntity(speciesDTO, originalSpecies));
+        Species updated = speciesRepository.saveAndFlush(rewriteValuesToEntity(speciesDTO, originalSpecies));
+        return DefaultMappers.speciesMapper.entityToDto(updated);
     }
 
     private void checkAccess(Species originalSpecies) {
@@ -148,19 +167,15 @@ public class SpeciesManagerDefault implements SpeciesManager {
     }
 
     @Override
+    @Transactional
     public void deleteSpeciesSafe(UUID speciesId) {
-        Species originalSpecies = getSpeciesById(speciesId);
+        Species originalSpecies = speciesRepository.findById(speciesId).orElse(Species.NONE);
         if (originalSpecies == Species.NONE) {
             return;
         }
         checkAccess(originalSpecies);
         checkUsages(originalSpecies);
         speciesRepository.delete(originalSpecies);
-    }
-
-    @Override
-    public Species getUndefinedSpecies() {
-        return speciesRepository.getSpeciesByName("ANY").orElse(Species.ANY);
     }
 
     private void checkUsages(Species originalSpecies) {
@@ -172,5 +187,22 @@ public class SpeciesManagerDefault implements SpeciesManager {
         throw new IllegalAccessErrorCustom(Species.class,
                 IllegalAccessErrorCause.USAGE_IN_OTHER_PLACES);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Species getSpeciesIfExists(UUID speciesId) {
+        if (speciesId == null) {
+            throw new IllegalArgumentExceptionCustom(Species.class, Set.of("Id"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        }
+        return speciesRepository.findById(speciesId).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(Plant.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Species getUndefinedSpecies() {
+        return speciesRepository.getSpeciesByName("ANY").orElse(Species.ANY);
+    }
+
 
 }

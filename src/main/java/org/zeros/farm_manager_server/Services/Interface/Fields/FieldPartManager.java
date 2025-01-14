@@ -1,5 +1,6 @@
 package org.zeros.farm_manager_server.Services.Interface.Fields;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldPartDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
@@ -27,5 +28,5 @@ public interface FieldPartManager {
 
     FieldPartDTO  getFieldPartById(@NotNull UUID id);
 
-
+    FieldPart getFieldPartIfExists(UUID fieldPartId);
 }

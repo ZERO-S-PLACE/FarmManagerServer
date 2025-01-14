@@ -73,7 +73,7 @@ public class CropParametersControllerTest {
 
 
     @BeforeEach
-    @Transactional
+
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .apply(SecurityMockMvcConfigurers.springSecurity()).build();
@@ -81,7 +81,7 @@ public class CropParametersControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getById() throws Exception {
         CropParameters cropParameters = findAnyCropParameters();
         MvcResult result = mockMvc.perform(
@@ -108,7 +108,7 @@ public class CropParametersControllerTest {
 
 
     @Test
-    @Transactional
+
     void getAll() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropParametersController.LIST_ALL_PATH)
@@ -139,7 +139,7 @@ public class CropParametersControllerTest {
 
 
     @Test
-    @Transactional
+
     void getByResourceType() throws Exception {
         CropParameters cropParameters = findAnyCropParameters();
         MvcResult result = mockMvc.perform(
@@ -177,7 +177,7 @@ public class CropParametersControllerTest {
 
 
     @Test
-    @Transactional
+
     void addNew() throws Exception {
         CropParametersDTO cropParametersDTO = GrainParametersDTO.builder()
                 .name("TEST")
@@ -211,7 +211,7 @@ public class CropParametersControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewErrorAlreadyExists() throws Exception {
 
         CropParametersDTO cropParametersDTO = DefaultMappers.cropParametersMapper.entityToDto(findAnyCropParameters());
@@ -225,7 +225,7 @@ public class CropParametersControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewMissingName() throws Exception {
         CropParametersDTO cropParametersDTO = GrainParametersDTO.builder()
                 .resourceType(ResourceType.GRAIN)
@@ -246,7 +246,7 @@ public class CropParametersControllerTest {
     }
 
     @Test
-    @Transactional
+
     void update() throws Exception {
         CropParameters cropParameters = saveNewCropParameters();
         CropParametersDTO cropParametersDTO = DefaultMappers.cropParametersMapper.entityToDto(cropParameters);
@@ -298,7 +298,7 @@ public class CropParametersControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateAccessDenied() throws Exception {
         CropParametersDTO cropParametersDTO = DefaultMappers.cropParametersMapper.entityToDto(
                 cropParametersManager.getUndefinedCropParameters());
@@ -313,7 +313,7 @@ public class CropParametersControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateModelBlank() throws Exception {
         CropParameters cropParameters = saveNewCropParameters();
         CropParametersDTO cropParametersDTO = DefaultMappers.cropParametersMapper.entityToDto(cropParameters);
@@ -328,7 +328,7 @@ public class CropParametersControllerTest {
     }
 
     @Test
-    @Transactional
+
     void deleteCropParameters() throws Exception {
         CropParameters cropParameters = saveNewCropParameters();
 

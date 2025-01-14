@@ -7,10 +7,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
-import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationService;
+import org.zeros.farm_manager_server.Configuration.LoggedUserConfigurationForServiceTest;
 import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
-import org.zeros.farm_manager_server.Domain.Entities.User.User;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Repositories.User.UserRepository;
 import org.zeros.farm_manager_server.Services.Interface.User.UserManager;
@@ -21,25 +19,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ActiveProfiles("local")
 @DataJpaTest
 @ComponentScan("org.zeros.farm_manager_server.Services")
-@Import(LoggedUserConfigurationService.class)
+@Import(LoggedUserConfigurationForServiceTest.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class UserManagerTest {
     @Autowired
     UserRepository userRepository;
     @Autowired
     UserManager userManager;
-    @Autowired
-    LoggedUserConfiguration loggedUserConfiguration;
-
 
     @Test
     void testCreateUser() {
         UserDTO userDTO = createTestUser(0);
-        User savedUser = userManager.registerNewUser(userDTO);
+        UserDTO savedUser = userManager.registerNewUser(userDTO);
         assertThat(savedUser).isNotNull();
         assertThat(savedUser.getId()).isNotNull();
-        assertThat(savedUser.getCreatedDate()).isNotNull();
-        assertThat(savedUser.getLastModifiedDate()).isNotNull();
         assertThat(savedUser.getVersion()).isNotNull();
         assertThat(userRepository.findById(savedUser.getId()).get()).isEqualTo(savedUser);
     }
@@ -48,7 +41,7 @@ public class UserManagerTest {
     void testCreateUserMissingEmail() {
         UserDTO userDTO = createTestUser(3);
         userDTO.setEmail("");
-        assertThrows(IllegalArgumentExceptionCustom.class,()->userManager.registerNewUser(userDTO));
+        assertThrows(IllegalArgumentExceptionCustom.class, () -> userManager.registerNewUser(userDTO));
 
 
     }
@@ -59,7 +52,7 @@ public class UserManagerTest {
         userManager.registerNewUser(userDTO);
         UserDTO userNotUniqueDTO = createTestUser(3);
         userNotUniqueDTO.setUsername("USER_NOT_UNIQUE");
-        assertThrows(IllegalArgumentExceptionCustom.class,()->userManager.registerNewUser(userNotUniqueDTO));
+        assertThrows(IllegalArgumentExceptionCustom.class, () -> userManager.registerNewUser(userNotUniqueDTO));
 
     }
 
@@ -69,15 +62,14 @@ public class UserManagerTest {
         userManager.registerNewUser(userDTO);
         UserDTO userNotUniqueDTO = createTestUser(3);
         userNotUniqueDTO.setEmail("NotUnique@gmail.com");
-        assertThrows(IllegalArgumentExceptionCustom.class,()->userManager.registerNewUser(userNotUniqueDTO));
+        assertThrows(IllegalArgumentExceptionCustom.class, () -> userManager.registerNewUser(userNotUniqueDTO));
     }
-
 
 
     @Test
     void testDeleteAllUserData() {
         UserDTO userDTO = createTestUser(0);
-        User savedUser = userManager.registerNewUser(userDTO);
+        UserDTO savedUser = userManager.registerNewUser(userDTO);
         assertThat(savedUser).isNotNull();
         assertThat(savedUser.getId()).isNotNull();
         userManager.deleteAllUserData(savedUser.getId());

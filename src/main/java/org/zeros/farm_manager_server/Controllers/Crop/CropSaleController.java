@@ -7,10 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSaleDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Crop.CropSale;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Services.Interface.Crop.CropSaleManager;
 
 import java.util.UUID;
@@ -26,17 +22,13 @@ public class CropSaleController {
 
     @GetMapping(ID_PATH)
     public CropSaleDTO getById(@PathVariable("id") UUID id) {
-        CropSale cropSale = cropSaleManager.getCropSaleById(id);
-        if (cropSale == CropSale.NONE) {
-            throw new IllegalArgumentExceptionCustom(CropSale.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.cropSaleMapper.entityToDto(cropSale);
+        return cropSaleManager.getCropSaleById(id);
     }
 
 
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNewCropSale(@RequestParam UUID cropId, @RequestBody CropSaleDTO cropSaleDTO) {
-        CropSale saved = cropSaleManager.addCropSale(cropId, cropSaleDTO);
+        CropSaleDTO saved = cropSaleManager.addCropSale(cropId, cropSaleDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);

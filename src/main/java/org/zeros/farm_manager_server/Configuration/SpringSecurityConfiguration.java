@@ -40,5 +40,4 @@ public class SpringSecurityConfiguration {
         return NimbusJwtDecoder.withJwkSetUri("http://localhost:9000/oauth2/jwks").build();
     }
 
-
 }

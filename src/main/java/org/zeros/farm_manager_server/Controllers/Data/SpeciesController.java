@@ -8,14 +8,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
-import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Domain.DTO.Data.SpeciesDTO;
-import org.zeros.farm_manager_server.Domain.Entities.Data.Species;
-import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Services.Interface.Data.SpeciesManager;
 
-import java.rmi.NoSuchObjectException;
 import java.util.UUID;
 
 @Slf4j
@@ -31,55 +26,41 @@ public class SpeciesController {
     private final SpeciesManager speciesManager;
 
     @GetMapping(ID_PATH)
-    public SpeciesDTO getById(@PathVariable("id") UUID id){
-        Species species = speciesManager.getSpeciesById(id);
-        if (species == Species.NONE) {
-            throw new IllegalArgumentExceptionCustom(Species.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.speciesMapper.entityToDto(species);
-
+    public SpeciesDTO getById(@PathVariable("id") UUID id) {
+        return speciesManager.getSpeciesById(id);
     }
 
     @GetMapping(LIST_ALL_PATH)
     public Page<SpeciesDTO> getAll(
             @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return speciesManager.getAllSpecies(pageNumber)
-                .map(DefaultMappers.speciesMapper::entityToDto);
-
+        return speciesManager.getAllSpecies(pageNumber);
     }
 
     @GetMapping(LIST_DEFAULT_PATH)
     public Page<SpeciesDTO> getDefault(
             @RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return speciesManager.getDefaultSpecies(pageNumber)
-                .map(DefaultMappers.speciesMapper::entityToDto);
+        return speciesManager.getDefaultSpecies(pageNumber);
     }
 
     @GetMapping(LIST_USER_PATH)
     public Page<SpeciesDTO> getUserCreated
             (@RequestParam(required = false, defaultValue = "0") Integer pageNumber) {
-        return speciesManager.getUserSpecies(pageNumber)
-                .map(DefaultMappers.speciesMapper::entityToDto);
-
+        return speciesManager.getUserSpecies(pageNumber);
     }
 
     @GetMapping(LIST_PARAM_PATH)
     public Page<SpeciesDTO> getCriteria(@RequestParam(required = false, defaultValue = "0") Integer pageNumber,
                                         @RequestParam(required = false) String name,
                                         @RequestParam(required = false) String family) {
-        return speciesManager.getSpeciesCriteria(name, family, pageNumber)
-                .map(DefaultMappers.speciesMapper::entityToDto);
-
+        return speciesManager.getSpeciesCriteria(name, family, pageNumber);
     }
 
     @PostMapping(BASE_PATH)
     ResponseEntity<String> addNew(@RequestBody SpeciesDTO speciesDTO) {
-
-        Species saved = speciesManager.addSpecies(speciesDTO);
+        SpeciesDTO saved = speciesManager.addSpecies(speciesDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
-
     }
 
     @PatchMapping(BASE_PATH)

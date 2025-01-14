@@ -19,6 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Controllers.Crop.CropDataReaderController;
 import org.zeros.farm_manager_server.Controllers.Crop.CropParametersController;
+import org.zeros.farm_manager_server.Domain.DTO.User.UserDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
@@ -85,8 +86,9 @@ public class CropDataReaderControllerTest {
     public void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .apply(SecurityMockMvcConfigurers.springSecurity()).build();
-        User user = userManager.getUserByUsername("DEMO_USER");
-        Field field = user.getFields().stream().findAny().orElse(Field.NONE);
+        UserDTO user = userManager.getUserByUsername("DEMO_USER");
+        UUID fieldId = user.getFields().stream().findAny().orElseThrow();
+        Field field=f
         FieldPart fieldPart = field.getFieldParts().stream().filter(fieldPart1 -> !fieldPart1.getIsArchived()).findAny().orElse(FieldPart.NONE);
         unsoldCrop = fieldPart.getCrops().stream().filter(crop ->
             (crop instanceof MainCrop && !((MainCrop) crop).getIsFullySold() && crop
@@ -98,7 +100,7 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryActive() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -113,7 +115,7 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryUnsold() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -128,7 +130,7 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryArchived() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -144,7 +146,7 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
@@ -156,7 +158,7 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
+
     void testGetCropResourcesSummary() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
@@ -171,7 +173,7 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropResourcesDoesNotExist() throws Exception {
          mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
@@ -183,7 +185,7 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
+
     void testGetCropPlannedResourcesSummary() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_PLANNED_RESOURCES_PATH)
@@ -198,7 +200,7 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropResourcesPlannedDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_PLANNED_RESOURCES_PATH)
@@ -211,7 +213,7 @@ public class CropDataReaderControllerTest {
 
 
     @Test
-    @Transactional
+
     void getMeanCropParameters() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_MEAN_PARAMETERS)
@@ -225,7 +227,7 @@ public class CropDataReaderControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropMeanParametersDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_MEAN_PARAMETERS)

@@ -185,7 +185,7 @@ public class FarmingMachineControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addFarmingMachine() throws Exception {
         FarmingMachineDTO farmingMachineDTO = FarmingMachineDTO.builder()
                 .supportedOperationTypes(Set.of(OperationType.SEEDING))
@@ -213,7 +213,7 @@ public class FarmingMachineControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addFarmingMachineErrorMachineExists() throws Exception {
         FarmingMachineDTO farmingMachineDTO = DefaultMappers.farmingMachineMapper.entityToDto(
                 farmingMachineManager.getDefaultFarmingMachines(0).getContent().get(2));
@@ -227,7 +227,7 @@ public class FarmingMachineControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addFarmingMachineMissingModel() throws Exception {
         FarmingMachineDTO farmingMachineDTO = DefaultMappers.farmingMachineMapper.entityToDto(
                 farmingMachineManager.getDefaultFarmingMachines(0).getContent().get(2));
@@ -242,7 +242,7 @@ public class FarmingMachineControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateFarmingMachine() throws Exception {
         FarmingMachine farmingMachineUser = saveNewFarmingMachine();
 
@@ -284,7 +284,7 @@ public class FarmingMachineControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateFarmingMachineAccessDenied() throws Exception {
         FarmingMachineDTO farmingMachineDTO = DefaultMappers.farmingMachineMapper.entityToDto(
                 farmingMachineManager.getDefaultFarmingMachines(0).getContent().get(2));
@@ -313,7 +313,7 @@ public class FarmingMachineControllerTest {
     }
 
     @Test
-    @Transactional
+
     void deleteFarmingMachine() throws Exception {
         FarmingMachine farmingMachineUser = saveNewFarmingMachine();
 
@@ -328,7 +328,7 @@ public class FarmingMachineControllerTest {
     }
 
     @Test
-    @Transactional
+
     void deleteFarmingMachineFailed() throws Exception {
         FarmingMachine farmingMachine = findAnyFarmingMachine();
 

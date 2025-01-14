@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldPartDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldPart;
@@ -16,7 +17,6 @@ import org.zeros.farm_manager_server.Services.Interface.Fields.FieldManager;
 import org.zeros.farm_manager_server.Services.Interface.Fields.FieldPartManager;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,6 +33,7 @@ public class FieldPartManagerDefault implements FieldPartManager {
 
 
     @Override
+    @Transactional
     public void divideFieldPart(UUID originPartId, FieldPartDTO part1DTO, FieldPartDTO part2DTO) {
         FieldPart originPart = fieldPartRepository.findById(originPartId).orElse(FieldPart.NONE);
         if (originPart.equals(FieldPart.NONE)) {
@@ -66,8 +67,9 @@ public class FieldPartManagerDefault implements FieldPartManager {
     }
 
     @Override
-    public FieldPart mergeFieldParts(Set<UUID> fieldPartsIds) {
-        Set<FieldPart> fieldParts = fieldPartsIds.stream().map(this::getFieldPartById).collect(Collectors.toSet());
+    @Transactional
+    public FieldPartDTO mergeFieldParts(Set<UUID> fieldPartsIds) {
+        Set<FieldPart> fieldParts = fieldPartsIds.stream().map(this::getFieldPartIfExists).collect(Collectors.toSet());
         if (fieldParts.size() < 2) {
             throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.NOT_COMPATIBLE);
         }
@@ -90,44 +92,38 @@ public class FieldPartManagerDefault implements FieldPartManager {
         firstPart.setIsArchived(true);
         FieldPart mergedSaved = fieldPartRepository.saveAndFlush(merged);
         flushChanges();
-        return mergedSaved;
+        return getFieldPartById(mergedSaved.getId());
     }
 
     @Override
-    public Set<FieldPart> getAllFieldParts(UUID fieldId) {
-        return fieldManager.getFieldById(fieldId).getFieldParts();
+    @Transactional(readOnly = true)
+    public Set<FieldPartDTO> getAllFieldParts(UUID fieldId) {
+        return fieldManager.getFieldById(fieldId).getFieldParts().stream().map(this::getFieldPartById).collect(Collectors.toSet());
     }
 
     @Override
-    public Set<FieldPart> getAllNonArchivedFieldParts(UUID fieldId) {
-        return new HashSet<>(fieldPartRepository.findAllByFieldAndIsArchived(fieldManager.getFieldById(fieldId), false));
+    @Transactional(readOnly = true)
+    public Set<FieldPartDTO> getAllNonArchivedFieldParts(UUID fieldId) {
+        return fieldPartRepository.findAllByFieldAndIsArchived(fieldManager.getFieldIfExists(fieldId), false).stream().map(
+                DefaultMappers.fieldPartMapper::entityToDto).collect(Collectors.toSet());
+
     }
 
     @Override
-    public FieldPart updateFieldPartName(UUID fieldPartId, String newName) {
-        FieldPart fieldPart = getFieldPartIfExist(fieldPartId);
-        if (newName.equals(fieldPart.getFieldPartName())) {
-            return fieldPart;
+    @Transactional
+    public FieldPartDTO updateFieldPartName(UUID fieldPartId, String newName) {
+        FieldPart fieldPart = getFieldPartIfExists(fieldPartId);
+        if (!newName.equals(fieldPart.getFieldPartName())) {
+            fieldPart.setFieldPartName(validateNewFieldPartName(newName, fieldPart.getField().getId()));
+            flushChanges();
         }
-        fieldPart.setFieldPartName(validateNewFieldPartName(newName, fieldPart.getField().getId()));
-        flushChanges();
         return getFieldPartById(fieldPartId);
     }
 
-    private FieldPart getFieldPartIfExist(UUID fieldPartId) {
-        if (fieldPartId == null) {
-            throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        FieldPart fieldPart = getFieldPartById(fieldPartId);
-        if (fieldPart.equals(FieldPart.NONE)) {
-            throw new IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return fieldPart;
-    }
-
     @Override
+    @Transactional
     public void updateFieldPartAreaResizeField(UUID fieldPartId, BigDecimal newArea) {
-        FieldPart fieldPart = getFieldPartIfExist(fieldPartId);
+        FieldPart fieldPart = getFieldPartIfExists(fieldPartId);
         Field field = fieldPart.getField();
         field.setArea(field.getArea().subtract(fieldPart.getArea()).add(newArea));
         fieldPart.setArea(newArea);
@@ -136,9 +132,10 @@ public class FieldPartManagerDefault implements FieldPartManager {
     }
 
     @Override
+    @Transactional
     public void updateFieldPartAreaTransfer(UUID basePartId, UUID resizedPartId, BigDecimal newArea) {
-        FieldPart basePart = getFieldPartIfExist(basePartId);
-        FieldPart resizedPart = getFieldPartIfExist(resizedPartId);
+        FieldPart basePart = getFieldPartIfExists(basePartId);
+        FieldPart resizedPart = getFieldPartIfExists(resizedPartId);
         Field field = fieldRepository.findById(basePart.getField().getId()).orElse(Field.NONE);
         if (basePart.equals(FieldPart.NONE)
                 || field.equals(Field.NONE)
@@ -151,13 +148,15 @@ public class FieldPartManagerDefault implements FieldPartManager {
     }
 
     @Override
-    public FieldPart getFieldPartById(UUID id) {
-        return fieldPartRepository.findById(id).orElse(FieldPart.NONE);
+    public FieldPartDTO getFieldPartById(UUID id) {
+        FieldPart fieldPart = fieldPartRepository.findById(id).orElseThrow(() -> new
+                IllegalArgumentExceptionCustom(FieldPart.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.fieldPartMapper.entityToDto(fieldPart);
     }
 
 
     private String validateNewFieldPartName(String name, UUID fieldId) {
-        Field field = fieldManager.getFieldById(fieldId);
+        Field field = fieldManager.getFieldIfExists(fieldId);
         if (field.equals(Field.NONE)) {
             throw new IllegalArgumentExceptionCustom(
                     FieldPart.class, Set.of("field"), IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
@@ -178,9 +177,23 @@ public class FieldPartManagerDefault implements FieldPartManager {
         return name;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public FieldPart getFieldPartIfExists(UUID fieldPartId) {
+        if (fieldPartId == null) {
+            throw new IllegalArgumentExceptionCustom(FieldPart.class, Set.of("field"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
+        }
+
+        return fieldPartRepository.findById(fieldPartId).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(FieldPart.class,
+                        IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+    }
+
 
     private void flushChanges() {
         entityManager.flush();
         entityManager.clear();
     }
+
 }

@@ -173,7 +173,7 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNew() throws Exception {
         Plant plantWithSameSpecies = findDefaultPlant();
         PlantDTO plantDTO = PlantDTO.builder()
@@ -202,7 +202,7 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewErrorAlreadyExists() throws Exception {
 
         PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(
@@ -217,7 +217,7 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewMissingVariety() throws Exception {
         Plant plantWithSameSpecies = findDefaultPlant();
         PlantDTO plantDTO = PlantDTO.builder()
@@ -236,7 +236,7 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
+
     void update() throws Exception {
         Plant plant = createNewPlant();
 
@@ -283,7 +283,7 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateAccessDenied() throws Exception {
         PlantDTO plantDTO = DefaultMappers.plantMapper.entityToDto(
               findDefaultPlant());
@@ -298,7 +298,7 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateVarietyBlank() throws Exception {
         Plant plant = createNewPlant();
 
@@ -314,7 +314,7 @@ public class PlantControllerTest {
     }
 
     @Test
-    @Transactional
+
     void deletePlant() throws Exception {
         Plant plant = createNewPlant();
 

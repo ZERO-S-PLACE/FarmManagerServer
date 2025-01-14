@@ -10,7 +10,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 public class JWT_Authentication {
 
-    public static final UUID USER_ID=UUID.fromString("1b5f3562-c9be-460f-8b5d-3903dd042208");
+    public static final UUID USER_ID=UUID.fromString("22179626-d06b-4b8b-9d71-507a63b59890");
     public static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRequestPostProcessor =
             jwt().jwt(
                     jwt -> jwt.claims(

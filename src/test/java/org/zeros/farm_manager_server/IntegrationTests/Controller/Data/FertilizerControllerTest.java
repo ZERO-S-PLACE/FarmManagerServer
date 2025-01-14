@@ -159,7 +159,7 @@ public class FertilizerControllerTest {
 
 
     @Test
-    @Transactional
+
     void addNew() throws Exception {
         FertilizerDTO fertilizerDTO = FertilizerDTO.builder()
                 .producer("TEST32")
@@ -189,7 +189,7 @@ public class FertilizerControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewErrorAlreadyExists() throws Exception {
 
         FertilizerDTO FertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(
@@ -204,7 +204,7 @@ public class FertilizerControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewMissingName() throws Exception {
         FertilizerDTO fertilizerDTO = FertilizerDTO.builder()
                 .producer("TEST")
@@ -224,7 +224,7 @@ public class FertilizerControllerTest {
     }
 
     @Test
-    @Transactional
+
     void update() throws Exception {
         Fertilizer fertilizer = addNewFertilizer();
         FertilizerDTO fertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
@@ -270,7 +270,7 @@ public class FertilizerControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateAccessDenied() throws Exception {
         FertilizerDTO fertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(
                 findDefaultFertilizer());
@@ -285,7 +285,7 @@ public class FertilizerControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateModelBlank() throws Exception {
         Fertilizer fertilizer = addNewFertilizer();
         FertilizerDTO FertilizerDTO = DefaultMappers.fertilizerMapper.entityToDto(fertilizer);
@@ -300,7 +300,7 @@ public class FertilizerControllerTest {
     }
 
     @Test
-    @Transactional
+
     void deleteFertilizer() throws Exception {
         Fertilizer fertilizer = addNewFertilizer();
 

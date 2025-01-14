@@ -15,7 +15,7 @@ import java.util.Set;
 @Component
 @Getter
 @Profile("local")
-public class LoggedUserConfigurationService implements LoggedUserConfiguration {
+public class LoggedUserConfigurationForServiceTest implements LoggedUserConfiguration {
     private User loggedUser = User.NONE;
     @Override
     public void replaceUser(User newUser) {

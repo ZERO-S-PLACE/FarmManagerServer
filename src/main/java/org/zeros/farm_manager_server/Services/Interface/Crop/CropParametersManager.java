@@ -25,9 +25,9 @@ public interface CropParametersManager {
 
     Page<CropParametersDTO > getParametersByResourceType(@NotNull ResourceType resourceType, int pageNumber);
 
-    CropParametersDTO  getCropParametersIfExist(UUID cropParametersId);
-
     void deleteCropParametersSafe(@NotNull UUID cropParametersId);
 
-    CropParametersDTO  getUndefinedCropParameters();
+    CropParameters getCropParametersIfExist(UUID cropParametersId);
+
+    CropParameters  getUndefinedCropParameters();
 }

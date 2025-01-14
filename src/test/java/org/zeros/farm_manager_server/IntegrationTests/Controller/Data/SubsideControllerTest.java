@@ -144,7 +144,7 @@ public class SubsideControllerTest {
 
 
     @Test
-    @Transactional
+
     void getBySpeciesAllowed() throws Exception {
         Subside subside = findDefaultSubside();
         MvcResult result = mockMvc.perform(
@@ -160,7 +160,7 @@ public class SubsideControllerTest {
         displayResponse(result);
     }
     @Test
-    @Transactional
+
     void getByNameAndSpeciesAllowed() throws Exception {
         Subside subside = findDefaultSubside();
         MvcResult result = mockMvc.perform(
@@ -179,7 +179,7 @@ public class SubsideControllerTest {
 
 
     @Test
-    @Transactional
+
     void addNew() throws Exception {
         SubsideDTO subsideDTO = SubsideDTO.builder()
                 .name("TEST")
@@ -208,7 +208,7 @@ public class SubsideControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewErrorAlreadyExists() throws Exception {
 
         SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(
@@ -223,7 +223,7 @@ public class SubsideControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewMissingName() throws Exception {
         SubsideDTO subsideDTO = SubsideDTO.builder()
                 .yearOfSubside(LocalDate.now())
@@ -243,7 +243,7 @@ public class SubsideControllerTest {
     }
 
     @Test
-    @Transactional
+
     void update() throws Exception {
         Subside subside = saveNewSubside();
         SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(subside);
@@ -290,7 +290,7 @@ public class SubsideControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateAccessDenied() throws Exception {
         SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(
                findDefaultSubside());
@@ -305,7 +305,7 @@ public class SubsideControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateModelBlank() throws Exception {
         Subside subside = saveNewSubside();
         SubsideDTO subsideDTO = DefaultMappers.subsideMapper.entityToDto(subside);
@@ -320,7 +320,7 @@ public class SubsideControllerTest {
     }
 
     @Test
-    @Transactional
+
     void deleteSubside() throws Exception {
         Subside subside = saveNewSubside();
 

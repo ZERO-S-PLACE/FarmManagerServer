@@ -42,42 +42,34 @@ public class UserController {
 
     @GetMapping(ADMIN_USER_PATH_ID)
     public UserDTO getUserDataById(@PathVariable("id") UUID id) {
-        User user = userManager.getUserEntityById(id);
-        if (user.getId() == null) {
-            throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.userMapper.entityToDto(user);
+        return userManager.getUserById(id);
     }
-
 
 
     @GetMapping(ADMIN_GET_USER_PATH)
     public UserDTO getUserCriteria(@RequestParam(required = false, defaultValue = "") String email,
-                                     @RequestParam(required = false,defaultValue = "")String username) {
-        User user;
-        if(username.isBlank()&&email.isBlank()) {
+                                   @RequestParam(required = false, defaultValue = "") String username) {
+        UserDTO user;
+        if (username.isBlank() && email.isBlank()) {
             throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
         if (email.isBlank()) {
-           user = userManager.getUserByUsername(username);
-        }else {
-            user=userManager.getUserByEmail(email);
+            user = userManager.getUserByUsername(username);
+        } else {
+            user = userManager.getUserByEmail(email);
         }
-        if(user.equals(User.NONE))
-        {
-            throw new IllegalArgumentExceptionCustom(AgriculturalOperation.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return DefaultMappers.userMapper.entityToDto(user);
+
+        return user;
     }
 
     @GetMapping(ADMIN_LIST_ALL_USERS_PATH)
     public Page<UserDTO> getAllUsers(@RequestParam Integer pageNumber) {
-        return userManager.getAllUsers(pageNumber).map(DefaultMappers.userMapper::entityToDto);
+        return userManager.getAllUsers(pageNumber);
     }
 
     @PostMapping(REGISTER_PATH)
     ResponseEntity<String> addNew(@RequestBody UserDTO userDTO) {
-        User saved=userManager.registerNewUser(userDTO);
+        UserDTO saved = userManager.registerNewUser(userDTO);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);

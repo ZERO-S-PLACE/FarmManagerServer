@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.SeedingDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
@@ -32,21 +33,25 @@ public class SeedingManagerDefault implements OperationManager<Seeding, SeedingD
     private final CropManager cropManager;
 
     @Override
+    @Transactional(readOnly = true)
     public Seeding getOperationById(UUID id) {
         return seedingRepository.findById(id).orElse(Seeding.NONE);
     }
 
     @Override
+    @Transactional
     public Seeding planOperation(UUID cropId, SeedingDTO seedingDTO) {
         return createNewSeeding(cropId, seedingDTO, true);
     }
 
     @Override
+    @Transactional
     public Seeding addOperation(UUID cropId, SeedingDTO seedingDTO) {
         return createNewSeeding(cropId, seedingDTO, false);
     }
 
     @Override
+    @Transactional
     public Seeding updateOperation(SeedingDTO seedingDTO) {
         Crop crop = cropManager.getCropIfExists(seedingDTO.getCrop());
         checkOperationModificationAccess(crop);
@@ -64,6 +69,7 @@ public class SeedingManagerDefault implements OperationManager<Seeding, SeedingD
     }
 
     @Override
+    @Transactional
     public void deleteOperation(UUID operationId) {
         Seeding seeding = getOperationById(operationId);
         if (seeding == Seeding.NONE) {
@@ -73,7 +79,8 @@ public class SeedingManagerDefault implements OperationManager<Seeding, SeedingD
         seedingRepository.delete(seeding);
     }
 
-    private Seeding createNewSeeding(UUID cropId, SeedingDTO operationDTO, boolean planned) {
+    @Transactional
+    protected Seeding createNewSeeding(UUID cropId, SeedingDTO operationDTO, boolean planned) {
         Crop crop = cropManager.getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         checkIfUUIDPresent(operationDTO);

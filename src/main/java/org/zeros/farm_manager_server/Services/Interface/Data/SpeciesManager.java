@@ -29,6 +29,8 @@ public interface SpeciesManager {
 
     void deleteSpeciesSafe(@NotNull UUID speciesId);
 
+    Species getSpeciesIfExists(UUID species);
+
     Species  getUndefinedSpecies();
 
 

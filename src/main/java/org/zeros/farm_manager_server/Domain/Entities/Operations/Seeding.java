@@ -6,9 +6,9 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.MainCrop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.Plant;
+import org.zeros.farm_manager_server.Domain.Enum.OperationType;
 
 import java.math.BigDecimal;
 import java.util.HashSet;

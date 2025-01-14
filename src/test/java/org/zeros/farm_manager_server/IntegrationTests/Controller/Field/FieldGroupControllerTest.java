@@ -99,7 +99,7 @@ public class FieldGroupControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryActive() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -113,7 +113,7 @@ public class FieldGroupControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryUnsold() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -127,7 +127,7 @@ public class FieldGroupControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryArchived() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_SUMMARY_PATH)
@@ -141,7 +141,7 @@ public class FieldGroupControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropSummaryDoesNotExist() throws Exception {
         mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
@@ -152,7 +152,7 @@ public class FieldGroupControllerTest {
     }
 
     @Test
-    @Transactional
+
     void testGetCropResourcesSummary() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
@@ -166,7 +166,7 @@ public class FieldGroupControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getCropResourcesDoesNotExist() throws Exception {
          mockMvc.perform(
                         get(CropDataReaderController.CROP_RESOURCES_PATH)
@@ -177,7 +177,7 @@ public class FieldGroupControllerTest {
     }
 
     @Test
-    @Transactional
+
     void testGetCropPlannedResourcesSummary() throws Exception {
         MvcResult result = mockMvc.perform(
                         get(CropDataReaderController.CROP_PLANNED_RESOURCES_PATH)

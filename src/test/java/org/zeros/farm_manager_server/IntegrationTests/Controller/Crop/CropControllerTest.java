@@ -108,7 +108,7 @@ public class CropControllerTest {
 //    void deleteCropAndItsData(@NotNull UUID cropId);
 
     @Test
-    @Transactional
+
     void getById() throws Exception {
         Crop crop = fieldPart.getCrops().stream().findAny().orElse(null);
         MvcResult result = mockMvc.perform(get(CropController.ID_PATH, crop.getId())
@@ -131,7 +131,7 @@ public class CropControllerTest {
 
 
     @Test
-    @Transactional
+
     void addNewMainCrop() throws Exception {
 
         MvcResult result = mockMvc.perform(post(CropController.BASE_PATH)
@@ -157,7 +157,7 @@ public class CropControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewErrorAlreadyExists() throws Exception {
 
         CropDTO cropDTO = DefaultMappers.cropMapper.entityToDto(
@@ -171,7 +171,7 @@ public class CropControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewMissingName() throws Exception {
         CropDTO cropDTO = GrainDTO.builder()
                 .resourceType(ResourceType.GRAIN)
@@ -191,7 +191,7 @@ public class CropControllerTest {
     }
 
     @Test
-    @Transactional
+
     void update() throws Exception {
         Crop crop = saveNewCrop();
         CropDTO cropDTO = DefaultMappers.cropMapper.entityToDto(crop);
@@ -225,7 +225,7 @@ public class CropControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateAccessDenied() throws Exception {
         CropDTO cropDTO = DefaultMappers.cropMapper.entityToDto(
                 cropManager.getUndefinedCrop());
@@ -239,7 +239,7 @@ public class CropControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateModelBlank() throws Exception {
         Crop crop = saveNewCrop();
         CropDTO cropDTO = DefaultMappers.cropMapper.entityToDto(crop);
@@ -253,7 +253,7 @@ public class CropControllerTest {
     }
 
     @Test
-    @Transactional
+
     void deleteCrop() throws Exception {
         Crop crop = saveNewCrop();
 

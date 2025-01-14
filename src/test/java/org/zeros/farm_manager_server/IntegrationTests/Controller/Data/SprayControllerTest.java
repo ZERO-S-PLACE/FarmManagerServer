@@ -170,7 +170,7 @@ public class SprayControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNew() throws Exception {
         SprayDTO sprayDTO = SprayDTO.builder()
                 .activeSubstances(Set.of("X1"))
@@ -199,7 +199,7 @@ public class SprayControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewErrorAlreadyExists() throws Exception {
 
 
@@ -215,7 +215,7 @@ public class SprayControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewMissingName() throws Exception {
         SprayDTO sprayDTO = SprayDTO.builder()
                 .activeSubstances(Set.of("X1"))
@@ -233,7 +233,7 @@ public class SprayControllerTest {
     }
 
     @Test
-    @Transactional
+
     void update() throws Exception {
         Spray spray = saveNewSpray();
         SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(spray);
@@ -280,7 +280,7 @@ public class SprayControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateAccessDenied() throws Exception {
         SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(
               findDefaultSpray());
@@ -295,7 +295,7 @@ public class SprayControllerTest {
     }
 
     @Test
-    @Transactional
+
     void updateModelBlank() throws Exception {
         Spray spray = saveNewSpray();
         SprayDTO sprayDTO = DefaultMappers.sprayMapper.entityToDto(spray);
@@ -310,7 +310,7 @@ public class SprayControllerTest {
     }
 
     @Test
-    @Transactional
+
     void deleteSpray() throws Exception {
         Spray spray = saveNewSpray();
         mockMvc.perform(delete(SprayController.BASE_PATH)

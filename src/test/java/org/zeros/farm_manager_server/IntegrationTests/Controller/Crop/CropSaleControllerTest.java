@@ -84,7 +84,7 @@ public class CropSaleControllerTest {
     private CropParametersManagerDefault cropParametersManagerDefault;
 
     @BeforeEach
-    @Transactional
+
     public void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .apply(SecurityMockMvcConfigurers.springSecurity()).build();
@@ -98,7 +98,7 @@ public class CropSaleControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getById() throws Exception {
         CropSale cropSale = saveNewCropSale();
         MvcResult result = mockMvc.perform(
@@ -114,7 +114,7 @@ public class CropSaleControllerTest {
     }
 
     @Test
-    @Transactional
+
     void getByIdNotFound() throws Exception {
         mockMvc.perform(get(CropSaleController.ID_PATH, UUID.randomUUID().toString())
                         .with(JWT_Authentication.jwtRequestPostProcessor)
@@ -125,7 +125,7 @@ public class CropSaleControllerTest {
 
 
     @Test
-    @Transactional
+
     void addNew() throws Exception {
         CropSaleDTO cropSaleDTO = CropSaleDTO.builder()
                 .cropParameters(cropParametersManagerDefault.getUndefinedCropParameters().getId())
@@ -160,7 +160,7 @@ public class CropSaleControllerTest {
     }
 
     @Test
-    @Transactional
+
     void addNewErrorAlreadyExists() throws Exception {
         CropSaleDTO cropSaleDTO = DefaultMappers.cropSaleMapper.entityToDto(((MainCrop) archivedCrop).getCropSales().stream().findFirst().get());
 
@@ -175,7 +175,7 @@ public class CropSaleControllerTest {
 
 
     @Test
-    @Transactional
+
     void update() throws Exception {
         CropSale cropSale = saveNewCropSale();
         CropSaleDTO cropSaleDTO = DefaultMappers.cropSaleMapper.entityToDto(cropSale);
@@ -225,7 +225,7 @@ public class CropSaleControllerTest {
 
 
     @Test
-    @Transactional
+
     void deleteCropSale() throws Exception {
         CropSale cropSale = saveNewCropSale();
         mockMvc.perform(delete(CropSaleController.BASE_PATH)

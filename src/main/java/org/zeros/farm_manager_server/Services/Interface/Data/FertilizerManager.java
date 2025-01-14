@@ -29,9 +29,9 @@ public interface FertilizerManager {
 
     FertilizerDTO  updateFertilizer(@NotNull FertilizerDTO fertilizerDTO);
 
-    FertilizerDTO  getFertilizerIfExists(UUID fertilizerId);
-
     void deleteFertilizerSafe(@NotNull UUID fertilizerId);
+
+    Fertilizer  getFertilizerIfExists(UUID fertilizerId);
 
     Fertilizer getUndefinedFertilizer();
 }

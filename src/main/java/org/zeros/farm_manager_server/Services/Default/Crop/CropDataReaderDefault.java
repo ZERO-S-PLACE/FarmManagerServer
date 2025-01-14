@@ -1,9 +1,9 @@
 package org.zeros.farm_manager_server.Services.Default.Crop;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropParameters.CropParametersDTO;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.CropSummary;
 import org.zeros.farm_manager_server.Domain.DTO.Crop.CropSummary.ResourcesSummary;
@@ -43,9 +43,9 @@ public class CropDataReaderDefault implements CropDataReader {
     private final CropManager cropManager;
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public CropSummary getCropSummary(UUID cropId) {
-        Crop crop = getCropIfExist(cropId);
+        Crop crop = cropManager.getCropIfExists(cropId);
         return CropSummary.builder()
                 .cropId(crop.getId())
                 .area(crop.getFieldPart().getArea())
@@ -60,13 +60,6 @@ public class CropDataReaderDefault implements CropDataReader {
                 .build();
     }
 
-    private Crop getCropIfExist(UUID cropId) {
-        Crop crop = cropManager.getCropById(cropId);
-        if (crop == MainCrop.NONE) {
-            throw new IllegalArgumentExceptionCustom(Crop.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return crop;
-    }
 
     private boolean getIsValueDetermined(Crop crop) {
         if (crop instanceof MainCrop) {
@@ -226,9 +219,9 @@ public class CropDataReaderDefault implements CropDataReader {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public ResourcesSummary getCropResourcesSummary(UUID cropId) {
-        Crop crop = getCropIfExist(cropId);
+        Crop crop = cropManager.getCropIfExists(cropId);
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
                 .area(crop.getFieldPart().getArea())
@@ -239,9 +232,9 @@ public class CropDataReaderDefault implements CropDataReader {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public ResourcesSummary getPlannedResourcesSummary(UUID cropId) {
-        Crop crop = getCropIfExist(cropId);
+        Crop crop = cropManager.getCropIfExists(cropId);
         return ResourcesSummary.builder()
                 .cropId(crop.getId())
                 .area(crop.getFieldPart().getArea())
@@ -338,9 +331,9 @@ public class CropDataReaderDefault implements CropDataReader {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<ResourceType, CropParametersDTO> getMeanCropParameters(UUID cropId) {
-        Crop crop = getCropIfExist(cropId);
+        Crop crop = cropManager.getCropIfExists(cropId);
         if (crop instanceof InterCrop) {
             return new HashMap<>();
         }

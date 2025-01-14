@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Domain.DTO.Operations.FertilizerApplicationDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Crop.Crop;
 import org.zeros.farm_manager_server.Domain.Entities.Data.FarmingMachine;
@@ -31,21 +32,25 @@ public class FertilizerApplicationManagerDefault implements OperationManager<Fer
     private final FertilizerManager fertilizerManager;
 
     @Override
+    @Transactional(readOnly = true)
     public FertilizerApplication getOperationById(UUID id) {
         return fertilizerApplicationRepository.findById(id).orElse(FertilizerApplication.NONE);
     }
 
     @Override
+    @Transactional
     public FertilizerApplication planOperation(UUID cropId, FertilizerApplicationDTO fertilizerApplicationDTO) {
         return createNewFertilizerApplication(cropId, fertilizerApplicationDTO, true);
     }
 
     @Override
+    @Transactional
     public FertilizerApplication addOperation(UUID cropId, FertilizerApplicationDTO fertilizerApplicationDTO) {
         return createNewFertilizerApplication(cropId, fertilizerApplicationDTO, false);
     }
 
     @Override
+    @Transactional
     public FertilizerApplication updateOperation(FertilizerApplicationDTO fertilizerApplicationDTO) {
         Crop crop = cropManager.getCropIfExists(fertilizerApplicationDTO.getCrop());
         checkOperationModificationAccess(crop);
@@ -63,6 +68,7 @@ public class FertilizerApplicationManagerDefault implements OperationManager<Fer
     }
 
     @Override
+    @Transactional
     public void deleteOperation(UUID operationId) {
         FertilizerApplication fertilizerApplication = getOperationById(operationId);
         if (fertilizerApplication == FertilizerApplication.NONE) {
@@ -71,8 +77,8 @@ public class FertilizerApplicationManagerDefault implements OperationManager<Fer
         checkOperationModificationAccess(fertilizerApplication.getCrop());
         fertilizerApplicationRepository.delete(fertilizerApplication);
     }
-
-    private FertilizerApplication createNewFertilizerApplication(UUID cropId, FertilizerApplicationDTO operationDTO, boolean planned) {
+    @Transactional
+    protected FertilizerApplication createNewFertilizerApplication(UUID cropId, FertilizerApplicationDTO operationDTO, boolean planned) {
         Crop crop = cropManager.getCropIfExists(cropId);
         checkOperationModificationAccess(crop);
         checkIfUUIDPresent(operationDTO);

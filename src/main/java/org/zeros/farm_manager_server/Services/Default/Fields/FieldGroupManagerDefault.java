@@ -4,14 +4,16 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zeros.farm_manager_server.Configuration.LoggedUserConfiguration;
 import org.zeros.farm_manager_server.Domain.DTO.Fields.FieldGroupDTO;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.Field;
 import org.zeros.farm_manager_server.Domain.Entities.Fields.FieldGroup;
 import org.zeros.farm_manager_server.Domain.Entities.User.User;
+import org.zeros.farm_manager_server.Domain.Mappers.DefaultMappers;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalAccessErrorCause;
-import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.Exception.Enum.IllegalArgumentExceptionCause;
+import org.zeros.farm_manager_server.Exception.IllegalAccessErrorCustom;
 import org.zeros.farm_manager_server.Exception.IllegalArgumentExceptionCustom;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldGroupRepository;
 import org.zeros.farm_manager_server.Repositories.Fields.FieldRepository;
@@ -25,7 +27,7 @@ import java.util.stream.Collectors;
 @Service
 @Primary
 @RequiredArgsConstructor
-public class FieldGroupManagerDefault implements FieldGroupManager{
+public class FieldGroupManagerDefault implements FieldGroupManager {
 
     private final FieldGroupRepository fieldGroupRepository;
     private final FieldRepository fieldRepository;
@@ -33,7 +35,8 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
     private final LoggedUserConfiguration loggedUserConfiguration;
 
     @Override
-    public FieldGroup createEmptyFieldGroup(String fieldGroupName, String description) {
+    @Transactional
+    public FieldGroupDTO createEmptyFieldGroup(String fieldGroupName, String description) {
         User user = loggedUserConfiguration.getLoggedUser();
         fieldGroupName = validateFieldGroupName(fieldGroupName);
         FieldGroup fieldGroup = FieldGroup.builder().
@@ -44,7 +47,7 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
         FieldGroup fieldGroupSaved = fieldGroupRepository.saveAndFlush(fieldGroup);
         user.addFieldGroup(fieldGroup);
         flushChanges();
-        return fieldGroupRepository.findById(fieldGroupSaved.getId()).orElse(FieldGroup.NONE);
+        return getFieldGroupById(fieldGroupSaved.getId());
     }
 
     private String validateFieldGroupName(String fieldGroupName) {
@@ -58,53 +61,65 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
     }
 
     @Override
-    public FieldGroup getFieldGroupByName(String groupName) {
-        return fieldGroupRepository.findByUserAndFieldGroupName(loggedUserConfiguration.getLoggedUser(), groupName).orElse(FieldGroup.NONE);
+    @Transactional(readOnly = true)
+    public FieldGroupDTO getFieldGroupByName(String groupName) {
+        FieldGroup fieldGroup = fieldGroupRepository.findByUserAndFieldGroupName(loggedUserConfiguration.getLoggedUser(), groupName).orElse(FieldGroup.NONE);
+        return DefaultMappers.fieldGroupMapper.entityToDto(fieldGroup);
     }
 
     @Override
-    public FieldGroup getFieldGroupById(UUID id) {
-        return fieldGroupRepository.findById(id).orElse(FieldGroup.NONE);
+    @Transactional(readOnly = true)
+    public FieldGroupDTO getFieldGroupById(UUID id) {
+        FieldGroup fieldGroup = fieldGroupRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(FieldGroup.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
+        return DefaultMappers.fieldGroupMapper.entityToDto(fieldGroup);
     }
 
     @Override
-    public FieldGroup updateFieldGroup(FieldGroupDTO groupDTO) {
+    @Transactional
+    public FieldGroupDTO updateFieldGroup(FieldGroupDTO groupDTO) {
         FieldGroup originalFieldGroup = getFieldGroupIfExists(groupDTO.getId());
         originalFieldGroup.setDescription(groupDTO.getDescription());
         originalFieldGroup.setFieldGroupName(groupDTO.getFieldGroupName());
-        return fieldGroupRepository.saveAndFlush(originalFieldGroup);
+        FieldGroup saved = fieldGroupRepository.saveAndFlush(originalFieldGroup);
+        return DefaultMappers.fieldGroupMapper.entityToDto(saved);
     }
 
-    FieldGroup getFieldGroupIfExists(UUID groupId) {
+    @Transactional(readOnly = true)
+    @Override
+    public FieldGroup getFieldGroupIfExists(UUID groupId) {
         if (groupId == null) {
-            throw new IllegalArgumentExceptionCustom(FieldGroup.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
+            throw new IllegalArgumentExceptionCustom(FieldGroup.class, Set.of("id"),
+                    IllegalArgumentExceptionCause.BLANK_REQUIRED_FIELDS);
         }
-        FieldGroup originalFieldGroup = getFieldGroupById(groupId);
-        if (originalFieldGroup.equals(FieldGroup.NONE)) {
-            throw new IllegalArgumentExceptionCustom(FieldGroup.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
-        }
-        return originalFieldGroup;
+        return fieldGroupRepository.findById(groupId).orElseThrow(() ->
+                new IllegalArgumentExceptionCustom(FieldGroup.class,
+                        IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST));
     }
 
     @Override
-    public Set<FieldGroup> getAllFieldGroups() {
-        return fieldGroupRepository.findAllByUser(loggedUserConfiguration.getLoggedUser());
+    @Transactional(readOnly = true)
+    public Set<FieldGroupDTO> getAllFieldGroups() {
+        return fieldGroupRepository.findAllByUser(loggedUserConfiguration.getLoggedUser())
+                .stream().map(DefaultMappers.fieldGroupMapper::entityToDto).collect(Collectors.toSet());
     }
 
     @Override
+    @Transactional
     public void deleteFieldGroupWithFields(UUID groupId) {
-        FieldGroup fieldGroup = getFieldGroupById(groupId);
+        FieldGroup fieldGroup = fieldGroupRepository.findById(groupId).orElse(FieldGroup.NONE);
         if (fieldGroup == FieldGroup.NONE) {
             return;
         }
-        fieldGroup.getFields().forEach(field ->  fieldRepository.deleteById(field.getId()));
+        fieldGroup.getFields().forEach(field -> fieldRepository.deleteById(field.getId()));
         fieldGroupRepository.delete(fieldGroup);
         flushChanges();
     }
 
     @Override
+    @Transactional
     public void deleteFieldGroupWithoutFields(UUID groupId) {
-        FieldGroup fieldGroup = getFieldGroupById(groupId);
+        FieldGroup fieldGroup = fieldGroupRepository.findById(groupId).orElse(FieldGroup.NONE);
         if (fieldGroup == FieldGroup.NONE) {
             return;
         }
@@ -132,12 +147,13 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
     }
 
     @Override
+    @Transactional
     public void moveFieldsToAnotherGroup(Set<UUID> fieldsIds, UUID newGroupId) {
-        Set<Field> fields = fieldsIds.stream().map(id->fieldRepository.findById(id).orElse(Field.NONE)).collect(Collectors.toSet());
+        Set<Field> fields = fieldsIds.stream().map(id -> fieldRepository.findById(id).orElse(Field.NONE)).collect(Collectors.toSet());
         if (fields.contains(Field.NONE)) {
             throw new IllegalArgumentExceptionCustom(Field.class, IllegalArgumentExceptionCause.OBJECT_DO_NOT_EXIST);
         }
-        FieldGroup newGroup = getFieldGroupById(newGroupId);
+        FieldGroup newGroup = fieldGroupRepository.findById(newGroupId).orElse(FieldGroup.NONE);
         if (newGroup == FieldGroup.NONE) {
             newGroup = getOrCreateDefaultFieldGroup();
         }
@@ -155,6 +171,7 @@ public class FieldGroupManagerDefault implements FieldGroupManager{
             }
         }
     }
+
     private void flushChanges() {
         entityManager.flush();
         entityManager.clear();
