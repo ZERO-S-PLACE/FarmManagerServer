@@ -1,0 +1,35 @@
+{
+    "id": null,
+    "version": null,
+    "firstName": "TEST2",
+    "secondName": "",
+    "lastName": "TEST2",
+    "email": "test2@zeros.org",
+    "address": "",
+    "city": "",
+    "zipCode": "",
+    "phoneNumber": "999999999",
+    "username": "TEST2",
+    "password": null,
+    "fields":null,
+    "fieldGroups": null
+}
+
+{
+    "id": null,
+    "version": null,
+    "fieldName": "Przed domem",
+    "description": "",
+    "area": 1452.11,
+    "user": null,
+    "fieldGroup":null,
+    "fieldParts":null,
+    "surveyingPlots": [
+        "1/1",
+        "1/2",
+    ],
+    "isOwnField": true,
+    "propertyTax": 132.11,
+    "rent": 0.00,
+    "isArchived": false
+}
