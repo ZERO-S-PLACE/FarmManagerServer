@@ -23,9 +23,9 @@ public class SpringSecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> {
                     authorize
-                            .requestMatchers("/api/register").permitAll()
                             .requestMatchers("/api/admin/**").authenticated()
-                            .requestMatchers("/api/user/**").authenticated();
+                            .requestMatchers("/api/user/**").authenticated()
+                            .anyRequest().permitAll();
                 })
                 .oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer -> {
                     httpSecurityOAuth2ResourceServerConfigurer.jwt(Customizer.withDefaults());
