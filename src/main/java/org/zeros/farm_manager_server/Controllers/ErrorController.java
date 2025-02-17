@@ -25,7 +25,7 @@ public class ErrorController {
     @ExceptionHandler(RuntimeException.class)
     @Operation(summary = "Handle unexpected runtime exceptions", description = "Handles generic runtime exceptions that are not caught elsewhere.")
     @ApiResponse(responseCode = "500", description = "Unexpected error occurred")
-    public ResponseEntity<String> handleRuntimeException(RuntimeException exception) {
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ignored) {
         return new ResponseEntity<>("Unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
