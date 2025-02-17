@@ -1,6 +1,11 @@
 package org.zeros.farm_manager_server.Controllers.Crop;
 
-import jakarta.transaction.Transactional;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +19,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
+@Tag(name = "6.Crop Management", description = "API for managing crop records")
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -29,67 +35,107 @@ public class CropController {
 
     private final CropManager cropManager;
 
+    @Operation(
+            summary = "Get crop by ID",
+            description = "Retrieve details of a specific crop",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Crop details retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = CropDTO.class))),
+                    @ApiResponse(responseCode = "404", description = "Crop not found")
+            }
+    )
     @GetMapping(ID_PATH)
-    public CropDTO getById(@PathVariable("cropId") UUID cropId) {
+    public CropDTO getById(@Parameter(description = "UUID of the crop to retrieve") @PathVariable("cropId") UUID cropId) {
         return cropManager.getCropById(cropId);
     }
 
+    @Operation(summary = "Create a new main crop", description = "Registers a new main crop for a field part")
     @PostMapping(MAIN_CROP_PATH)
-    ResponseEntity<String> createNewMainCrop(@RequestParam UUID fieldPartId, @RequestParam Set<UUID> cultivatedPlantsIds) {
+    public ResponseEntity<String> createNewMainCrop(
+            @Parameter(description = "UUID of the field part where the crop is grown") @RequestParam UUID fieldPartId,
+            @Parameter(description = "Set of cultivated plant UUIDs") @RequestParam Set<UUID> cultivatedPlantsIds) {
+
         CropDTO saved = cropManager.createNewMainCrop(fieldPartId, cultivatedPlantsIds);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-
+    @Operation(summary = "Create a new inter crop", description = "Registers a new inter crop")
     @PostMapping(INTER_CROP_PATH)
-    ResponseEntity<String> createNewInterCrop(@RequestParam UUID fieldPartId, @RequestParam Set<UUID> cultivatedPlantsIds) {
+    public ResponseEntity<String> createNewInterCrop(
+            @Parameter(description = "UUID of the field part where the inter crop is grown") @RequestParam UUID fieldPartId,
+            @Parameter(description = "Set of cultivated plant UUIDs") @RequestParam Set<UUID> cultivatedPlantsIds) {
+
         CropDTO saved = cropManager.createNewInterCrop(fieldPartId, cultivatedPlantsIds);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", BASE_PATH + "/" + saved.getId().toString());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
-    
+
+    @Operation(summary = "Update cultivated plants", description = "Updates the list of cultivated plants for a crop")
     @PatchMapping(CROP_PLANTS_PATH)
-    ResponseEntity<String> updateCultivatedPlants(@RequestParam UUID cropId, @RequestParam Set<UUID> cultivatedPlantsIds) {
+    public ResponseEntity<String> updateCultivatedPlants(
+            @Parameter(description = "UUID of the crop to update") @RequestParam UUID cropId,
+            @Parameter(description = "Set of new cultivated plant UUIDs") @RequestParam Set<UUID> cultivatedPlantsIds) {
+
         cropManager.updateCultivatedPlants(cropId, cultivatedPlantsIds);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Operation(summary = "Add a subside to a crop", description = "Links a subside to a specific crop")
     @PatchMapping(ADD_SUBSIDE_PATH)
-    ResponseEntity<String> addSubside(@RequestParam UUID cropId, @RequestParam UUID subsideId) {
+    public ResponseEntity<String> addSubside(
+            @Parameter(description = "UUID of the crop") @RequestParam UUID cropId,
+            @Parameter(description = "UUID of the subside") @RequestParam UUID subsideId) {
+
         cropManager.addSubside(cropId, subsideId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Operation(summary = "Remove a subside from a crop", description = "Detaches a subside from a specific crop")
     @PatchMapping(REMOVE_SUBSIDE_PATH)
-    ResponseEntity<String> removeSubside(@RequestParam UUID cropId, @RequestParam UUID subsideId) {
+    public ResponseEntity<String> removeSubside(
+            @Parameter(description = "UUID of the crop") @RequestParam UUID cropId,
+            @Parameter(description = "UUID of the subside") @RequestParam UUID subsideId) {
+
         cropManager.removeSubside(cropId, subsideId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-
+    @Operation(summary = "Set inter crop destruction date", description = "Registers the date an inter crop was destroyed")
     @PatchMapping(INTER_CROP_PATH)
-    ResponseEntity<String> setDateDestroyed(@RequestParam UUID interCropId, @RequestParam LocalDate dateDestroyed) {
+    public ResponseEntity<String> setDateDestroyed(
+            @Parameter(description = "UUID of the inter crop") @RequestParam UUID interCropId,
+            @Parameter(description = "Date when the inter crop was destroyed") @RequestParam LocalDate dateDestroyed) {
+
         cropManager.setDateDestroyed(interCropId, dateDestroyed);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Operation(summary = "Mark crop work as finished", description = "Marks a crop's work as completed")
     @PatchMapping(WORK_FINISHED_PATH)
-    ResponseEntity<String> setWorkFinished(@RequestParam UUID finishedCropId) {
+    public ResponseEntity<String> setWorkFinished(
+            @Parameter(description = "UUID of the finished crop") @RequestParam UUID finishedCropId) {
+
         cropManager.setWorkFinished(finishedCropId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Operation(summary = "Mark main crop as fully sold", description = "Indicates that a main crop has been completely sold")
     @PatchMapping(MAIN_CROP_PATH)
-    ResponseEntity<String> setFullySold(@RequestParam UUID fullySoldCropId) {
+    public ResponseEntity<String> setFullySold(
+            @Parameter(description = "UUID of the fully sold crop") @RequestParam UUID fullySoldCropId) {
+
         cropManager.setFullySold(fullySoldCropId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Operation(summary = "Delete a crop", description = "Removes a crop and its associated data from the system")
     @DeleteMapping(BASE_PATH)
-    ResponseEntity<String> deleteCrop(@RequestParam UUID cropId) {
+    public ResponseEntity<String> deleteCrop(
+            @Parameter(description = "UUID of the crop to delete") @RequestParam UUID cropId) {
+
         cropManager.deleteCropAndItsData(cropId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
