@@ -1,36 +1,43 @@
-# **Farm Manager Server**  
+# **Farm Manager Server**  
 
-Farm Manager Server is a backend system designed to collect data about crops and fields, making resource planning easier. It helps estimate the effectiveness of different farming solutions by providing insights into crop management and field usage.  
+Farm Manager Server is a backend system designed to collect data about crops and fields, to make resource planning easier, and to allow farmers to compare how different solutions used in farming influence yields.
 
-Built with **Spring Boot** and **Spring Data JPA**, the application ensures efficient data handling and security using OAuth2 authentication for user access control.  
 
-## **2. Tech Stack & Dependencies**  
 
-- **Spring Boot** – Core framework for building REST APIs  
-- **Spring Data JPA** – ORM for database interactions  
-- **OAuth2 / Spring Security** – Authentication & authorization  
-- **MySQL** – Relational database for storing farm-related data  
-- **Lombok** – Reduces boilerplate code  
-- **SpringDoc OpenAPI** – API documentation with Swagger UI  
+## **2. Tech Stack & Dependencies**  
 
-## **3. Database Structure & ERD**  
 
-A separate ERD diagram provides an overview of how different entities relate (e.g., `Crop`, `FieldPart`, `Subside`, `User`).  
-The database follows a normalized structure to prevent data duplication and improve efficiency.  
+- **Spring Boot**
 
-## **4. API Documentation** *(Work in Progress)*  
+- **Spring Data JPA**
 
-The API documentation is generated using **SpringDoc OpenAPI** and can be accessed at:  
+- **OAuth2 / Spring Security** 
 
-- [Swagger UI](http://localhost:8080/swagger-ui.html)  
-- [OpenAPI JSON](http://localhost:8080/v3/api-docs)
+- **MySQL** 
 
-  when application is running.
+- **Lombok** 
 
-## **5. Security**  
+- **SpringDoc OpenAPI**
 
-- **OAuth2 authentication** is used to protect API endpoints.  
-- The authentication server for this application is available at:  
-  [Farm Manager Authorization Server](https://github.com/ZERO-S-PLACE/FarmManagerAuthorizationServer)  
-- The authentication system has been customized to allow user differentiation.  
-- A manual on how to connect to this application is available in a separate file.  
+
+
+## **3. Database Structure & ERD**  
+
+A separate ERD diagram is available in project files.  
+
+
+## **4. API Documentation**  
+
+The API documentation is generated using **SpringDoc OpenAPI** and can be accessed at:  [Swagger UI](http://localhost:8080/swagger-ui.html) when the application is running.
+
+
+## **5. Security**  
+
+- **OAuth2 authentication** is used to protect API endpoints.  
+
+- The authentication server for this application is available at:  [Farm Manager Authorization Server](https://github.com/ZERO-S-PLACE/FarmManagerAuthorizationServer)  
+
+- The authentication system has been customized to allow distinguished users.  
+
+- A manual on how to register, login and obtain tokens is available in API documentation.  
+
